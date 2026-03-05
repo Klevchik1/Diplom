@@ -2,13 +2,20 @@ from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.units import mm
 import os
 from django.conf import settings
-from reportlab.lib.enums import TA_CENTER, TA_LEFT
-from reportlab.lib.units import mm
+from django.utils import timezone
+import qrcode
+from PIL import Image as PILImage
+import tempfile
+
+# Импорт модели TicketGroup, если используется в функциях
+from .models import TicketGroup
 
 
 def register_custom_fonts():
@@ -16,13 +23,54 @@ def register_custom_fonts():
     try:
         fonts_dir = os.path.join(settings.BASE_DIR, 'ticket', 'fonts')
         dejavu_sans_path = os.path.join(fonts_dir, 'DejaVuSans.ttf')
+        dejavu_sans_bold_path = os.path.join(fonts_dir, 'DejaVuSans-Bold.ttf')
 
         if os.path.exists(dejavu_sans_path):
             pdfmetrics.registerFont(TTFont('DejaVuSans', dejavu_sans_path))
+        if os.path.exists(dejavu_sans_bold_path):
+            pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', dejavu_sans_bold_path))
             return True
         return False
-    except Exception:
+    except Exception as e:
+        print(f"Font registration error: {e}")
         return False
+
+
+def create_wrapped_text(text, font_name='Helvetica', font_size=9, alignment=TA_CENTER):
+    """Создает Paragraph с переносом текста"""
+    wrap_style = ParagraphStyle(
+        name='WrapStyle',
+        fontName=font_name,
+        fontSize=font_size,
+        alignment=alignment,
+        wordWrap='CJK',
+        spaceBefore=2,
+        spaceAfter=2
+    )
+    return Paragraph(str(text), wrap_style)
+
+
+def generate_qr_code(data):
+    """Генерация QR-кода для билета"""
+    try:
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=3,
+            border=1,
+        )
+        qr.add_data(data)
+        qr.make(fit=True)
+
+        img = qr.make_image(fill_color="black", back_color="white")
+
+        # Сохраняем во временный файл
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
+        img.save(temp_file.name)
+        return temp_file.name
+    except Exception as e:
+        print(f"QR code generation error: {e}")
+        return None
 
 
 def generate_pdf_report(data, report_type, title, filters):
@@ -33,13 +81,14 @@ def generate_pdf_report(data, report_type, title, filters):
                             topMargin=20 * mm, bottomMargin=20 * mm)
     elements = []
 
-    # Регистрируем шрифты
     has_custom_font = register_custom_fonts()
+    font_name = 'DejaVuSans' if has_custom_font else 'Helvetica'
+    font_name_bold = 'DejaVuSans-Bold' if has_custom_font else 'Helvetica-Bold'
 
     # Заголовок
     title_style = ParagraphStyle(
         name='CustomTitle',
-        fontName='DejaVuSans' if has_custom_font else 'Helvetica-Bold',
+        fontName=font_name_bold,
         fontSize=14,
         spaceAfter=20,
         alignment=TA_CENTER,
@@ -59,7 +108,7 @@ def generate_pdf_report(data, report_type, title, filters):
 
         filter_style = ParagraphStyle(
             name='FilterStyle',
-            fontName='DejaVuSans' if has_custom_font else 'Helvetica',
+            fontName=font_name,
             fontSize=9,
             spaceAfter=15,
             alignment=TA_CENTER
@@ -81,29 +130,16 @@ def generate_pdf_report(data, report_type, title, filters):
     return buffer
 
 
-def create_wrapped_text(text, font_name='Helvetica', font_size=9, alignment=TA_CENTER, width=None):
-    """Создает Paragraph с переносом текста"""
-    wrap_style = ParagraphStyle(
-        name='WrapStyle',
-        fontName=font_name,
-        fontSize=font_size,
-        alignment=alignment,
-        wordWrap='CJK',  # Полный перенос текста
-        spaceBefore=2,
-        spaceAfter=2
-    )
-    return Paragraph(str(text), wrap_style)
-
-
 def generate_revenue_table(data, has_custom_font, period):
     """Генерация таблицы выручки с переносом текста"""
     elements = []
+    font_name = 'DejaVuSans' if has_custom_font else 'Helvetica'
+    font_name_bold = 'DejaVuSans-Bold' if has_custom_font else 'Helvetica-Bold'
 
     if not data:
         elements.append(Paragraph("Нет данных для отображения", getSampleStyleSheet()['Normal']))
         return elements
 
-    # Описание периода
     period_map = {
         'daily': 'по дням',
         'weekly': 'по неделям',
@@ -114,7 +150,7 @@ def generate_revenue_table(data, has_custom_font, period):
     if period_text:
         period_style = ParagraphStyle(
             name='PeriodStyle',
-            fontName='DejaVuSans' if has_custom_font else 'Helvetica',
+            fontName=font_name,
             fontSize=9,
             spaceAfter=8,
             alignment=TA_CENTER
@@ -122,19 +158,20 @@ def generate_revenue_table(data, has_custom_font, period):
         elements.append(Paragraph(f"<i>Отчет {period_text}</i>", period_style))
 
     # Заголовки таблицы
-    font_name = 'DejaVuSans' if has_custom_font else 'Helvetica-Bold'
     table_data = [[
-        create_wrapped_text('Период', font_name, 9, TA_CENTER),
-        create_wrapped_text('Выручка (руб.)', font_name, 9, TA_CENTER),
-        create_wrapped_text('Продано билетов', font_name, 9, TA_CENTER),
-        create_wrapped_text('Средний чек (руб.)', font_name, 9, TA_CENTER)
+        create_wrapped_text('Период', font_name_bold, 9, TA_CENTER),
+        create_wrapped_text('Выручка (руб.)', font_name_bold, 9, TA_CENTER),
+        create_wrapped_text('Продано билетов', font_name_bold, 9, TA_CENTER),
+        create_wrapped_text('Средний чек (руб.)', font_name_bold, 9, TA_CENTER)
     ]]
 
     # Данные таблицы
-    normal_font = 'DejaVuSans' if has_custom_font else 'Helvetica'
     for item in data:
         if 'date' in item and item['date']:
-            period_display = item['date'].strftime('%d.%m.%Y')
+            if hasattr(item['date'], 'strftime'):
+                period_display = item['date'].strftime('%d.%m.%Y')
+            else:
+                period_display = str(item['date'])
         elif 'week' in item:
             period_display = f"Неделя {int(item['week'])}, {int(item['year'])}"
         elif 'month' in item:
@@ -142,22 +179,19 @@ def generate_revenue_table(data, has_custom_font, period):
         else:
             period_display = "Неизвестный период"
 
-        # Расчет среднего чека
         tickets = item.get('tickets_sold', 0)
-        revenue = item.get('revenue', 0) or 0
+        revenue = float(item.get('revenue', 0) or 0)
         avg_ticket = revenue / tickets if tickets > 0 else 0
 
         table_data.append([
-            create_wrapped_text(period_display, normal_font, 8, TA_CENTER),
-            create_wrapped_text(f"{revenue:.2f}", normal_font, 8, TA_CENTER),
-            create_wrapped_text(str(tickets), normal_font, 8, TA_CENTER),
-            create_wrapped_text(f"{avg_ticket:.2f}", normal_font, 8, TA_CENTER)
+            create_wrapped_text(period_display, font_name, 8, TA_CENTER),
+            create_wrapped_text(f"{revenue:.2f}", font_name, 8, TA_CENTER),
+            create_wrapped_text(str(tickets), font_name, 8, TA_CENTER),
+            create_wrapped_text(f"{avg_ticket:.2f}", font_name, 8, TA_CENTER)
         ])
 
-    # Создание таблицы с правильными ширинами
     table = Table(table_data, colWidths=[60 * mm, 40 * mm, 40 * mm, 40 * mm])
 
-    # Стили таблицы
     table_style = TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2E86AB')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -171,7 +205,6 @@ def generate_revenue_table(data, has_custom_font, period):
         ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
     ])
 
-    # Чередование цветов строк
     for i in range(1, len(table_data)):
         if i % 2 == 0:
             table_style.add('BACKGROUND', (0, i), (-1, i), colors.HexColor('#F8F9FA'))
@@ -181,13 +214,13 @@ def generate_revenue_table(data, has_custom_font, period):
     elements.append(Spacer(1, 10 * mm))
 
     # Итоги
-    total_revenue = sum(item.get('revenue', 0) or 0 for item in data)
+    total_revenue = sum(float(item.get('revenue', 0) or 0) for item in data)
     total_tickets = sum(item.get('tickets_sold', 0) for item in data)
     total_avg = total_revenue / total_tickets if total_tickets > 0 else 0
 
     total_style = ParagraphStyle(
         name='TotalStyle',
-        fontName='DejaVuSans' if has_custom_font else 'Helvetica-Bold',
+        fontName=font_name_bold,
         fontSize=10,
         spaceAfter=6,
         textColor=colors.black,
@@ -204,44 +237,42 @@ def generate_revenue_table(data, has_custom_font, period):
 def generate_movies_table(data, has_custom_font):
     """Генерация таблицы популярных фильмов с полным переносом текста"""
     elements = []
+    font_name = 'DejaVuSans' if has_custom_font else 'Helvetica'
+    font_name_bold = 'DejaVuSans-Bold' if has_custom_font else 'Helvetica-Bold'
 
     if not data:
         elements.append(Paragraph("Нет данных для отображения", getSampleStyleSheet()['Normal']))
         return elements
 
     # Заголовки таблицы
-    font_name = 'DejaVuSans' if has_custom_font else 'Helvetica-Bold'
     table_data = [[
-        create_wrapped_text('№', font_name, 9, TA_CENTER),
-        create_wrapped_text('Фильм', font_name, 9, TA_CENTER),
-        create_wrapped_text('Жанр', font_name, 9, TA_CENTER),
-        create_wrapped_text('Продано билетов', font_name, 9, TA_CENTER),
-        create_wrapped_text('Общая выручка (руб.)', font_name, 9, TA_CENTER),
-        create_wrapped_text('Популярность (%)', font_name, 9, TA_CENTER)
+        create_wrapped_text('№', font_name_bold, 9, TA_CENTER),
+        create_wrapped_text('Фильм', font_name_bold, 9, TA_CENTER),
+        create_wrapped_text('Жанр', font_name_bold, 9, TA_CENTER),
+        create_wrapped_text('Продано билетов', font_name_bold, 9, TA_CENTER),
+        create_wrapped_text('Общая выручка (руб.)', font_name_bold, 9, TA_CENTER),
+        create_wrapped_text('Популярность (%)', font_name_bold, 9, TA_CENTER)
     ]]
 
     # Данные таблицы
-    normal_font = 'DejaVuSans' if has_custom_font else 'Helvetica'
     for idx, movie in enumerate(data, 1):
         title = str(movie.get('title', 'Без названия'))
         genre = str(movie.get('genre', ''))
         tickets_sold = movie.get('tickets_sold', 0)
-        total_revenue = movie.get('total_revenue', 0)
-        popularity = movie.get('popularity_percentage', 0)
+        total_revenue = float(movie.get('total_revenue', 0))
+        popularity = float(movie.get('popularity_percentage', 0))
 
         table_data.append([
-            create_wrapped_text(str(idx), normal_font, 8, TA_CENTER),
-            create_wrapped_text(title, normal_font, 8, TA_CENTER),
-            create_wrapped_text(genre, normal_font, 8, TA_CENTER),
-            create_wrapped_text(str(tickets_sold), normal_font, 8, TA_CENTER),
-            create_wrapped_text(f"{total_revenue:.2f}", normal_font, 8, TA_CENTER),
-            create_wrapped_text(f"{popularity:.1f}", normal_font, 8, TA_CENTER)
+            create_wrapped_text(str(idx), font_name, 8, TA_CENTER),
+            create_wrapped_text(title, font_name, 8, TA_CENTER),
+            create_wrapped_text(genre, font_name, 8, TA_CENTER),
+            create_wrapped_text(str(tickets_sold), font_name, 8, TA_CENTER),
+            create_wrapped_text(f"{total_revenue:.2f}", font_name, 8, TA_CENTER),
+            create_wrapped_text(f"{popularity:.1f}", font_name, 8, TA_CENTER)
         ])
 
-    # Создание таблицы с правильными ширинами
     table = Table(table_data, colWidths=[15 * mm, 55 * mm, 30 * mm, 35 * mm, 40 * mm, 30 * mm])
 
-    # Стили таблицы
     table_style = TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#28A745')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -255,7 +286,6 @@ def generate_movies_table(data, has_custom_font):
         ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
     ])
 
-    # Чередование цветов строк
     for i in range(1, len(table_data)):
         if i % 2 == 0:
             table_style.add('BACKGROUND', (0, i), (-1, i), colors.HexColor('#F8F9FA'))
@@ -266,11 +296,11 @@ def generate_movies_table(data, has_custom_font):
 
     # Итоги
     total_tickets = sum(m.get('tickets_sold', 0) for m in data)
-    total_revenue = sum(m.get('total_revenue', 0) for m in data)
+    total_revenue = sum(float(m.get('total_revenue', 0)) for m in data)
 
     total_style = ParagraphStyle(
         name='MovieTotalStyle',
-        fontName='DejaVuSans' if has_custom_font else 'Helvetica-Bold',
+        fontName=font_name_bold,
         fontSize=10,
         spaceAfter=6,
         textColor=colors.black,
@@ -286,45 +316,43 @@ def generate_movies_table(data, has_custom_font):
 def generate_halls_table(data, has_custom_font):
     """Генерация таблицы загруженности залов с полным переносом текста"""
     elements = []
+    font_name = 'DejaVuSans' if has_custom_font else 'Helvetica'
+    font_name_bold = 'DejaVuSans-Bold' if has_custom_font else 'Helvetica-Bold'
 
     if not data:
         elements.append(Paragraph("Нет данных для отображения", getSampleStyleSheet()['Normal']))
         return elements
 
     # Заголовки таблицы
-    font_name = 'DejaVuSans' if has_custom_font else 'Helvetica-Bold'
     table_data = [[
-        create_wrapped_text('Зал', font_name, 9, TA_CENTER),
-        create_wrapped_text('Всего мест', font_name, 9, TA_CENTER),
-        create_wrapped_text('Сеансов', font_name, 9, TA_CENTER),
-        create_wrapped_text('Продано билетов', font_name, 9, TA_CENTER),
-        create_wrapped_text('Выручка (руб.)', font_name, 9, TA_CENTER),
-        create_wrapped_text('Загруженность (%)', font_name, 9, TA_CENTER)
+        create_wrapped_text('Зал', font_name_bold, 9, TA_CENTER),
+        create_wrapped_text('Всего мест', font_name_bold, 9, TA_CENTER),
+        create_wrapped_text('Сеансов', font_name_bold, 9, TA_CENTER),
+        create_wrapped_text('Продано билетов', font_name_bold, 9, TA_CENTER),
+        create_wrapped_text('Выручка (руб.)', font_name_bold, 9, TA_CENTER),
+        create_wrapped_text('Загруженность (%)', font_name_bold, 9, TA_CENTER)
     ]]
 
     # Данные таблицы
-    normal_font = 'DejaVuSans' if has_custom_font else 'Helvetica'
     for hall in data:
         hall_name = str(hall.get('name', ''))
         total_seats = hall.get('total_seats', 0)
         total_screenings = hall.get('total_screenings', 0)
         sold_tickets = hall.get('sold_tickets', 0)
-        total_revenue = hall.get('total_revenue', 0)
-        occupancy_percent = hall.get('occupancy_percent', 0)
+        total_revenue = float(hall.get('total_revenue', 0))
+        occupancy_percent = float(hall.get('occupancy_percent', 0))
 
         table_data.append([
-            create_wrapped_text(hall_name, normal_font, 8, TA_CENTER),
-            create_wrapped_text(str(total_seats), normal_font, 8, TA_CENTER),
-            create_wrapped_text(str(total_screenings), normal_font, 8, TA_CENTER),
-            create_wrapped_text(str(sold_tickets), normal_font, 8, TA_CENTER),
-            create_wrapped_text(f"{total_revenue:.2f}", normal_font, 8, TA_CENTER),
-            create_wrapped_text(f"{occupancy_percent:.1f}", normal_font, 8, TA_CENTER)
+            create_wrapped_text(hall_name, font_name, 8, TA_CENTER),
+            create_wrapped_text(str(total_seats), font_name, 8, TA_CENTER),
+            create_wrapped_text(str(total_screenings), font_name, 8, TA_CENTER),
+            create_wrapped_text(str(sold_tickets), font_name, 8, TA_CENTER),
+            create_wrapped_text(f"{total_revenue:.2f}", font_name, 8, TA_CENTER),
+            create_wrapped_text(f"{occupancy_percent:.1f}", font_name, 8, TA_CENTER)
         ])
 
-    # Создание таблицы с правильными ширинами
     table = Table(table_data, colWidths=[35 * mm, 25 * mm, 25 * mm, 35 * mm, 35 * mm, 35 * mm])
 
-    # Стили таблицы
     table_style = TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#FFC107')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
@@ -338,7 +366,6 @@ def generate_halls_table(data, has_custom_font):
         ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
     ])
 
-    # Чередование цветов строк
     for i in range(1, len(table_data)):
         if i % 2 == 0:
             table_style.add('BACKGROUND', (0, i), (-1, i), colors.HexColor('#F8F9FA'))
@@ -349,13 +376,13 @@ def generate_halls_table(data, has_custom_font):
 
     # Итоги
     if data:
-        avg_occupancy = sum(h.get('occupancy_percent', 0) for h in data) / len(data) if data else 0
-        total_revenue = sum(h.get('total_revenue', 0) for h in data)
+        avg_occupancy = sum(float(h.get('occupancy_percent', 0)) for h in data) / len(data) if data else 0
+        total_revenue = sum(float(h.get('total_revenue', 0)) for h in data)
         total_tickets = sum(h.get('sold_tickets', 0) for h in data)
 
         total_style = ParagraphStyle(
             name='HallTotalStyle',
-            fontName='DejaVuSans' if has_custom_font else 'Helvetica-Bold',
+            fontName=font_name_bold,
             fontSize=10,
             spaceAfter=6,
             textColor=colors.black,
@@ -372,6 +399,8 @@ def generate_halls_table(data, has_custom_font):
 def generate_sales_table(data, has_custom_font):
     """Генерация таблицы общей статистики с полным переносом текста"""
     elements = []
+    font_name = 'DejaVuSans' if has_custom_font else 'Helvetica'
+    font_name_bold = 'DejaVuSans-Bold' if has_custom_font else 'Helvetica-Bold'
 
     if not data:
         elements.append(Paragraph("Нет данных для отображения", getSampleStyleSheet()['Normal']))
@@ -380,17 +409,7 @@ def generate_sales_table(data, has_custom_font):
     # Стиль для ячеек с переносом текста
     cell_style = ParagraphStyle(
         name='CellStyle',
-        fontName='DejaVuSans' if has_custom_font else 'Helvetica',
-        fontSize=9,
-        wordWrap='CJK',  # Полный перенос текста
-        alignment=TA_CENTER,
-        spaceBefore=4,
-        spaceAfter=4
-    )
-
-    cell_style_bold = ParagraphStyle(
-        name='CellStyleBold',
-        fontName='DejaVuSans' if has_custom_font else 'Helvetica-Bold',
+        fontName=font_name,
         fontSize=9,
         wordWrap='CJK',
         alignment=TA_CENTER,
@@ -398,7 +417,16 @@ def generate_sales_table(data, has_custom_font):
         spaceAfter=4
     )
 
-    # Создаем данные таблицы с использованием Paragraph для полного переноса
+    cell_style_bold = ParagraphStyle(
+        name='CellStyleBold',
+        fontName=font_name_bold,
+        fontSize=9,
+        wordWrap='CJK',
+        alignment=TA_CENTER,
+        spaceBefore=4,
+        spaceAfter=4
+    )
+
     popular_movie = str(data.get('popular_movie', ''))
 
     table_data = [
@@ -428,10 +456,8 @@ def generate_sales_table(data, has_custom_font):
         ]
     ]
 
-    # Создание таблицы
     table = Table(table_data, colWidths=[80 * mm, 80 * mm])
 
-    # Стили таблицы
     table_style = TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#6F42C1')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -445,7 +471,6 @@ def generate_sales_table(data, has_custom_font):
         ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
     ])
 
-    # Чередование цветов строк
     for i in range(1, len(table_data)):
         if i % 2 == 0:
             table_style.add('BACKGROUND', (0, i), (-1, i), colors.HexColor('#F8F9FA'))
@@ -463,7 +488,7 @@ def generate_sales_table(data, has_custom_font):
 
         share_style = ParagraphStyle(
             name='ShareStyle',
-            fontName='DejaVuSans' if has_custom_font else 'Helvetica-Bold',
+            fontName=font_name_bold,
             fontSize=10,
             spaceBefore=5,
             spaceAfter=5,

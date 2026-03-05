@@ -78,13 +78,24 @@ WSGI_APPLICATION = 'cinematic.wsgi.application'
 
 BACKUP_DIR = os.path.join(BASE_DIR, 'backups')
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'cinema',
+#         'USER': 'postgres',
+#         'PASSWORD': '123',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'cinema',
         'USER': 'postgres',
         'PASSWORD': '123',
-        'HOST': 'localhost',
+        'HOST': '192.168.25.58',
         'PORT': '5432',
     }
 }

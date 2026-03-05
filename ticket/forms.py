@@ -7,16 +7,18 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.utils import timezone
 from .export_utils import LogExporter
-from .models import User, Movie, Hall, Screening, OperationLog, Genre, AgeRating
+from .models import (
+    User, Movie, Hall, Screening, OperationLog,
+    Genre, AgeRating, Director, Actor, Country, HallType,
+    ActionType, ModuleType, TicketStatus, TicketGroup,
+    EmailChangeRequest, PendingRegistration, PasswordResetRequest
+)
 from django import forms
 from django.utils.html import format_html
 from django.utils import timezone
 from decimal import Decimal
-from django import forms
 import datetime
-from .widgets import TimePickerWidget  # Добавить в начале файла
-import datetime
-
+from .widgets import TimePickerWidget
 
 
 class RegistrationForm(forms.Form):
@@ -27,35 +29,39 @@ class RegistrationForm(forms.Form):
             'class': 'form-control',
             'data-validate': 'email',
             'required': True,
-            'autocomplete': 'email'
+            'autocomplete': 'email',
+            'maxlength': '50'
         })
     )
     name = forms.CharField(
         label='Имя',
+        max_length=20,
         widget=forms.TextInput(attrs={
             'placeholder': 'Иван',
             'class': 'form-control',
             'data-validate': 'name',
             'required': True,
             'minlength': '2',
-            'maxlength': '30',
+            'maxlength': '20',
             'autocomplete': 'given-name'
         })
     )
     surname = forms.CharField(
         label='Фамилия',
+        max_length=20,
         widget=forms.TextInput(attrs={
             'placeholder': 'Иванов',
             'class': 'form-control',
             'data-validate': 'surname',
             'required': True,
             'minlength': '2',
-            'maxlength': '30',
+            'maxlength': '20',
             'autocomplete': 'family-name'
         })
     )
     number = forms.CharField(
         label='Телефон',
+        max_length=20,
         widget=forms.TextInput(attrs={
             'placeholder': '+7 (999) 999-99-99',
             'class': 'form-control',
@@ -136,6 +142,7 @@ class RegistrationForm(forms.Form):
 class LoginForm(forms.Form):
     email = forms.EmailField(
         label='Email',
+        max_length=50,
         widget=forms.EmailInput(attrs={
             'placeholder': 'Ваш email',
             'class': 'form-control'
@@ -152,6 +159,7 @@ class LoginForm(forms.Form):
 
 class UserUpdateForm(forms.ModelForm):
     name = forms.CharField(
+        max_length=20,
         validators=[
             RegexValidator(
                 regex=r'^[а-яА-Яa-zA-Z\- ]+$',
@@ -164,6 +172,7 @@ class UserUpdateForm(forms.ModelForm):
         })
     )
     surname = forms.CharField(
+        max_length=20,
         validators=[
             RegexValidator(
                 regex=r'^[а-яА-Яa-zA-Z\- ]+$',
@@ -176,6 +185,7 @@ class UserUpdateForm(forms.ModelForm):
         })
     )
     number = forms.CharField(
+        max_length=20,
         validators=[
             RegexValidator(
                 regex=r'^(\+7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$',
@@ -194,157 +204,192 @@ class UserUpdateForm(forms.ModelForm):
 
     def clean_number(self):
         number = self.cleaned_data.get('number')
-        # Очищаем номер от лишних символов
         cleaned_number = re.sub(r'[^\d+]', '', number)
 
-        # Если номер начинается с 8, заменяем на +7
         if cleaned_number.startswith('8'):
             cleaned_number = '+7' + cleaned_number[1:]
         elif cleaned_number.startswith('7'):
             cleaned_number = '+' + cleaned_number
 
-        # Проверяем длину номера
-        if len(cleaned_number) != 12:  # +79123456789
+        if len(cleaned_number) != 12:
             raise ValidationError('Номер телефона должен содержать 11 цифр')
 
-        # Проверяем, что номер не занят другим пользователем
         if User.objects.filter(number=cleaned_number).exclude(pk=self.instance.pk).exists():
             raise ValidationError('Пользователь с таким номером телефона уже существует')
 
         return cleaned_number
 
 
+class DirectorForm(forms.ModelForm):
+    class Meta:
+        model = Director
+        fields = ['name', 'surname', 'birth_date', 'country', 'biography']
+        widgets = {
+            'birth_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'biography': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'surname': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        name = cleaned_data.get('name')
+        surname = cleaned_data.get('surname')
+
+        if not re.match(r'^[а-яА-Яa-zA-Z\- ]+$', name or ''):
+            raise ValidationError('Имя может содержать только буквы и дефисы')
+        if not re.match(r'^[а-яА-Яa-zA-Z\- ]+$', surname or ''):
+            raise ValidationError('Фамилия может содержать только буквы и дефисы')
+
+        return cleaned_data
+
+
+class ActorForm(forms.ModelForm):
+    class Meta:
+        model = Actor
+        fields = ['name', 'surname', 'birth_date', 'country', 'biography']
+        widgets = {
+            'birth_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'biography': forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'surname': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        name = cleaned_data.get('name')
+        surname = cleaned_data.get('surname')
+
+        if not re.match(r'^[а-яА-Яa-zA-Z\- ]+$', name or ''):
+            raise ValidationError('Имя может содержать только буквы и дефисы')
+        if not re.match(r'^[а-яА-Яa-zA-Z\- ]+$', surname or ''):
+            raise ValidationError('Фамилия может содержать только буквы и дефисы')
+
+        return cleaned_data
+
+
 class MovieForm(forms.ModelForm):
-    genre_choice = forms.ChoiceField(
-        choices=[],  # Будет заполнено динамически
-        required=False,
-        label='Выберите жанр',
-        widget=forms.Select(attrs={'class': 'form-control'})
+    duration = forms.IntegerField(
+        min_value=1,
+        max_value=300,
+        label='Длительность (минуты)',
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 300})
+    )
+    release_year = forms.IntegerField(
+        min_value=1900,
+        max_value=date.today().year + 1,
+        label='Год выпуска',
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
     )
 
-    # Добавляем поле для возрастного рейтинга
-    age_rating = forms.ModelChoiceField(
-        queryset=AgeRating.objects.all(),
-        label='Возрастной рейтинг',
-        widget=forms.Select(attrs={'class': 'form-control'})
+    # Используем обычные ModelMultipleChoiceField без кастомных промежуточных моделей
+    directors = forms.ModelMultipleChoiceField(
+        queryset=Director.objects.all().order_by('surname', 'name'),
+        required=False,
+        label='Режиссёры',
+        widget=forms.SelectMultiple(attrs={'class': 'form-control', 'size': 5})
+    )
+
+    actors = forms.ModelMultipleChoiceField(
+        queryset=Actor.objects.all().order_by('surname', 'name'),
+        required=False,
+        label='Актёры',
+        widget=forms.SelectMultiple(attrs={'class': 'form-control', 'size': 5})
     )
 
     class Meta:
         model = Movie
-        fields = ['title', 'short_description', 'description', 'duration', 'poster', 'age_rating']
+        fields = ['title', 'release_year', 'short_description', 'description',
+                  'duration', 'genre', 'age_rating', 'poster', 'directors', 'actors']
         widgets = {
             'short_description': forms.Textarea(attrs={
                 'rows': 3,
+                'class': 'form-control',
                 'placeholder': 'Короткое описание для главной страницы (до 300 символов)'
             }),
             'description': forms.Textarea(attrs={
                 'rows': 5,
+                'class': 'form-control',
                 'placeholder': 'Полное описание для страницы фильма'
             }),
-            'duration': forms.TextInput(attrs={'placeholder': 'HH:MM:SS'}),
-            'poster': forms.FileInput(attrs={'accept': 'image/*'})
+            'poster': forms.FileInput(attrs={'accept': 'image/*', 'class': 'form-control'}),
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'genre': forms.Select(attrs={'class': 'form-control'}),
+            'age_rating': forms.Select(attrs={'class': 'form-control'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Заполняем выбор существующих жанров
-        genres = Genre.objects.all().values_list('name', 'name')
-        self.fields['genre_choice'].choices = [('', '---------')] + list(genres)
-
-        # Если редактируем существующий фильм, устанавливаем текущий жанр
-        if self.instance and self.instance.pk and self.instance.genre:
-            self.fields['genre_choice'].initial = self.instance.genre.name
-
-        # Устанавливаем начальное значение для возрастного рейтинга
-        if self.instance and self.instance.pk and self.instance.age_rating:
-            self.fields['age_rating'].initial = self.instance.age_rating
-
-    def clean(self):
-        cleaned_data = super().clean()
-        genre_choice = cleaned_data.get('genre_choice')
-        new_genre = cleaned_data.get('new_genre')
-        age_rating = cleaned_data.get('age_rating')
-
-        if not genre_choice and not new_genre:
-            raise ValidationError('Выберите жанр или создайте новый')
-
-        if genre_choice == 'new':
-            if not new_genre:
-                raise ValidationError('Введите название нового жанра')
-            # Создаем новый жанр
-            genre, created = Genre.objects.get_or_create(name=new_genre)
-            cleaned_data['genre'] = genre
-        elif genre_choice:
-            # Используем существующий жанр
-            try:
-                genre = Genre.objects.get(name=genre_choice)
-                cleaned_data['genre'] = genre
-            except Genre.DoesNotExist:
-                raise ValidationError('Выбранный жанр не существует')
-
-        # Проверяем наличие возрастного рейтинга
-        if not age_rating:
-            raise ValidationError('Выберите возрастной рейтинг')
-
-        return cleaned_data
+        if self.instance and self.instance.pk:
+            # Для существующего фильма загружаем текущих режиссёров и актёров
+            self.fields['directors'].initial = self.instance.directors.all()
+            self.fields['actors'].initial = self.instance.actors.all()
 
     def save(self, commit=True):
         movie = super().save(commit=False)
-        movie.genre = self.cleaned_data['genre']
         if commit:
             movie.save()
-        return movie
+            # Сохраняем связи через кастомные промежуточные модели
+            if self.cleaned_data.get('directors') is not None:
+                # Очищаем старые связи
+                MovieDirector.objects.filter(movie=movie).delete()
+                # Создаем новые
+                for director in self.cleaned_data['directors']:
+                    MovieDirector.objects.create(movie=movie, director=director)
 
-    def save(self, commit=True):
-        movie = super().save(commit=False)
-        movie.genre = self.cleaned_data['genre']
-        if commit:
-            movie.save()
+            if self.cleaned_data.get('actors') is not None:
+                # Очищаем старые связи
+                MovieActor.objects.filter(movie=movie).delete()
+                # Создаем новые
+                for actor in self.cleaned_data['actors']:
+                    MovieActor.objects.create(movie=movie, actor=actor)
         return movie
 
 
 class HallForm(forms.ModelForm):
     class Meta:
         model = Hall
-        fields = ['name', 'rows', 'seats_per_row']
+        fields = ['name', 'hall_type', 'rows', 'seats_per_row', 'description']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'hall_type': forms.Select(attrs={'class': 'form-control'}),
+            'rows': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+            'seats_per_row': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+            'description': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+        }
 
 
 class ScreeningForm(forms.ModelForm):
     start_time = forms.DateTimeField(
         widget=forms.DateTimeInput(attrs={
             'type': 'datetime-local',
-            'min': '08:00'
+            'class': 'form-control'
         }),
         label='Время начала'
     )
 
     class Meta:
         model = Screening
-        fields = ['movie', 'hall', 'start_time', 'price']
+        fields = ['movie', 'hall', 'start_time']
+        widgets = {
+            'movie': forms.Select(attrs={'class': 'form-control'}),
+            'hall': forms.Select(attrs={'class': 'form-control'}),
+        }
         labels = {
             'movie': 'Фильм',
             'hall': 'Зал',
-            'start_time': 'Время начала',
-            'price': 'Цена (руб)'
-        }
-        help_texts = {
-            'start_time': 'Сеансы доступны с 8:00 до 23:00',
-            'price': 'Укажите цену в рублях'
         }
 
     def clean_start_time(self):
         start_time = self.cleaned_data.get('start_time')
         if start_time:
-            # Приводим к локальному времени для проверки
             local_time = timezone.localtime(start_time)
             hour = local_time.hour
 
-            # Проверяем что время между 8:00 и 23:00
             if hour < 8 or hour >= 23:
                 raise ValidationError("Сеансы могут начинаться только с 8:00 до 23:00")
 
-            # Проверяем что сеанс не в прошлом
             if start_time < timezone.now():
                 raise ValidationError("Нельзя создавать сеансы в прошлом")
 
@@ -357,10 +402,9 @@ class ScreeningForm(forms.ModelForm):
         hall = cleaned_data.get('hall')
 
         if start_time and movie and hall:
-            # Рассчитываем время окончания
-            end_time = start_time + movie.duration + timedelta(minutes=10)
+            duration_timedelta = timedelta(minutes=movie.duration)
+            end_time = start_time + duration_timedelta + timedelta(minutes=10)
 
-            # Проверяем что сеанс заканчивается до 24:00
             local_end_time = timezone.localtime(end_time)
             if local_end_time.hour >= 24 or (local_end_time.hour == 0 and local_end_time.minute > 0):
                 raise ValidationError(
@@ -368,7 +412,6 @@ class ScreeningForm(forms.ModelForm):
                     f"Кинотеатр работает до 24:00. Выберите более раннее время начала."
                 )
 
-            # Проверяем пересечения с другими сеансами
             overlapping_screenings = Screening.objects.filter(
                 hall=hall,
                 start_time__lt=end_time,
@@ -383,79 +426,16 @@ class ScreeningForm(forms.ModelForm):
                 )
 
         return cleaned_data
-
-    def clean_start_time(self):
-        start_time = self.cleaned_data.get('start_time')
-        if start_time:
-            # Приводим к локальному времени для проверки
-            local_time = timezone.localtime(start_time)
-            hour = local_time.hour
-
-            # Проверяем что время между 8:00 и 23:00
-            if hour < 8 or hour >= 23:
-                raise ValidationError("Сеансы могут начинаться только с 8:00 до 23:00")
-
-            # Проверяем что сеанс не в прошлом
-            if start_time < timezone.now():
-                raise ValidationError("Нельзя создавать сеансы в прошлом")
-
-        return start_time
-
-    def clean(self):
-        cleaned_data = super().clean()
-        start_time = cleaned_data.get('start_time')
-        movie = cleaned_data.get('movie')
-        hall = cleaned_data.get('hall')
-
-        if start_time and movie and hall:
-            # Рассчитываем время окончания
-            end_time = start_time + movie.duration + timedelta(minutes=10)
-
-            # Проверяем что сеанс заканчивается до 24:00
-            local_end_time = timezone.localtime(end_time)
-            if local_end_time.hour >= 24:
-                raise ValidationError("Сеанс должен заканчиваться до 24:00")
-
-            # Проверяем пересечения с другими сеансами
-            overlapping_screenings = Screening.objects.filter(
-                hall=hall,
-                start_time__lt=end_time,
-                end_time__gt=start_time
-            ).exclude(pk=self.instance.pk if self.instance else None)
-
-            if overlapping_screenings.exists():
-                overlapping = overlapping_screenings.first()
-                raise ValidationError(
-                    f"Сеанс пересекается с другим сеансом: "
-                    f"{overlapping.movie.title} в {timezone.localtime(overlapping.start_time).strftime('%H:%M')}"
-                )
-
-        return cleaned_data
-
-
-class DateTimeInput(forms.DateTimeInput):
-    input_type = 'datetime-local'
-
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault('format', '%Y-%m-%dT%H:%M')
-        super().__init__(*args, **kwargs)
-
-    def format_value(self, value):
-        # Преобразуем DateTime в формат для input[type="datetime-local"]
-        if isinstance(value, datetime.datetime):
-            value = value.strftime('%Y-%m-%dT%H:%M')
-        return value
 
 
 class ScreeningAdminForm(forms.ModelForm):
     """Кастомная форма для админки Screening с автоматическим расчетом цены"""
 
-    # Добавляем отдельные поля для даты и времени
     start_date = forms.DateField(
         widget=forms.DateInput(attrs={
             'type': 'date',
             'min': datetime.date.today().strftime('%Y-%m-%d'),
-            'class': 'date-input'
+            'class': 'date-input form-control'
         }),
         label='Дата сеанса',
         required=True
@@ -474,32 +454,38 @@ class ScreeningAdminForm(forms.ModelForm):
             'rows': 10,
             'cols': 80,
             'readonly': 'readonly',
-            'class': 'price-calculation-field',
+            'class': 'price-calculation-field form-control',
             'style': 'font-family: monospace; font-size: 12px; white-space: pre;'
         }),
         label='Расчет стоимости',
         help_text='Цена рассчитывается автоматически при выборе зала, даты и времени'
     )
 
+    class Meta:
+        model = Screening
+        fields = ['movie', 'hall', 'ticket_price']
+        widgets = {
+            'movie': forms.Select(attrs={'class': 'form-control'}),
+            'hall': forms.Select(attrs={'class': 'form-control'}),
+            'ticket_price': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+        }
+        labels = {
+            'movie': 'Фильм',
+            'hall': 'Зал',
+            'ticket_price': 'Цена (рассчитывается автоматически)',
+        }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Если объект уже существует, заполняем поля даты и времени
         if self.instance.pk and self.instance.start_time:
-            # Приводим к локальному времени
             local_time = timezone.localtime(self.instance.start_time)
             self.fields['start_date'].initial = local_time.date()
             self.fields['start_time'].initial = local_time.strftime('%H:%M')
 
-        # Делаем поле price readonly
-        self.fields['price'].widget.attrs['readonly'] = True
-        self.fields['price'].widget.attrs['class'] = 'price-field-readonly'
-        self.fields['price'].help_text = 'Рассчитывается автоматически'
-
-        # Устанавливаем начальные значения
+        self.fields['ticket_price'].widget.attrs['readonly'] = True
         self.fields['price_calculation'].initial = "Выберите зал, дату и время сеанса для расчета цены"
 
-        # Если объект уже сохранен - показываем расчет
         if self.instance.pk and self.instance.hall and self.instance.start_time:
             calculation_text = self.instance.get_price_calculation_explanation()
             self.fields['price_calculation'].initial = calculation_text
@@ -509,12 +495,8 @@ class ScreeningAdminForm(forms.ModelForm):
         time_str = self.cleaned_data.get('start_time')
         if time_str:
             try:
-                # Преобразуем строку в объект time
-                hour, minute, _ = time_str.split(':')
-                hour = int(hour)
-                minute = int(minute)
+                hour, minute = map(int, time_str.split(':'))
 
-                # Проверяем допустимое время (8:00 - 23:50)
                 if hour < 8 or hour > 23:
                     raise ValidationError("Время должно быть с 8:00 до 23:50")
                 if hour == 23 and minute > 50:
@@ -534,44 +516,32 @@ class ScreeningAdminForm(forms.ModelForm):
         hall = cleaned_data.get('hall')
 
         if start_date and start_time and movie and hall:
-            # Создаем datetime объект
             try:
-                hour, minute, _ = start_time.split(':')
+                hour, minute = map(int, start_time.split(':'))
                 start_datetime = datetime.datetime.combine(
                     start_date,
-                    datetime.time(int(hour), int(minute))
+                    datetime.time(hour, minute)
                 )
-                # Делаем его aware с текущей временной зоной
                 start_datetime = timezone.make_aware(start_datetime)
 
-                # Проверяем что сеанс не в прошлом
                 if start_datetime < timezone.now():
                     raise ValidationError("Нельзя создавать сеансы в прошлом")
 
-                # Рассчитываем время окончания
-                end_datetime = start_datetime + movie.duration + datetime.timedelta(minutes=10)
+                duration_timedelta = datetime.timedelta(minutes=movie.duration)
+                end_datetime = start_datetime + duration_timedelta + datetime.timedelta(minutes=10)
 
-                # Исправленная проверка: сеанс должен заканчиваться до 24:00
-                # Преобразуем в локальное время для проверки
                 local_end = timezone.localtime(end_datetime)
-                end_hour = local_end.hour
-                end_minute = local_end.minute
-
-                # Проверяем, что сеанс заканчивается до 24:00
-                if end_hour == 0 and end_minute > 0:
-                    # Если час = 0 (после полуночи), значит сеанс заканчивается после 24:00
+                if local_end.hour == 0 and local_end.minute > 0:
                     raise ValidationError(
                         f"Сеанс заканчивается в {local_end.strftime('%H:%M')} следующего дня. "
                         f"Кинотеатр работает до 24:00. Выберите более раннее время начала."
                     )
-                elif end_hour >= 24:
-                    # На всякий случай проверяем часы >= 24
+                elif local_end.hour >= 24:
                     raise ValidationError(
                         f"Сеанс заканчивается после 24:00. "
                         f"Кинотеатр работает до 24:00. Выберите более раннее время начала."
                     )
 
-                # Проверяем пересечения с другими сеансами
                 overlapping_screenings = Screening.objects.filter(
                     hall=hall,
                     start_time__lt=end_datetime,
@@ -589,7 +559,6 @@ class ScreeningAdminForm(forms.ModelForm):
                         f"Выберите другое время."
                     )
 
-                # Сохраняем вычисленное время для использования в save()
                 cleaned_data['start_datetime'] = start_datetime
 
             except Exception as e:
@@ -603,28 +572,17 @@ class ScreeningAdminForm(forms.ModelForm):
         """Сохраняем объект с вычисленным временем"""
         screening = super().save(commit=False)
 
-        # Устанавливаем время из clean()
         if 'start_datetime' in self.cleaned_data:
             screening.start_time = self.cleaned_data['start_datetime']
 
-            # Автоматически рассчитываем время окончания
             if screening.movie and screening.start_time:
-                # Длительность фильма + 10 минут на уборку
-                screening.end_time = screening.start_time + screening.movie.duration + datetime.timedelta(minutes=10)
-
-        # Автоматически рассчитываем цену, если она не была установлена
-        if not screening.price and screening.hall and screening.start_time:
-            screening.price = screening.calculate_price()
+                duration_timedelta = datetime.timedelta(minutes=screening.movie.duration)
+                screening.end_time = screening.start_time + duration_timedelta + datetime.timedelta(minutes=10)
 
         if commit:
             screening.save()
 
         return screening
-
-    class Meta:
-        model = Screening
-        fields = '__all__'
-        exclude = ['start_time']  # Исключаем старое поле, используем наши поля
 
 
 class DailyBackupForm(forms.Form):
@@ -633,7 +591,7 @@ class DailyBackupForm(forms.Form):
         widget=forms.DateInput(attrs={
             'type': 'date',
             'max': str(date.today()),
-            'class': 'vDateField'
+            'class': 'vDateField form-control'
         })
     )
 
@@ -641,6 +599,7 @@ class DailyBackupForm(forms.Form):
 class PasswordResetRequestForm(forms.Form):
     email = forms.EmailField(
         label='Email',
+        max_length=50,
         widget=forms.EmailInput(attrs={
             'placeholder': 'Ваш email',
             'class': 'form-control'
@@ -686,7 +645,6 @@ class PasswordResetForm(forms.Form):
         if password1 and password2 and password1 != password2:
             raise ValidationError('Пароли не совпадают')
 
-        # Валидация пароля
         if password1:
             try:
                 password_validation.validate_password(password1)
@@ -742,46 +700,63 @@ class ReportFilterForm(forms.Form):
     )
 
 
-# Добавить после существующих форм
 class LogExportForm(forms.Form):
     """Форма для экспорта логов"""
 
     format_type = forms.ChoiceField(
         choices=LogExporter.get_export_formats(),
         label='Формат экспорта',
-        initial='csv'
+        initial='csv',
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
 
     start_date = forms.DateField(
         label='Начальная дата',
         required=False,
-        widget=forms.DateInput(attrs={'type': 'date'})
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
     )
 
     end_date = forms.DateField(
         label='Конечная дата',
         required=False,
-        widget=forms.DateInput(attrs={'type': 'date'})
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
     )
 
     action_type = forms.ChoiceField(
-        choices=[('', 'Все действия')] + list(OperationLog.ACTION_TYPES),
+        choices=[('', 'Все действия')],  # Временно только пустой выбор
         label='Тип действия',
-        required=False
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
 
     module_type = forms.ChoiceField(
-        choices=[('', 'Все модули')] + list(OperationLog.MODULE_TYPES),
+        choices=[('', 'Все модули')],  # Временно только пустой выбор
         label='Модуль',
-        required=False
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
 
     user = forms.ModelChoiceField(
         queryset=User.objects.all(),
         label='Пользователь',
         required=False,
-        empty_label='Все пользователи'
+        empty_label='Все пользователи',
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Динамически заполняем choices после создания формы
+        try:
+            self.fields['action_type'].choices = [('', 'Все действия')] + [
+                (obj.code, obj.name) for obj in ActionType.objects.all()
+            ]
+            self.fields['module_type'].choices = [('', 'Все модули')] + [
+                (obj.code, obj.name) for obj in ModuleType.objects.all()
+            ]
+        except Exception:
+            # Если таблицы еще не существуют, оставляем пустые choices
+            pass
 
     def clean(self):
         cleaned_data = super().clean()
@@ -797,6 +772,7 @@ class LogExportForm(forms.Form):
 class EmailChangeForm(forms.Form):
     new_email = forms.EmailField(
         label='Новый email',
+        max_length=50,
         widget=forms.EmailInput(attrs={
             'class': 'form-control',
             'placeholder': 'Введите новый email'
@@ -827,12 +803,8 @@ class EmailChangeForm(forms.Form):
         if new_email == self.user.email:
             raise ValidationError('Новый email совпадает с текущим')
 
-        # Проверяем, не занят ли email другим пользователем (включая неподтвержденные)
-        if User.objects.filter(email=new_email).exists():
-            # Если email занят текущим пользователем (но не подтвержден) - разрешаем
-            existing_user = User.objects.get(email=new_email)
-            if existing_user.id != self.user.id:
-                raise ValidationError('Пользователь с таким email уже существует')
+        if User.objects.filter(email=new_email).exclude(pk=self.user.pk).exists():
+            raise ValidationError('Пользователь с таким email уже существует')
 
         return new_email
 
@@ -841,10 +813,8 @@ class EmailChangeForm(forms.Form):
         verification_code = cleaned_data.get('verification_code')
         new_email = cleaned_data.get('new_email')
 
-        # Если введен код подтверждения, проверяем его
         if verification_code:
             try:
-                from .models import EmailChangeRequest
                 change_request = EmailChangeRequest.objects.filter(
                     user=self.user,
                     new_email=new_email,
@@ -865,3 +835,33 @@ class EmailChangeForm(forms.Form):
                 raise ValidationError('Запрос на смену email не найден')
 
         return cleaned_data
+
+
+class HallTypeForm(forms.ModelForm):
+    class Meta:
+        model = HallType
+        fields = ['name', 'description', 'price_coefficient', 'base_price']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'price_coefficient': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0.5', 'max': '3.0'}),
+            'base_price': forms.NumberInput(attrs={'class': 'form-control', 'min': '100', 'step': '50'}),
+        }
+
+
+class CountryForm(forms.ModelForm):
+    class Meta:
+        model = Country
+        fields = ['name', 'code']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'code': forms.TextInput(attrs={'class': 'form-control', 'maxlength': '2', 'placeholder': 'RU'}),
+        }
+
+    def clean_code(self):
+        code = self.cleaned_data.get('code')
+        if code:
+            code = code.upper()
+            if len(code) != 2:
+                raise ValidationError('Код страны должен содержать ровно 2 символа')
+        return code
