@@ -151,7 +151,7 @@
                             <div class="screening-item" onclick="location.href='{% url 'screening_detail' screening.id %}'">
                                 <div class="screening-time">{{ screening.start_time|date:"H:i" }}</div>
                                 <div class="screening-hall">{{ screening.hall.name }}</div>
-                                <div class="screening-price">{{ screening.price }} ₽</div>
+                                <div class="screening-price">{{ screening.ticket_price }} ₽</div>
                             </div>
                             {% endfor %}
                         </div>

@@ -37,6 +37,56 @@
     </div>
 </div>
 
+<!-- Информация о режиссёрах и актёрах -->
+<div class="movie-crew-section" style="margin-top: 30px; padding: 20px; background: rgba(20, 20, 20, 0.6); border-radius: 10px;">
+    <h3 style="color: #ffcc00; margin-bottom: 20px; text-align: center;">Создатели фильма</h3>
+
+    <!-- Режиссёры -->
+    {% with directors=movie.directors.all %}
+        {% if directors %}
+        <div style="margin-bottom: 20px;">
+            <h4 style="color: #ffcc00; margin-bottom: 10px;">🎬 Режиссёры:</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+                {% for director in directors %}
+                <div style="background: rgba(255, 204, 0, 0.1); padding: 10px 15px; border-radius: 20px; border: 1px solid #ffcc00;">
+                    <span style="color: white; font-weight: bold;">{{ director.name }} {{ director.surname }}</span>
+                    {% if director.country %}
+                    <span style="color: #ffcc00; font-size: 0.9em;"> ({{ director.country.name }})</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Актёры -->
+    {% with actors=movie.actors.all %}
+        {% if actors %}
+        <div>
+            <h4 style="color: #ffcc00; margin-bottom: 10px;">🎭 В ролях:</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+                {% for actor in actors %}
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 10px 15px; border-radius: 20px; border: 1px solid #444;">
+                    <span style="color: white;">{{ actor.name }} {{ actor.surname }}</span>
+                    {% if actor.country %}
+                    <span style="color: #aaa; font-size: 0.9em;"> ({{ actor.country.name }})</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Если нет информации -->
+    {% if not movie.directors.exists and not movie.actors.exists %}
+    <p style="color: #aaa; text-align: center; font-style: italic;">
+        Информация о создателях фильма отсутствует
+    </p>
+    {% endif %}
+</div>
+
 <!-- Табы с сеансами -->
 <div class="screenings-tabs">
     <div class="tabs-header">
@@ -59,7 +109,7 @@
                     <div class="screening-time">{{ screening.start_time|date:"H:i" }}</div>
                     <div class="screening-date">{{ screening.start_time|date:"d F Y" }}</div>
                     <div class="screening-hall">{{ screening.hall.name }}</div>
-                    <div class="screening-price">{{ screening.price }} ₽</div>
+                    <div class="screening-price">{{ screening.ticket_price }} ₽</div>
                 </div>
                 {% endfor %}
             </div>

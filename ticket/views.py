@@ -484,6 +484,15 @@ def screening_detail(request, screening_id):
         Screening.objects.select_related('movie', 'hall', 'hall__hall_type'),
         pk=screening_id
     )
+
+    # Загружаем информацию о фильме с режиссёрами и актёрами
+    movie = Movie.objects.prefetch_related(
+        'directors',
+        'actors',
+        'genre',
+        'age_rating'
+    ).get(pk=screening.movie.id)
+
     seats = Seat.objects.filter(hall=screening.hall).order_by('row', 'number')
 
     # Получаем все билеты на этот сеанс
@@ -499,6 +508,7 @@ def screening_detail(request, screening_id):
 
     return render(request, 'ticket/screening_detail.html', {
         'screening': screening,
+        'movie': movie,  # Передаём movie с предзагруженными режиссёрами и актёрами
         'rows': rows,
         'booked_seat_ids': booked_seat_ids,
         'is_guest': not request.user.is_authenticated
