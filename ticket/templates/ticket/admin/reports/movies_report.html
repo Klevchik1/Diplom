@@ -1,11 +1,11 @@
+{% load report_filters %}
 <div class="movies-report">
     <h2 style="color: var(--report-secondary); margin-bottom: 25px; font-size: 1.5rem; border-bottom: 2px solid var(--report-border); padding-bottom: 10px;">
         🎬 Популярность фильмов
     </h2>
 
     {% if report_data %}
-        <!-- Рассчитываем общие показатели один раз -->
-        {% load report_filters %}
+        <!-- Рассчитываем общие показатели -->
         {% with aggregated=report_data|aggregate_movies_stats %}
 
         <!-- Карточки с топ фильмами -->

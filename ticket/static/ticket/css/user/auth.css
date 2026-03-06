@@ -1,0 +1,335 @@
+/* ===== ОБЩИЕ СТИЛИ ДЛЯ АВТОРИЗАЦИИ ===== */
+.auth-container {
+    background: rgba(30, 30, 30, 0.9);
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+    width: 100%;
+    max-width: 500px;
+    padding: 40px;
+    text-align: center;
+    border: 2px solid #ffcc00;
+    margin: 40px auto;
+}
+
+.auth-logo {
+    color: #ffcc00;
+    font-size: 36px;
+    margin-bottom: 25px;
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.auth-title {
+    color: #fff;
+    margin-bottom: 25px;
+    font-size: 28px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ===== ФОРМЫ ===== */
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    color: #ffcc00;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.input-with-icon {
+    position: relative;
+}
+
+input[type="email"],
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 14px 45px 14px 15px;
+    border: 2px solid #ff0000;
+    border-radius: 8px;
+    background: rgba(20, 20, 20, 0.8);
+    color: #fff;
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+input:focus {
+    border-color: #ffcc00;
+    outline: none;
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+}
+
+/* ===== КНОПКИ ===== */
+.auth-button {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 15px;
+}
+
+.auth-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #cc0000 0%, #ff0000 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
+}
+
+.auth-button:disabled {
+    background: linear-gradient(135deg, #666 0%, #444 100%);
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ===== ПЕРЕКЛЮЧАТЕЛЬ ПАРОЛЯ ===== */
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #ffcc00;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+    transition: all 0.3s;
+    z-index: 2;
+}
+
+.password-toggle:hover {
+    color: #ff0000;
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* ===== ССЫЛКИ ===== */
+.auth-links {
+    margin-top: 25px;
+    color: #aaa;
+}
+
+.auth-links a {
+    color: #ffcc00;
+    text-decoration: none;
+    transition: color 0.3s;
+    font-weight: bold;
+}
+
+.auth-links a:hover {
+    color: #ff0000;
+    text-decoration: underline;
+}
+
+/* ===== СООБЩЕНИЯ ===== */
+.messages {
+    margin-bottom: 25px;
+    padding: 15px;
+    border-radius: 8px;
+    background: rgba(255, 0, 0, 0.2);
+    border: 1px solid #ff0000;
+}
+
+.messages .error {
+    color: #ff6b6b;
+    list-style: none;
+}
+
+.messages .success {
+    color: #4caf50;
+}
+
+.messages .info {
+    color: #ffcc00;
+}
+
+/* ===== ОШИБКИ ФОРМ ===== */
+.form-errors {
+    color: #ff6b6b;
+    margin-top: 5px;
+    font-size: 14px;
+    background: rgba(255, 107, 107, 0.1);
+    padding: 8px;
+    border-radius: 4px;
+    border-left: 3px solid #ff6b6b;
+}
+
+.field-error {
+    color: #ff6b6b;
+    font-size: 14px;
+    margin-top: 5px;
+    padding: 5px 10px;
+    background: rgba(255, 107, 107, 0.1);
+    border-radius: 4px;
+    border-left: 3px solid #ff6b6b;
+    animation: fadeIn 0.3s ease;
+    display: none;
+}
+
+.error-field {
+    border-color: #ff6b6b !important;
+    box-shadow: 0 0 10px rgba(255, 107, 107, 0.5) !important;
+    animation: shake 0.5s ease;
+}
+
+.valid-field {
+    border-color: #4CAF50 !important;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.3) !important;
+}
+
+.non-field-errors {
+    background: rgba(255, 107, 107, 0.1);
+    color: #ff6b6b;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ff6b6b;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.non-field-errors ul {
+    padding-left: 20px;
+    margin: 0;
+}
+
+/* ===== АНИМАЦИИ ===== */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== ТЕСТОВЫЙ РЕЖИМ ===== */
+.test-mode-banner {
+    background: #ffcc00;
+    color: #000;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    text-align: center;
+    border: 2px solid #ff0000;
+}
+
+/* ===== ИНФОРМАЦИОННЫЕ БЛОКИ ===== */
+.email-notice {
+    color: #ffcc00;
+    margin-bottom: 25px;
+    font-size: 16px;
+}
+
+.help-text {
+    color: #ffcc00;
+    font-size: 14px;
+    margin-top: 5px;
+    padding: 8px;
+    background: rgba(20, 20, 20, 0.6);
+    border-radius: 5px;
+}
+
+.help-text ul {
+    padding-left: 20px;
+    margin: 5px 0;
+}
+
+.help-text li {
+    margin-bottom: 3px;
+}
+
+.code-hint {
+    color: #aaa;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+/* ===== ГОСТЕВОЙ РАЗДЕЛ ===== */
+.guest-section {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #444;
+}
+
+.btn-guest {
+    display: block;
+    background: linear-gradient(135deg, #666 0%, #444 100%);
+    color: #fff;
+    text-align: center;
+    padding: 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-guest:hover {
+    background: linear-gradient(135deg, #777 0%, #555 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);
+}
+
+/* ===== АДМИН ПАНЕЛЬ ===== */
+.admin-panel {
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 1px solid #444;
+}
+
+.admin-link {
+    display: block;
+    background: rgba(255, 204, 0, 0.1);
+    color: #ffcc00;
+    text-align: center;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ffcc00;
+    text-decoration: none;
+    transition: all 0.3s;
+    font-weight: bold;
+}
+
+.admin-link:hover {
+    background: rgba(255, 204, 0, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 3px 10px rgba(255, 204, 0, 0.3);
+}
+
+/* ===== СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ КОДОВ ===== */
+.code-input {
+    text-align: center;
+    letter-spacing: 5px;
+    font-size: 18px;
+}
+
+/* ===== АДАПТИВНОСТЬ ===== */
+@media (max-width: 768px) {
+    .auth-container {
+        padding: 20px;
+        margin: 20px;
+    }
+
+    .auth-logo {
+        font-size: 28px;
+    }
+
+    .auth-title {
+        font-size: 24px;
+    }
+}

@@ -1,51 +1,96 @@
 <!DOCTYPE html>
+{% load static %}
 <html>
 <head>
     <title>Панель администратора</title>
+    <link rel="stylesheet" href="{% static 'ticket/css/admin/dashboard.css' %}">
 </head>
 <body>
-    <h1>Управление кинотеатром</h1>
-    <section>
-        <h2>Фильмы</h2>
-        <a href="{% url 'movie_add' %}">Добавить новый фильм</a>
-        <ul>
-            {% for movie in movies %}
-            <li>
-                {{ movie.title }}
-                <a href="{% url 'movie_edit' movie.id %}">Редактировать</a>
-                <a href="{% url 'movie_delete' movie.id %}">Удалить</a>
-            </li>
-            {% endfor %}
-        </ul>
-    </section>
+    <div class="dashboard-container">
+        <h1 class="dashboard-title">🎬 Управление кинотеатром</h1>
 
-    <section>
-        <h2>Залы</h2>
-        <a href="{% url 'hall_add' %}">Добавить новый зал</a>
-        <ul>
-            {% for hall in halls %}
-            <li>
-                {{ hall.title }}
-                <a href="{% url 'hall_edit' hall.id %}">Редактировать</a>
-                <a href="{% url 'hall_delete' hall.id %}">Удалить</a>
-            </li>
-            {% endfor %}
-        </ul>
-    </section>
+        <div class="dashboard-grid">
+            <!-- Фильмы -->
+            <section class="dashboard-card">
+                <h2>🎥 Фильмы <span class="count-badge">{{ movies|length }}</span></h2>
+                <div class="dashboard-actions">
+                    <a href="{% url 'movie_add' %}">➕ Добавить новый фильм</a>
+                </div>
+                <ul>
+                    {% for movie in movies %}
+                    <li>
+                        <span>{{ movie.title }}</span>
+                        <div>
+                            <a href="{% url 'movie_edit' movie.id %}">✏️ Ред.</a>
+                            <a href="{% url 'movie_delete' movie.id %}" onclick="return confirm('Удалить фильм?')">❌ Уд.</a>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="empty-message">Нет фильмов</li>
+                    {% endfor %}
+                </ul>
+            </section>
 
-    <section>
-        <h2>Сеансы</h2>
-        <a href="{% url 'screening_add' %}">Добавить новый сеанс</a>
-        <ul>
-            {% for screening in screenings %}
-            <li>
-                {{ screening.title }}
-                <a href="{% url 'screening_edit' screening.id %}">Редактировать</a>
-                <a href="{% url 'screening_delete' screening.id %}">Удалить</a>
-            </li>
-            {% endfor %}
-        </ul>
-    </section>
+            <!-- Залы -->
+            <section class="dashboard-card">
+                <h2>🏛️ Залы <span class="count-badge">{{ halls|length }}</span></h2>
+                <div class="dashboard-actions">
+                    <a href="{% url 'hall_add' %}">➕ Добавить новый зал</a>
+                </div>
+                <ul>
+                    {% for hall in halls %}
+                    <li>
+                        <span>{{ hall.name }}</span>
+                        <div>
+                            <a href="{% url 'hall_edit' hall.id %}">✏️ Ред.</a>
+                            <a href="{% url 'hall_delete' hall.id %}" onclick="return confirm('Удалить зал?')">❌ Уд.</a>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="empty-message">Нет залов</li>
+                    {% endfor %}
+                </ul>
+            </section>
 
+            <!-- Сеансы -->
+            <section class="dashboard-card">
+                <h2>🎫 Сеансы <span class="count-badge">{{ screenings|length }}</span></h2>
+                <div class="dashboard-actions">
+                    <a href="{% url 'screening_add' %}">➕ Добавить новый сеанс</a>
+                </div>
+                <ul>
+                    {% for screening in screenings %}
+                    <li>
+                        <span>
+                            {{ screening.movie.title|truncatechars:20 }}
+                            <small>{{ screening.start_time|date:"d.m H:i" }}</small>
+                        </span>
+                        <div>
+                            <a href="{% url 'screening_edit' screening.id %}">✏️ Ред.</a>
+                            <a href="{% url 'screening_delete' screening.id %}" onclick="return confirm('Удалить сеанс?')">❌ Уд.</a>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="empty-message">Нет сеансов</li>
+                    {% endfor %}
+                </ul>
+            </section>
+
+            <!-- Админ-панель Django -->
+            <section class="dashboard-card">
+                <h2>⚙️ Администрирование</h2>
+                <div class="dashboard-actions">
+                    <a href="/admin/" class="secondary">🔐 Django Admin</a>
+                    <a href="{% url 'home' %}" class="secondary">🏠 На сайт</a>
+                </div>
+                <ul>
+                    <li><a href="/admin/ticket/user/">👥 Пользователи</a></li>
+                    <li><a href="/admin/ticket/ticket/">🎟️ Билеты</a></li>
+                    <li><a href="/admin/ticket/operationlog/">📋 Логи операций</a></li>
+                    <li><a href="/admin/ticket/backupmanager/">💾 Бэкапы</a></li>
+                </ul>
+            </section>
+        </div>
+    </div>
 </body>
 </html>

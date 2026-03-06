@@ -1,843 +1,280 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Личный кабинет - Кинотеатр Премьера</title>
-    <style>
-        .profile-container {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 30px;
-            margin-top: 30px;
-        }
+{% extends "ticket/base.html" %}
+{% load static %}
 
-        @media (max-width: 992px) {
-            .profile-container {
-                grid-template-columns: 1fr;
-            }
-        }
+{% block title %}Личный кабинет - Кинотеатр Премьера{% endblock %}
 
-        .profile-card {
-            background: rgba(30, 30, 30, 0.9);
-            border-radius: 10px;
-            padding: 25px;
-            border: 2px solid #ff0000;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
-        }
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ticket/css/user/profile.css' %}">
+{% endblock %}
 
-        .profile-header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
+{% block content %}
+<h1 class="page-title">Личный кабинет</h1>
 
-        .profile-avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: #ffcc00;
-            margin: 0 auto 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 48px;
-            color: #000;
-            font-weight: bold;
-        }
-
-        .ticket-card {
-            background: rgba(20, 20, 20, 0.8);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-left: 4px solid #ffcc00;
-        }
-
-        .ticket-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #444;
-            padding-bottom: 10px;
-        }
-
-        .ticket-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 10px;
-        }
-
-        .info-item {
-            background: rgba(30, 30, 30, 0.7);
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        .no-tickets {
-            text-align: center;
-            padding: 40px;
-            color: #aaa;
-        }
-        * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Arial', sans-serif;
-        }
-
-        body {
-            background-color: #000;
-            background: linear-gradient(135deg, #000 0%, #222 100%);
-            color: #fff;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            background: rgba(30, 30, 30, 0.9);
-            padding: 15px 20px;
-            border-bottom: 2px solid #ffcc00;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            color: #ffcc00;
-            font-size: 28px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
-        }
-
-        .user-panel {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-panel a, .btn {
-            color: #ffcc00;
-            text-decoration: none;
-            padding: 8px 15px;
-            border: 1px solid #ff0000;
-            border-radius: 5px;
-            transition: all 0.3s;
-            font-weight: bold;
-        }
-
-        .user-panel a:hover, .btn:hover {
-            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
-            color: #fff;
-            transform: translateY(-2px);
-            box-shadow: 0 3px 10px rgba(255, 0, 0, 0.4);
-        }
-
-        .page-title {
-            text-align: center;
-            margin: 25px 0;
-            color: #ffcc00;
-            font-size: 36px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-        }
-
-        .card {
-            background: rgba(30, 30, 30, 0.9);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 25px;
-            border: 2px solid #ff0000;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
-        }
-
-        .btn-buy {
-            display: inline-block;
-            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
-            color: #fff;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-decoration: none;
-            margin-top: 15px;
-        }
-
-        .btn-buy:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
-        }
-
-        .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            background: rgba(255, 0, 0, 0.2);
-            border: 1px solid #ff0000;
-        }
-
-        .alert-success {
-            background: rgba(0, 128, 0, 0.2);
-            border-color: #008000;
-        }
-
-        .alert-info {
-            background: rgba(255, 204, 0, 0.2);
-            border-color: #ffcc00;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            color: #ffcc00;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            background: rgba(20, 20, 20, 0.8);
-            border: 2px solid #ff0000;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-
-        .form-control:focus {
-            border-color: #ffcc00;
-            outline: none;
-            box-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .form-actions {
-            margin-top: 25px;
-            text-align: center;
-        }
-
-        .btn-save {
-            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
-            color: #fff;
-            padding: 14px 40px;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn-save:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
-        }
-        .error-field {
-            border-color: #ff6b6b !important;
-            box-shadow: 0 0 10px rgba(255, 107, 107, 0.5) !important;
-        }
-        .error-field {
-            border-color: #ff6b6b !important;
-            box-shadow: 0 0 10px rgba(255, 107, 107, 0.5) !important;
-        }
-
-        .form-errors {
-            color: #ff6b6b;
-            margin-top: 5px;
-            font-size: 14px;
-            background: rgba(255, 107, 107, 0.1);
-            padding: 8px;
-            border-radius: 4px;
-            border-left: 3px solid #ff6b6b;
-        }
-
-        /* Стили для смены пароля */
-        .password-section {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 2px solid #ffcc00;
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #ffcc00;
-            cursor: pointer;
-            font-size: 18px;
-            padding: 5px;
-            transition: all 0.3s;
-        }
-
-        .password-toggle:hover {
-            color: #ff0000;
-            transform: translateY(-50%) scale(1.1);
-        }
-
-        .input-with-icon {
-            position: relative;
-        }
-
-        .password-form {
-            background: rgba(20, 20, 20, 0.6);
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #ffcc00;
-            margin-top: 15px;
-        }
-
-        .section-title {
-            color: #ffcc00;
-            font-size: 20px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-home {
-            background: linear-gradient(135deg, #666 0%, #444 100%);
-            color: #fff;
-            padding: 8px 15px;
-            border: 1px solid #555;
-            border-radius: 5px;
-            text-decoration: none;
-            transition: all 0.3s;
-            font-weight: bold;
-        }
-
-        .btn-home:hover {
-            background: linear-gradient(135deg, #777 0%, #555 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);
-        }
-
-        .section-title i {
-            font-size: 24px;
-        }
-
-        /* Стили для статусов билетов */
-        .status-active { color: #4CAF50; }
-        .status-refund_requested { color: #FF9800; }
-        .status-refunded { color: #2196F3; }
-        .status-used { color: #9C27B0; }
-        .status-cancelled { color: #F44336; }
-        .status-expired { color: #FF9800; }
-        .status-mixed { color: #FFC107; }
-        .status-unknown { color: #aaa; }
-
-        /* Стили для кнопок возврата */
-        .btn-refund {
-            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
-            color: #fff;
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: bold;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-refund:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 3px 10px rgba(255, 152, 0, 0.4);
-        }
-
-        .btn-cancel-refund {
-            background: linear-gradient(135deg, #666 0%, #444 100%);
-            color: #fff;
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: bold;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-cancel-refund:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 3px 10px rgba(102, 102, 102, 0.4);
-        }
-
-        /* Информационные блоки */
-        .refund-info {
-            background: rgba(255, 152, 0, 0.1);
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 10px;
-            border-left: 3px solid #FF9800;
-        }
-
-        .refund-processed {
-            background: rgba(33, 150, 243, 0.1);
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 10px;
-            border-left: 3px solid #2196F3;
-        }
-
-        .screening-ended {
-            background: rgba(156, 39, 176, 0.1);
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 10px;
-            border-left: 3px solid #9C27B0;
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <div class="logo">КИНОТЕАТР ПРЕМЬЕРА</div>
-        <div class="user-panel">
-            <a href="{% url 'home' %}" class="btn">На главную</a>
-
-            {% if user.is_staff %}
-                <a href="/admin/" class="btn-admin">Админ-панель</a>
-            {% endif %}
-            <a href="{% url 'logout' %}" class="btn">Выйти</a>
+<div class="profile-container">
+    <!-- Левая колонка - информация о пользователе -->
+    <div class="profile-card">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                {{ user.name|first }}{{ user.surname|first }}
+            </div>
+            <h2>{{ user.name }} {{ user.surname }}</h2>
         </div>
-    </div>
 
-    <div class="container">
-        <h1 class="page-title">Личный кабинет</h1>
+        <!-- Форма профиля -->
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="profile">
 
-        {% if messages %}
-        <div class="alert alert-{{ message.tags }}">
-            {% for message in messages %}
-                {{ message }}
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <div class="profile-container">
-        <!-- Левая колонка - информация о пользователе -->
-            <div class="profile-card">
-                <div class="profile-header">
-                    <div class="profile-avatar">
-                        {{ user.name|first }}{{ user.surname|first }}
-                    </div>
-                    <h2>{{ user.name }} {{ user.surname }}</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    {{ form.name.label_tag }}
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <div class="form-errors">{{ form.name.errors }}</div>
+                    {% endif %}
                 </div>
 
-                <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="form_type" value="profile">
+                <div class="form-group">
+                    {{ form.surname.label_tag }}
+                    {{ form.surname }}
+                    {% if form.surname.errors %}
+                    <div class="form-errors">{{ form.surname.errors }}</div>
+                    {% endif %}
+                </div>
 
-                    <div class="form-grid">
-                        <!-- Форма смены email -->
-                        <div class="card" style="margin-top: 20px;">
-                            <h3 style="color: #ffcc00; margin-bottom: 20px;">Смена email</h3>
-                            <form method="post">
-                                {% csrf_token %}
-                                <input type="hidden" name="form_type" value="email_change">
-
-                                <div class="form-group">
-                                    <label for="id_new_email">Текущий email:</label>
-                                    <input type="email" class="form-control" value="{{ user.email }}" disabled>
-                                    <small style="color: #aaa;">Текущий email нельзя изменить через эту форму</small>
-                                </div>
-
-                                <div class="form-group">
-                                    {{ email_form.new_email.label_tag }}
-                                    {{ email_form.new_email }}
-                                    {% if email_form.new_email.errors %}
-                                        <div class="error" style="color: #ff4444; font-size: 14px;">
-                                            {{ email_form.new_email.errors }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-
-                                {% if active_email_change %}
-                                    <div class="form-group">
-                                        {{ email_form.verification_code.label_tag }}
-                                        {{ email_form.verification_code }}
-                                        {% if email_form.verification_code.errors %}
-                                            <div class="error" style="color: #ff4444; font-size: 14px;">
-                                                {{ email_form.verification_code.errors }}
-                                            </div>
-                                        {% endif %}
-                                        <small style="color: #ffcc00;">Код отправлен на {{ active_email_change.new_email }}</small>
-                                    </div>
-                                {% endif %}
-
-                                <button type="submit" class="btn-buy" style="margin-top: 10px;">
-                                    {% if active_email_change %}Подтвердить смену email{% else %}Запросить смену email{% endif %}
-                                </button>
-                            </form>
-                        </div>
-
-                        <!-- Форма профиля -->
-                        <form method="post">
-                            {% csrf_token %}
-                            <input type="hidden" name="form_type" value="profile">
-
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    {{ form.name.label_tag }}
-                                    {{ form.name }}
-                                    {% if form.name.errors %}
-                                    <div class="form-errors">{{ form.name.errors }}</div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="form-group">
-                                    {{ form.surname.label_tag }}
-                                    {{ form.surname }}
-                                    {% if form.surname.errors %}
-                                    <div class="form-errors">{{ form.surname.errors }}</div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="form-group">
-                                    {{ form.number.label_tag }}
-                                    {{ form.number }}
-                                    {% if form.number.errors %}
-                                    <div class="form-errors">{{ form.number.errors }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-
-                            <div class="form-actions">
-                                <button type="submit" class="btn-save">Сохранить изменения</button>
-                            </div>
-                        </form>
-                    </div>
-                </form>
-
-                <div class="telegram-section" style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #ffcc00;">
-                    <h3 class="section-title">🤖 Telegram Уведомления</h3>
-
-                    {% if telegram_connected %}
-                    <div class="telegram-status" style="background: rgba(0, 128, 0, 0.2); padding: 15px; border-radius: 8px; border: 1px solid #008000;">
-                        <p style="color: #00ff00; margin-bottom: 10px;">
-                            ✅ Telegram аккаунт привязан: @{{ telegram_username }}
-                        </p>
-                        <p style="color: #ccc; margin-bottom: 15px;">
-                            Вы будете получать уведомления о покупках билетов и напоминания о сеансах.
-                        </p>
-
-                        <!-- Кнопка отвязки -->
-                        <form method="post" style="margin-top: 15px;">
-                            {% csrf_token %}
-                            <input type="hidden" name="form_type" value="telegram_unlink">
-                            <button type="submit" class="btn-buy" style="background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);"
-                                    onclick="return confirm('Вы уверены, что хотите отвязать Telegram?')">
-                                🔗 Отвязать Telegram
-                            </button>
-                        </form>
-                    </div>
-                    {% else %}
-                    <div class="telegram-connect" style="background: rgba(255, 204, 0, 0.1); padding: 20px; border-radius: 8px; border: 1px solid #ffcc00;">
-                        <h4 style="color: #ffcc00; margin-bottom: 15px;">Привязать Telegram аккаунт</h4>
-                        <p style="color: #ccc; margin-bottom: 15px;">
-                            Получайте уведомления о покупках билетов прямо в Telegram!
-                        </p>
-
-                        <form method="post">
-                            {% csrf_token %}
-                            <input type="hidden" name="form_type" value="telegram_connect">
-                            <button type="submit" class="btn-buy" style="background: linear-gradient(135deg, #0088cc 0%, #005599 100%);">
-                                Получить код привязки
-                            </button>
-                        </form>
-
-                        <div style="margin-top: 15px; font-size: 14px; color: #aaa;">
-                            <p><strong>После получения кода:</strong></p>
-                            <ol style="padding-left: 20px; margin-top: 10px;">
-                                <li>Перейдите к <a href="https://t.me/CinemaaPremierBot" target="_blank" style="color: #ffcc00;">@CinemaaPremierBot</a></li>
-                                <li>Отправьте полученный код как обычное сообщение (не команду)</li>
-                                <li>Бот автоматически привяжет ваш аккаунт</li>
-                            </ol>
-                            <p style="margin-top: 10px; color: #ffcc00;">
-                                💡 <strong>Важно:</strong> Отправляйте код как обычное текстовое сообщение, а не как команду!
-                            </p>
-                        </div>
-                    </div>
+                <div class="form-group">
+                    {{ form.number.label_tag }}
+                    {{ form.number }}
+                    {% if form.number.errors %}
+                    <div class="form-errors">{{ form.number.errors }}</div>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Правая колонка - история билетов -->
-            <div class="profile-card">
-                <h2 style="color: #ffcc00; margin-bottom: 20px;">🎫 История покупок</h2>
+            <div class="form-actions">
+                <button type="submit" class="btn-save">Сохранить изменения</button>
+            </div>
+        </form>
 
-                <!-- Информация о политике возврата -->
-                <div style="background: rgba(255, 204, 0, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffcc00;">
-                    <p style="color: #fff; margin-bottom: 10px;">
-                        <strong>📋 Политика возврата:</strong> Возврат возможен за 30 минут до сеанса. Полная стоимость возвращается.
-                    </p>
-                    <p style="color: #aaa; font-size: 14px;">
-                        💡 Для возврата нажмите кнопку "Вернуть" рядом с билетом
-                    </p>
+        <!-- Смена email -->
+        <div class="password-section">
+            <h3 class="section-title">📧 Смена email</h3>
+            <form method="post" class="password-form">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="email_change">
+
+                <div class="form-group">
+                    <label>Текущий email:</label>
+                    <input type="email" class="form-control" value="{{ user.email }}" disabled>
+                    <small style="color: #aaa;">Текущий email нельзя изменить через эту форму</small>
                 </div>
 
-                {% if ticket_groups %}
-                    {% for group in ticket_groups %}
-                    <div class="ticket-card">
-                        <div class="ticket-header">
-                            {% if group.movie_poster %}
-                                <img
-                                    src="{{ group.movie_poster.url }}"
-                                    alt="{{ group.movie_title }}"
-                                    style="max-height: 60px; margin-right: 15px; border-radius: 5px;"
-                                >
-                            {% endif %}
-                            <div style="flex: 1;">
-                                <h3>{{ group.movie_title }}</h3>
-                                <small style="color: #aaa;">Группа из {{ group.ticket_count }} билет(а)</small>
-                            </div>
+                <div class="form-group">
+                    {{ email_form.new_email.label_tag }}
+                    {{ email_form.new_email }}
+                    {% if email_form.new_email.errors %}
+                        <div class="form-errors">{{ email_form.new_email.errors }}</div>
+                    {% endif %}
+                </div>
 
-                            <!-- ИЗМЕНЕНИЕ: Проверяем можно ли скачивать -->
-                            {% if group.group_status == 'refunded' %}
-                                {% if user.is_staff %}
-                                    <!-- Админ видит кнопку скачивания -->
-                                    <a href="{% url 'download_ticket_group' group.group_id %}" class="btn-buy"
-                                       style="background: linear-gradient(135deg, #666 0%, #444 100%);">
-                                        📥 Скачать (админ)
-                                    </a>
-                                {% else %}
-                                    <!-- Обычный пользователь видит сообщение -->
-                                    <span class="btn-buy" style="background: linear-gradient(135deg, #666 0%, #444 100%);
-                                                                 opacity: 0.7; cursor: not-allowed;"
-                                          title="Билет возвращён. Скачивание недоступно.">
-                                        ⛔ Недоступно
-                                    </span>
-                                {% endif %}
-                            {% else %}
-                                <!-- Для активных билетов обычная кнопка -->
-                                <a href="{% url 'download_ticket_group' group.group_id %}" class="btn-buy">
-                                    📥 Скачать билеты
-                                </a>
-                            {% endif %}
-                        </div>
-
-                        <div class="ticket-info">
-                            <div class="info-item">
-                                <strong>Дата покупки:</strong><br>
-                                {{ group.purchase_date|date:"d M Y H:i" }}
-                            </div>
-                            <div class="info-item">
-                                <strong>Сеанс:</strong><br>
-                                {{ group.start_time|date:"d M Y H:i" }}
-                            </div>
-                            <div class="info-item">
-                                <strong>Зал:</strong><br>
-                                {{ group.hall_name }}
-                            </div>
-                            <div class="info-item">
-                                <strong>Места:</strong><br>
-                                {% for seat in group.seats %}
-                                    Ряд {{ seat.row }}, Место {{ seat.number }}{% if not forloop.last %}; {% endif %}
-                                {% endfor %}
-                            </div>
-                            <div class="info-item">
-                                <strong>Общая стоимость:</strong><br>
-                                {{ group.total_price }} ₽
-                            </div>
-                            <div class="info-item">
-                                <strong>Статус:</strong><br>
-                                <span class="status-{{ group.group_status }}">
-                                    {{ group.status_display }}
-                                </span>
-
-                                {% if group.refund_processed_at %}
-                                    <br><small style="color: #aaa;">
-                                        Возврат: {{ group.refund_processed_at|date:"d.m.Y H:i" }}
-                                    </small>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #444;">
-                            {% if group.group_status == 'active' and group.can_be_refunded %}
-                                <!-- Кнопка возврата для активных билетов -->
-                                <form method="post" action="{% url 'request_ticket_refund' group.first_ticket_id %}"
-                                      onsubmit="return confirm('Вернуть билет? Полная стоимость будет возвращена.')">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn-buy"
-                                            style="background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);">
-                                        🔄 Вернуть билет
-                                    </button>
-                                    <small style="color: #ccc; margin-left: 10px;">
-                                        {{ group.refund_message }}
-                                    </small>
-                                </form>
-                            {% elif group.group_status == 'refunded' %}
-                                <!-- Информация о возвращенном билете -->
-                                <div style="background: rgba(33, 150, 243, 0.1); padding: 10px; border-radius: 5px;">
-                                    <p style="color: #2196F3; margin: 0;">
-                                        ✅ Билет возвращен {{ group.refund_processed_at|date:"d.m.Y H:i" }}
-                                    </p>
-                                    <p style="color: #ccc; font-size: 14px; margin: 5px 0 0 0;">
-                                        Полная стоимость возвращена
-                                    </p>
-                                </div>
-                            {% elif group.group_status == 'active' and not group.can_be_refunded %}
-                                <!-- Билет активен, но возврат невозможен -->
-                                <div style="background: rgba(244, 67, 54, 0.1); padding: 10px; border-radius: 5px;">
-                                    <p style="color: #F44336; margin: 0;">
-                                        ⚠️ Возврат невозможен
-                                    </p>
-                                    <p style="color: #ccc; font-size: 14px; margin: 5px 0 0 0;">
-                                        {{ group.refund_message }}
-                                    </p>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="no-tickets">
-                        <h3>У вас еще нет купленных билетов</h3>
-                        <p>Перейдите на <a href="{% url 'home' %}" style="color: #ffcc00;">главную страницу</a>, чтобы выбрать сеанс</p>
+                {% if active_email_change %}
+                    <div class="form-group">
+                        {{ email_form.verification_code.label_tag }}
+                        {{ email_form.verification_code }}
+                        {% if email_form.verification_code.errors %}
+                            <div class="form-errors">{{ email_form.verification_code.errors }}</div>
+                        {% endif %}
+                        <small style="color: #ffcc00;">Код отправлен на {{ active_email_change.new_email }}</small>
                     </div>
                 {% endif %}
+
+                <button type="submit" class="btn-save" style="padding: 10px;">
+                    {% if active_email_change %}Подтвердить смену email{% else %}Запросить смену email{% endif %}
+                </button>
+            </form>
+        </div>
+
+        <!-- Telegram секция -->
+        <div class="telegram-section">
+            <h3 class="section-title">🤖 Telegram Уведомления</h3>
+
+            {% if telegram_connected %}
+            <div class="telegram-status">
+                <p style="color: #00ff00; margin-bottom: 10px;">
+                    ✅ Telegram аккаунт привязан: @{{ telegram_username }}
+                </p>
+                <p style="color: #ccc; margin-bottom: 15px;">
+                    Вы будете получать уведомления о покупках билетов и напоминания о сеансах.
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="telegram_unlink">
+                    <button type="submit" class="btn-refund"
+                            onclick="return confirm('Вы уверены, что хотите отвязать Telegram?')">
+                        🔗 Отвязать Telegram
+                    </button>
+                </form>
             </div>
+            {% else %}
+            <div class="telegram-connect">
+                <h4 style="color: #ffcc00; margin-bottom: 15px;">Привязать Telegram аккаунт</h4>
+                <p style="color: #ccc; margin-bottom: 15px;">
+                    Получайте уведомления о покупках билетов прямо в Telegram!
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="telegram_connect">
+                    <button type="submit" class="btn-save" style="background: linear-gradient(135deg, #0088cc 0%, #005599 100%);">
+                        Получить код привязки
+                    </button>
+                </form>
+
+                <div style="margin-top: 15px; font-size: 14px; color: #aaa;">
+                    <p><strong>После получения кода:</strong></p>
+                    <ol style="padding-left: 20px; margin-top: 10px;">
+                        <li>Перейдите к <a href="https://t.me/CinemaaPremierBot" target="_blank" style="color: #ffcc00;">@CinemaaPremierBot</a></li>
+                        <li>Отправьте полученный код как обычное сообщение</li>
+                        <li>Бот автоматически привяжет ваш аккаунт</li>
+                    </ol>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 
-    <script>
-        // Форматирование номера телефона в реальном времени
-        document.getElementById('id_number').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
+    <!-- Правая колонка - история билетов -->
+    <div class="profile-card">
+        <h2 style="color: #ffcc00; margin-bottom: 20px;">🎫 История покупок</h2>
 
-            if (value.startsWith('7') || value.startsWith('8')) {
-                value = value.substring(1);
-            }
+        <!-- Политика возврата -->
+        <div class="refund-policy">
+            <p style="color: #fff; margin-bottom: 10px;">
+                <strong>📋 Политика возврата:</strong> Возврат возможен за 30 минут до сеанса. Полная стоимость возвращается.
+            </p>
+            <p style="color: #aaa; font-size: 14px;">
+                💡 Для возврата нажмите кнопку "Вернуть" рядом с билетом
+            </p>
+        </div>
 
-            if (value.length > 0) {
-                value = '+7 (' + value;
+        {% if ticket_groups %}
+            {% for group in ticket_groups %}
+            <div class="ticket-card">
+                <div class="ticket-header">
+                    {% if group.movie_poster %}
+                        <img
+                            src="{{ group.movie_poster.url }}"
+                            alt="{{ group.movie_title }}"
+                            style="max-height: 60px; margin-right: 15px; border-radius: 5px;"
+                        >
+                    {% endif %}
+                    <div style="flex: 1;">
+                        <h3>{{ group.movie_title }}</h3>
+                        <small style="color: #aaa;">Группа из {{ group.ticket_count }} билет(а)</small>
+                    </div>
 
-                if (value.length > 7) {
-                    value = value.substring(0, 7) + ') ' + value.substring(7);
-                }
-                if (value.length > 12) {
-                    value = value.substring(0, 12) + '-' + value.substring(12);
-                }
-                if (value.length > 15) {
-                    value = value.substring(0, 15) + '-' + value.substring(15);
-                }
-            }
+                    {% if group.group_status == 'refunded' %}
+                        {% if user.is_staff %}
+                            <a href="{% url 'download_ticket_group' group.group_id %}" class="btn-save"
+                               style="padding: 8px 15px; font-size: 14px;">
+                                📥 Скачать (админ)
+                            </a>
+                        {% else %}
+                            <span class="btn-save" style="opacity: 0.7; cursor: not-allowed; padding: 8px 15px; font-size: 14px;"
+                                  title="Билет возвращён. Скачивание недоступно.">
+                                ⛔ Недоступно
+                            </span>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'download_ticket_group' group.group_id %}" class="btn-save"
+                           style="padding: 8px 15px; font-size: 14px;">
+                            📥 Скачать билеты
+                        </a>
+                    {% endif %}
+                </div>
 
-            e.target.value = value;
-        });
+                <div class="ticket-info">
+                    <div class="info-item">
+                        <strong>Дата покупки:</strong><br>
+                        {{ group.purchase_date|date:"d M Y H:i" }}
+                    </div>
+                    <div class="info-item">
+                        <strong>Сеанс:</strong><br>
+                        {{ group.start_time|date:"d M Y H:i" }}
+                    </div>
+                    <div class="info-item">
+                        <strong>Зал:</strong><br>
+                        {{ group.hall_name }}
+                    </div>
+                    <div class="info-item">
+                        <strong>Места:</strong><br>
+                        {% for seat in group.seats %}
+                            Ряд {{ seat.row }}, Место {{ seat.number }}{% if not forloop.last %}; {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div class="info-item">
+                        <strong>Общая стоимость:</strong><br>
+                        {{ group.total_price }} ₽
+                    </div>
+                    <div class="info-item">
+                        <strong>Статус:</strong><br>
+                        <span class="status-{{ group.group_status }}">
+                            {{ group.status_display }}
+                        </span>
 
-        // Функция переключения видимости пароля
-        function togglePassword(inputId, button) {
-            const passwordInput = document.getElementById(inputId);
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                button.textContent = '🔒';
-            } else {
-                passwordInput.type = 'password';
-                button.textContent = '👁️';
-            }
-        }
+                        {% if group.refund_processed_at %}
+                            <br><small style="color: #aaa;">
+                                Возврат: {{ group.refund_processed_at|date:"d.m.Y H:i" }}
+                            </small>
+                        {% endif %}
+                    </div>
+                </div>
 
-        // Обработка ошибок при загрузке страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            // Подсветка полей с ошибками для формы профиля
-            const errorFields = document.querySelectorAll('.error-field');
-            errorFields.forEach(field => {
-                field.style.borderColor = '#ff6b6b';
-                field.style.boxShadow = '0 0 10px rgba(255, 107, 107, 0.5)';
-            });
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #444;">
+                    {% if group.group_status == 'active' and group.can_be_refunded %}
+                        <form method="post" action="{% url 'request_ticket_refund' group.first_ticket_id %}"
+                              onsubmit="return confirmRefund()">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-refund">
+                                🔄 Вернуть билет
+                            </button>
+                            <small style="color: #ccc; margin-left: 10px;">
+                                {{ group.refund_message }}
+                            </small>
+                        </form>
+                    {% elif group.group_status == 'refunded' %}
+                        <div class="refund-processed">
+                            <p style="color: #2196F3; margin: 0;">
+                                ✅ Билет возвращен {{ group.refund_processed_at|date:"d.m.Y H:i" }}
+                            </p>
+                            <p style="color: #ccc; font-size: 14px; margin: 5px 0 0 0;">
+                                Полная стоимость возвращена
+                            </p>
+                        </div>
+                    {% elif group.group_status == 'active' and not group.can_be_refunded %}
+                        <div class="screening-ended">
+                            <p style="color: #F44336; margin: 0;">
+                                ⚠️ Возврат невозможен
+                            </p>
+                            <p style="color: #ccc; font-size: 14px; margin: 5px 0 0 0;">
+                                {{ group.refund_message }}
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-tickets">
+                <h3>У вас еще нет купленных билетов</h3>
+                <p>Перейдите на <a href="{% url 'home' %}" style="color: #ffcc00;">главную страницу</a>, чтобы выбрать сеанс</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
 
-            // Добавляем кнопки просмотра пароля для всех полей пароля
-            const passwordFields = document.querySelectorAll('input[type="password"]');
-            passwordFields.forEach(field => {
-                if (!field.parentNode.querySelector('.password-toggle')) {
-                    const toggleButton = document.createElement('button');
-                    toggleButton.type = 'button';
-                    toggleButton.className = 'password-toggle';
-                    toggleButton.innerHTML = '👁️';
-                    toggleButton.onclick = function() {
-                        togglePassword(field.id, this);
-                    };
-
-                    const inputContainer = document.createElement('div');
-                    inputContainer.className = 'input-with-icon';
-                    field.parentNode.insertBefore(inputContainer, field);
-                    inputContainer.appendChild(field);
-                    inputContainer.appendChild(toggleButton);
-                }
-            });
-        });
-    </script>
-
-    <script>
-        // Функция для подтверждения возврата
-        function confirmRefund() {
-            return confirm("Вы уверены, что хотите вернуть билет?\n\n✅ Возвращается полная стоимость\n⚠️ После возврата билет станет недействительным\n\nДля продолжения нажмите OK");
-        }
-
-        // Функция для подтверждения отмены возврата
-        function confirmCancelRefund() {
-            return confirm("Вы уверены, что хотите отменить запрос на возврат?\n\nБилет снова станет активным и действительным");
-        }
-
-        // Проверка времени для возврата
-        function checkRefundTime(startTimeStr, ticketId) {
-            const startTime = new Date(startTimeStr);
-            const now = new Date();
-            const timeDiff = startTime - now;
-            const minutesDiff = Math.floor(timeDiff / (1000 * 60));
-
-            if (minutesDiff < 30) {
-                alert(`Возврат невозможен!\n\nДо сеанса осталось ${minutesDiff} минут.\nВозврат возможен только за 30 минут до начала.`);
-                return false;
-            }
-
-            return confirmRefund();
-        }
-
-        // Автоматически подсвечиваем билеты, которые можно вернуть
-        document.addEventListener('DOMContentLoaded', function() {
-            // Находим все кнопки возврата
-            const refundButtons = document.querySelectorAll('form[action*="refund"] button[type="submit"]');
-
-            refundButtons.forEach(button => {
-                const form = button.closest('form');
-                const ticketCard = form.closest('.ticket-card');
-
-                if (ticketCard) {
-                    // Находим время сеанса
-                    const screeningTimeElement = ticketCard.querySelector('.info-item:nth-child(2)');
-                    if (screeningTimeElement) {
-                        const timeText = screeningTimeElement.textContent.split(': ')[1];
-                        // Можно добавить дополнительную логику проверки времени
-                    }
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+{% block extra_js %}
+<script src="{% static 'ticket/js/user/profile.js' %}"></script>
+{% endblock %}

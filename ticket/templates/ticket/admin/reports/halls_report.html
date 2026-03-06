@@ -1,3 +1,4 @@
+{% load report_filters %}
 <div class="halls-report">
     <h2 style="color: var(--report-secondary); margin-bottom: 25px; font-size: 1.5rem; border-bottom: 2px solid var(--report-border); padding-bottom: 10px;">
         🏛️ Загруженность залов
@@ -5,7 +6,6 @@
 
     {% if report_data %}
         <!-- Рассчитываем общие показатели -->
-        {% load report_filters %}
         {% with aggregated=report_data|aggregate_halls_stats %}
 
         <!-- Общая статистика -->
@@ -84,7 +84,7 @@
                     </div>
                 </div>
 
-                <!-- Информация о загруженности (без прогресс-бара) -->
+                <!-- Информация о загруженности -->
                 <div style="text-align: center; padding: 10px; background: rgba(255, 0, 0, 0.1); border-radius: 6px;">
                     <div style="font-size: 0.9rem; color: var(--report-muted);">Загруженность</div>
                     <div style="font-size: 1.5rem; font-weight: bold; color: var(--report-secondary);">

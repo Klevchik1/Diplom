@@ -1,784 +1,182 @@
-<!DOCTYPE html>
-{% load ru_filters %}
-<html>
-<head>
-    <title>Главная - Кинотеатр Премьера</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-        }
+{% extends "ticket/base.html" %}
+{% load static ru_filters %}
 
-        body {
-            background-color: #000;
-            background: linear-gradient(135deg, #000 0%, #222 100%);
-            color: #fff;
-            min-height: 100vh;
-        }
+{% block title %}Главная - Кинотеатр Премьера{% endblock %}
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ticket/css/user/home.css' %}">
+{% endblock %}
 
-        .header {
-            background: rgba(30, 30, 30, 0.9);
-            padding: 15px 20px;
-            border-bottom: 2px solid #ffcc00;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+{% block content %}
+<h1 class="page-title">Фильмы</h1>
 
-        .logo {
-            color: #ffcc00;
-            font-size: 28px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
-        }
-
-        .user-panel {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-panel a, .btn {
-            color: #ffcc00;
-            text-decoration: none;
-            padding: 8px 15px;
-            border: 1px solid #ff0000;
-            border-radius: 5px;
-            transition: all 0.3s;
-            font-weight: bold;
-        }
-
-        .user-panel a:hover, .btn:hover {
-            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
-            color: #fff;
-            transform: translateY(-2px);
-            box-shadow: 0 3px 10px rgba(255, 0, 0, 0.4);
-        }
-
-        .page-title {
-            text-align: center;
-            margin: 25px 0;
-            color: #ffcc00;
-            font-size: 36px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-        }
-
-        .card {
-            background: rgba(30, 30, 30, 0.9);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 25px;
-            border: 2px solid #ff0000;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
-        }
-
-        .btn-buy {
-            display: inline-block;
-            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
-            color: #fff;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-decoration: none;
-            margin-top: 15px;
-        }
-
-        .btn-buy:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
-        }
-
-        .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            background: rgba(255, 0, 0, 0.2);
-            border: 1px solid #ff0000;
-        }
-
-        .alert-success {
-            background: rgba(0, 128, 0, 0.2);
-            border-color: #008000;
-        }
-
-        .alert-info {
-            background: rgba(255, 204, 0, 0.2);
-            border-color: #ffcc00;
-        }
-        .btn-admin {
-                display: inline-block;
-                background: linear-gradient(135deg, #4a00e0 0%, #8e2de2 100%);
-                color: #fff;
-                padding: 8px 15px;
-                border: none;
-                border-radius: 5px;
-                font-size: 14px;
-                font-weight: bold;
-                cursor: pointer;
-                transition: all 0.3s;
-                text-decoration: none;
-                margin-left: 10px;
-            }
-        .btn-admin:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 3px 10px rgba(142, 45, 226, 0.4);
-        }
-        .main-content {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 20px;
-            align-items: start;
-        }
-
-        .filters-container {
-            position: sticky;
-            top: 20px;
-        }
-
-        .screenings-container {
-            min-width: 0;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            color: #ffcc00;
-            margin-bottom: 5px;
-            font-size: 14px;
-        }
-
-        .form-group select,
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #ff0000;
-            border-radius: 8px;
-            background: rgba(20, 20, 20, 0.8);
-            color: #fff;
-            font-size: 14px;
-        }
-
-        .screening-header {
-            display: flex;
-            margin-bottom: 15px;
-        }
-
-        .screening-poster {
-            flex: 0 0 150px;
-            margin-right: 20px;
-        }
-
-        .screening-poster img {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 8px;
-            border: 2px solid #ffcc00;
-        }
-
-        .screening-details {
-            flex: 1;
-        }
-
-        .screening-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-        }
-
-        .screening-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid #ff0000;
-            padding-top: 15px;
-        }
-
-        .screening-price {
-            font-size: 24px;
-            color: #ffcc00;
-        }
-
-        /* СТИЛИ ДЛЯ КНОПОК ФИЛЬТРОВ */
-        .filter-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .btn-apply {
-            flex: 1;
-            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
-            color: #fff;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-        }
-
-        .btn-reset {
-            flex: 1;
-            background: rgba(50, 50, 50, 0.8);
-            color: #ffcc00;
-            padding: 12px;
-            border: 2px solid #ff0000;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-            text-decoration: none;
-        }
-
-        .btn-apply:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 3px 10px rgba(255, 0, 0, 0.4);
-        }
-
-        .btn-reset:hover {
-            background: rgba(70, 70, 70, 0.8);
-            transform: translateY(-2px);
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-
-            .filters-container {
-                position: static;
-            }
-
-            .filter-buttons {
-                flex-direction: column;
-            }
-        }
-        .movie-card {
-            background: rgba(30, 30, 30, 0.9);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 25px;
-            border: 2px solid #ff0000;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
-        }
-
-        .movie-header {
-            display: grid;
-            grid-template-columns: 150px 1fr;
-            gap: 20px;
-            margin-bottom: 15px;
-        }
-
-        .movie-poster {
-            width: 150px;
-            height: 200px;
-            border-radius: 8px;
-            border: 2px solid #ffcc00;
-            overflow: hidden;
-        }
-
-        .movie-poster img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .movie-info h2 {
-            color: #ffcc00;
-            margin-bottom: 10px;
-            font-size: 24px;
-        }
-
-        .movie-meta {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 10px;
-            color: #aaa;
-        }
-
-        .movie-description {
-            color: #ccc;
-            line-height: 1.5;
-        }
-
-        .screenings-section {
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid #444;
-        }
-
-        .screenings-title {
-            color: #ffcc00;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-
-        .screenings-list {
-            display: flex;
-            gap: 15px;
-            overflow-x: auto;
-            padding: 10px 0;
-        }
-
-        .screening-item {
-            background: rgba(20, 20, 20, 0.8);
-            padding: 12px 15px;
-            border-radius: 8px;
-            border: 1px solid #ff0000;
-            cursor: pointer;
-            transition: all 0.3s;
-            min-width: 180px;
-            text-align: center;
-        }
-
-        .screening-item:hover {
-            background: rgba(255, 0, 0, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .screening-time {
-            font-weight: bold;
-            color: #ffcc00;
-            font-size: 16px;
-        }
-
-        .screening-hall {
-            color: #aaa;
-            font-size: 14px;
-            margin: 5px 0;
-        }
-
-        .screening-price {
-            color: #4CAF50;
-            font-weight: bold;
-        }
-
-        .btn-movie-details {
-            display: inline-block;
-            background: linear-gradient(135deg, #4a00e0 0%, #8e2de2 100%);
-            color: #fff;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            margin-top: 15px;
-        }
-
-        .btn-movie-details:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 3px 10px rgba(74, 0, 224, 0.4);
-        }
-
-        .no-screenings {
-            text-align: center;
-            padding: 20px;
-            color: #aaa;
-            font-style: italic;
-        }
-        .date-filters {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
-            overflow-x: auto;
-            padding: 15px 0;
-            justify-content: center;
-        }
-
-        .date-filter-item {
-            flex: 0 0 auto;
-            background: rgba(30, 30, 30, 0.9);
-            border: 2px solid #ff0000;
-            border-radius: 10px;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-            min-width: 100px;
-            color: #ffcc00;
-            font-weight: bold;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .date-filter-item:hover {
-            background: rgba(255, 0, 0, 0.2);
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.3);
-        }
-
-        .date-filter-item.active {
-            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
-            color: #fff;
-            border-color: #ffcc00;
-        }
-
-        .date-label {
-            font-size: 16px;
-            font-weight: bold;
-        }
-
-        .date-display {
-            font-size: 14px;
-            color: #ffcc00;
-            opacity: 0.9;
-        }
-
-        .date-filter-item.active .date-display {
-            color: #fff;
-        }
-
-        .no-screenings-today {
-            text-align: center;
-            padding: 15px;
-            color: #aaa;
-            font-style: italic;
-            background: rgba(50, 50, 50, 0.5);
-            border-radius: 8px;
-            margin-top: 10px;
-        }
-
-        .screening-counter {
-            background: rgba(255, 204, 0, 0.2);
-            color: #ffcc00;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            margin-left: 10px;
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <div class="logo">КИНОТЕАТР ПРЕМЬЕРА</div>
-        <div class="user-panel">
-            {% if user.is_authenticated %}
-                <a href="{% url 'profile' %}" class="btn">Личный кабинет</a>
-                {% if user.is_staff %}
-                    <a href="/admin/" class="btn-admin">Админ-панель</a>
-                {% endif %}
-                <span>Привет, {{ user.name }}!</span>
-                <a href="{% url 'logout' %}" class="btn">Выйти</a>
-            {% else %}
-                <a href="{% url 'login' %}" class="btn">Войти</a>
-                <a href="{% url 'register' %}" class="btn" style="background: linear-gradient(135deg, #4a00e0 0%, #8e2de2 100%);">Регистрация</a>
-            {% endif %}
-            <a href="{% url 'about' %}" class="btn">О кинотеатре</a>
+<!-- ФИЛЬТР ПО ДАТАМ -->
+<div class="date-filters">
+    {% for date_filter in date_filters %}
+        <div class="date-filter-item {% if date_filter.date == selected_date %}active{% endif %}"
+             onclick="selectDate('{{ date_filter.date|date:"Y-m-d" }}')">
+            <div class="date-label">{{ date_filter.label.label }}</div>
+            <div class="date-display">{{ date_filter.label.date }}</div>
         </div>
-    </div>
+    {% endfor %}
+</div>
 
-    <div class="container">
-        <h1 class="page-title">Фильмы</h1>
+<div class="main-content">
+    <!-- Левая колонка - фильтры -->
+    <div class="filters-container">
+        <div class="card">
+            <h3 style="color: #ffcc00; text-align: center; margin-bottom: 20px;">Фильтры</h3>
 
-        {% if messages %}
-            <div class="alert alert-{{ message.tags }}">
-                {% for message in messages %}
-                    {{ message }}
-                {% endfor %}
-            </div>
-        {% endif %}
+            <form method="get" id="filter-form">
+                <!-- Скрытое поле для выбранной даты -->
+                <input type="hidden" name="date" id="selected-date" value="{{ selected_date|date:"Y-m-d" }}">
 
-        <!-- ФИЛЬТР ПО ДАТАМ -->
-        <div class="date-filters">
-            {% for date_filter in date_filters %}
-                <div class="date-filter-item {% if date_filter.date == selected_date %}active{% endif %}"
-                     onclick="selectDate('{{ date_filter.date|date:"Y-m-d" }}')">
-                    <div class="date-label">{{ date_filter.label.label }}</div>
-                    <div class="date-display">{{ date_filter.label.date }}</div>
+                <!-- Поиск по названию -->
+                <div class="form-group">
+                    <label for="search">Поиск фильма</label>
+                    <input
+                        type="text"
+                        name="search"
+                        id="search"
+                        class="form-control"
+                        placeholder="Введите название"
+                        value="{{ current_filters.search }}"
+                    >
                 </div>
-            {% endfor %}
-        </div>
 
-        <div class="main-content">
-            <!-- Левая колонка - фильтры (БЕЗ ФИЛЬТРА ПО ДАТЕ) -->
-            <div class="filters-container">
-                <div class="card">
-                    <h3 style="color: #ffcc00; text-align: center; margin-bottom: 20px;">Фильтры</h3>
-
-                    <form method="get" id="filter-form">
-                        <!-- Скрытое поле для выбранной даты -->
-                        <input type="hidden" name="date" id="selected-date" value="{{ selected_date|date:"Y-m-d" }}">
-
-                        <!-- Поиск по названию -->
-                        <div class="form-group">
-                            <label for="search">Поиск фильма</label>
-                            <input
-                                type="text"
-                                name="search"
-                                id="search"
-                                class="form-control"
-                                placeholder="Введите название"
-                                value="{{ current_filters.search }}"
+                <!-- Фильтр по залу -->
+                <div class="form-group">
+                    <label for="hall">Зал</label>
+                    <select name="hall" id="hall" class="form-control">
+                        <option value="">Все залы</option>
+                        {% for hall in halls %}
+                            <option
+                                value="{{ hall.id }}"
+                                {% if current_filters.hall == hall.id|stringformat:"s" %}selected{% endif %}
                             >
-                        </div>
-
-                        <!-- Фильтр по залу -->
-                        <div class="form-group">
-                            <label for="hall">Зал</label>
-                            <select name="hall" id="hall" class="form-control">
-                                <option value="">Все залы</option>
-                                {% for hall in halls %}
-                                    <option
-                                        value="{{ hall.id }}"
-                                        {% if current_filters.hall == hall.id|stringformat:"s" %}selected{% endif %}
-                                    >
-                                        {{ hall.name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <!-- Фильтр по жанру -->
-                        <div class="form-group">
-                            <label for="genre">Жанр</label>
-                            <select name="genre" id="genre" class="form-control">
-                                <option value="">Все жанры</option>
-                                {% for genre in genres %}
-                                    <option
-                                        value="{{ genre }}"
-                                        {% if current_filters.genre == genre %}selected{% endif %}
-                                    >
-                                        {{ genre }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <!-- Фильтр по возрастному рейтингу -->
-                        <div class="form-group">
-                            <label for="age_rating">Возрастной рейтинг</label>
-                            <select name="age_rating" id="age_rating" class="form-control">
-                                <option value="">Все рейтинги</option>
-                                {% for rating in age_ratings %}
-                                    <option
-                                        value="{{ rating.name }}"
-                                        {% if current_filters.age_rating == rating.name %}selected{% endif %}
-                                    >
-                                        {{ rating.name }} - {{ rating.description }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <!-- КНОПКИ ПРИМЕНИТЬ И СБРОСИТЬ -->
-                        <div class="filter-buttons">
-                            <button type="button" class="btn-apply" onclick="applyFilters()">Применить</button>
-                            <a href="{% url 'home' %}" class="btn-reset">Сбросить</a>
-                        </div>
-                    </form>
+                                {{ hall.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
                 </div>
-            </div>
 
-            <!-- Правая колонка - фильмы -->
-            <div class="screenings-container">
-                {% for movie_data in movies %}
-                <div class="movie-card">
-                    <div class="movie-header">
-                        {% if movie_data.movie.poster %}
-                            <div class="movie-poster">
-                                <img
-                                    src="{{ movie_data.movie.poster.url }}"
-                                    alt="{{ movie_data.movie.title }}"
-                                >
-                            </div>
-                        {% else %}
-                            <div class="movie-poster" style="background: #333; display: flex; align-items: center; justify-content: center; color: #ffcc00;">
-                                Нет постера
-                            </div>
-                        {% endif %}
-
-                        <div class="movie-info">
-                            <h2>{{ movie_data.movie.title }}</h2>
-                            <div class="movie-meta">
-                                <span><strong>Жанр:</strong> {{ movie_data.movie.genre }}</span>
-                                <span><strong>Возраст:</strong> {{ movie_data.movie.age_rating.name }}</span>
-                                <span><strong>Длительность:</strong> {{ movie_data.movie.duration }}</span>
-                                {% if movie_data.has_screenings_today %}
-                                    <span class="screening-counter">{{ movie_data.screening_count }} сеанс{{ movie_data.screening_count|ru_pluralize:" ,а,ов" }}</span>
-                                {% endif %}
-                            </div>
-                            <div class="movie-description">
-                                {{ movie_data.movie.short_description }}
-                            </div>
-                            <a href="{% url 'movie_detail' movie_data.movie.id %}" class="btn-movie-details">
-                                Все сеансы
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Ближайшие сеансы -->
-                    <div class="screenings-section">
-                        <div class="screenings-title">
-                            🎬 {% if selected_date == today %}Ближайшие сеансы на сегодня{% else %}Сеансы на {{ selected_date|date:"d.m.Y" }}{% endif %}:
-                        </div>
-
-                        {% if movie_data.has_screenings_today %}
-                            {% if movie_data.upcoming_screenings %}
-                                <div class="screenings-list">
-                                    {% for screening in movie_data.upcoming_screenings %}
-                                    <div class="screening-item" onclick="location.href='{% url 'screening_detail' screening.id %}'">
-                                        <div class="screening-time">{{ screening.start_time|date:"H:i" }}</div>
-                                        <div class="screening-hall">{{ screening.hall.name }}</div>
-                                        <div class="screening-price">{{ screening.price }} ₽</div>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                <div class="no-screenings">
-                                    На выбранную дату сеансов нет
-                                </div>
-                            {% endif %}
-                        {% else %}
-                            <div class="no-screenings-today">
-                                На {% if selected_date == today %}сегодня{% else %}{{ selected_date|date:"d.m.Y" }}{% endif %} сеансов больше нет
-                            </div>
-                        {% endif %}
-                    </div>
+                <!-- Фильтр по жанру -->
+                <div class="form-group">
+                    <label for="genre">Жанр</label>
+                    <select name="genre" id="genre" class="form-control">
+                        <option value="">Все жанры</option>
+                        {% for genre in genres %}
+                            <option
+                                value="{{ genre }}"
+                                {% if current_filters.genre == genre %}selected{% endif %}
+                            >
+                                {{ genre }}
+                            </option>
+                        {% endfor %}
+                    </select>
                 </div>
-                {% empty %}
-                <div class="card" style="text-align: center; padding: 40px;">
-                    <h3 style="color: #ffcc00;">Фильмы не найдены</h3>
-                    <p>Попробуйте изменить параметры фильтрации</p>
+
+                <!-- Фильтр по возрастному рейтингу -->
+                <div class="form-group">
+                    <label for="age_rating">Возрастной рейтинг</label>
+                    <select name="age_rating" id="age_rating" class="form-control">
+                        <option value="">Все рейтинги</option>
+                        {% for rating in age_ratings %}
+                            <option
+                                value="{{ rating.name }}"
+                                {% if current_filters.age_rating == rating.name %}selected{% endif %}
+                            >
+                                {{ rating.name }} - {{ rating.description }}
+                            </option>
+                        {% endfor %}
+                    </select>
                 </div>
-                {% endfor %}
-            </div>
+
+                <!-- КНОПКИ ПРИМЕНИТЬ И СБРОСИТЬ -->
+                <div class="filter-buttons">
+                    <button type="button" class="btn-apply" onclick="applyFilters()">Применить</button>
+                    <a href="{% url 'home' %}" class="btn-reset">Сбросить</a>
+                </div>
+            </form>
         </div>
     </div>
 
-    <script>
-        function selectDate(date) {
-            // Сохраняем текущие значения фильтров
-            const searchValue = document.getElementById('search').value;
-            const hallValue = document.getElementById('hall').value;
-            const genreValue = document.getElementById('genre').value;
-            const ageRatingValue = document.getElementById('age_rating').value; // Новое
+    <!-- Правая колонка - фильмы -->
+    <div class="screenings-container">
+        {% for movie_data in movies %}
+        <div class="movie-card">
+            <div class="movie-header">
+                {% if movie_data.movie.poster %}
+                    <div class="movie-poster">
+                        <img
+                            src="{{ movie_data.movie.poster.url }}"
+                            alt="{{ movie_data.movie.title }}"
+                        >
+                    </div>
+                {% else %}
+                    <div class="movie-poster-placeholder">
+                        Нет постера
+                    </div>
+                {% endif %}
 
-            // Устанавливаем выбранную дату
-            document.getElementById('selected-date').value = date;
+                <div class="movie-info">
+                    <h2>{{ movie_data.movie.title }}</h2>
+                    <div class="movie-meta">
+                        <span><strong>Жанр:</strong> {{ movie_data.movie.genre }}</span>
+                        <span><strong>Возраст:</strong> {{ movie_data.movie.age_rating.name }}</span>
+                        <span><strong>Длительность:</strong> {{ movie_data.movie.duration }}</span>
+                        {% if movie_data.has_screenings_today %}
+                            <span class="screening-counter">{{ movie_data.screening_count }} сеанс{{ movie_data.screening_count|ru_pluralize:" ,а,ов" }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="movie-description">
+                        {{ movie_data.movie.short_description }}
+                    </div>
+                    <a href="{% url 'movie_detail' movie_data.movie.id %}" class="btn-movie-details">
+                        Все сеансы
+                    </a>
+                </div>
+            </div>
 
-            // Создаем скрытые поля для сохранения фильтров
-            let form = document.getElementById('filter-form');
+            <!-- Ближайшие сеансы -->
+            <div class="screenings-section">
+                <div class="screenings-title">
+                    🎬 {% if selected_date == today %}Ближайшие сеансы на сегодня{% else %}Сеансы на {{ selected_date|date:"d.m.Y" }}{% endif %}:
+                </div>
 
-            // Удаляем старые скрытые поля если есть
-            const oldHiddenFields = form.querySelectorAll('input[type="hidden"][name="search"], input[type="hidden"][name="hall"], input[type="hidden"][name="genre"], input[type="hidden"][name="age_rating"]');
-            oldHiddenFields.forEach(field => field.remove());
+                {% if movie_data.has_screenings_today %}
+                    {% if movie_data.upcoming_screenings %}
+                        <div class="screenings-list">
+                            {% for screening in movie_data.upcoming_screenings %}
+                            <div class="screening-item" onclick="location.href='{% url 'screening_detail' screening.id %}'">
+                                <div class="screening-time">{{ screening.start_time|date:"H:i" }}</div>
+                                <div class="screening-hall">{{ screening.hall.name }}</div>
+                                <div class="screening-price">{{ screening.price }} ₽</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="no-screenings">
+                            На выбранную дату сеансов нет
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="no-screenings-today">
+                        На {% if selected_date == today %}сегодня{% else %}{{ selected_date|date:"d.m.Y" }}{% endif %} сеансов больше нет
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="card" style="text-align: center; padding: 40px;">
+            <h3 style="color: #ffcc00;">Фильмы не найдены</h3>
+            <p>Попробуйте изменить параметры фильтрации</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
 
-            // Добавляем скрытые поля с текущими значениями фильтров
-            if (searchValue) {
-                let hiddenSearch = document.createElement('input');
-                hiddenSearch.type = 'hidden';
-                hiddenSearch.name = 'search';
-                hiddenSearch.value = searchValue;
-                form.appendChild(hiddenSearch);
-            }
-
-            if (hallValue) {
-                let hiddenHall = document.createElement('input');
-                hiddenHall.type = 'hidden';
-                hiddenHall.name = 'hall';
-                hiddenHall.value = hallValue;
-                form.appendChild(hiddenHall);
-            }
-
-            if (genreValue) {
-                let hiddenGenre = document.createElement('input');
-                hiddenGenre.type = 'hidden';
-                hiddenGenre.name = 'genre';
-                hiddenGenre.value = genreValue;
-                form.appendChild(hiddenGenre);
-            }
-
-            if (ageRatingValue) { // Новое
-                let hiddenAgeRating = document.createElement('input');
-                hiddenAgeRating.type = 'hidden';
-                hiddenAgeRating.name = 'age_rating';
-                hiddenAgeRating.value = ageRatingValue;
-                form.appendChild(hiddenAgeRating);
-            }
-
-            // Отправляем форму
-            form.submit();
-        }
-
-
-        // Функция для применения фильтров с сохранением даты
-        function applyFilters() {
-            const dateValue = document.getElementById('selected-date').value;
-            let form = document.getElementById('filter-form');
-
-            // Добавляем скрытое поле с датой
-            let hiddenDate = document.createElement('input');
-            hiddenDate.type = 'hidden';
-            hiddenDate.name = 'date';
-            hiddenDate.value = dateValue;
-            form.appendChild(hiddenDate);
-
-            form.submit();
-        }
-
-        // Обработчик для кнопки "Применить"
-        document.addEventListener('DOMContentLoaded', function() {
-            const applyButton = document.querySelector('.btn-apply');
-            if (applyButton) {
-                applyButton.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    applyFilters();
-                });
-            }
-
-            // Обработчик для формы (на случай отправки через Enter)
-            const form = document.getElementById('filter-form');
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    // Убедимся, что дата сохраняется
-                    const dateValue = document.getElementById('selected-date').value;
-                    let hiddenDate = document.createElement('input');
-                    hiddenDate.type = 'hidden';
-                    hiddenDate.name = 'date';
-                    hiddenDate.value = dateValue;
-                    this.appendChild(hiddenDate);
-                });
-            }
-        });
-
-        // Устанавливаем минимальную дату как сегодня для фильтров даты
-        document.addEventListener('DOMContentLoaded', function() {
-            const today = new Date().toISOString().split('T')[0];
-
-            // Обновляем активную дату в URL при загрузке
-            const urlParams = new URLSearchParams(window.location.search);
-            const currentDate = urlParams.get('date') || today;
-            document.getElementById('selected-date').value = currentDate;
-        });
-    </script>
-</body>
-</html>
+{% block extra_js %}
+<script src="{% static 'ticket/js/user/home.js' %}"></script>
+{% endblock %}

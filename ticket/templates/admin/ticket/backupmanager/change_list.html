@@ -1,11 +1,155 @@
-{% extends "admin/change_list.html" %}
-{% load i18n admin_urls %}
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
 
-{% block object-tools-items %}
-    <li>
-        <a href="{% url 'admin:ticket_backupmanager_backup_management' %}" class="addlink" style="background: var(--primary); color: var(--button-fg); text-decoration: none;">
-            🗃️ Управление бэкапами
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'ticket/css/admin/backup-management.css' %}">
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h1>🗃️ Управление бэкапами базы данных</h1>
+
+    <!-- Сообщения -->
+    {% if messages %}
+        <ul class="messagelist">
+            {% for message in messages %}
+                <li class="{% if message.tags %}{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <!-- Предупреждение -->
+    <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 4px; margin-bottom: 20px; color: #856404;">
+        <strong>⚠️ Внимание!</strong> Восстановление базы данных перезапишет все текущие данные.
+        Убедитесь, что у вас есть свежий бэкап перед восстановлением.
+    </div>
+
+    <!-- Секция создания бэкапов -->
+    <div class="backup-section">
+        <h2>Создать новый бэкап</h2>
+
+        <!-- Полный бэкап -->
+        <div class="backup-form">
+            <h3>Полный бэкап базы данных</h3>
+            <p>Создает полную копию всей базы данных</p>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="full_backup">
+                <button type="submit" class="btn btn-primary">
+                    🗃️ Создать полный бэкап
+                </button>
+            </form>
+        </div>
+
+        <!-- Дневной бэкап -->
+        <div class="backup-form">
+            <h3>Бэкап за определенный день</h3>
+            <p>Создает бэкап данных за выбранную дату</p>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="daily_backup">
+                <div class="form-group">
+                    <label for="backup_date">Выберите дату:</label>
+                    <input type="date" id="backup_date" name="backup_date" required>
+                    <button type="submit" class="btn btn-secondary">
+                        📅 Создать дневной бэкап
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Список существующих бэкапов -->
+    <div class="backup-section">
+        <h2>Существующие бэкапы</h2>
+
+        {% if backups %}
+            <div class="backup-list">
+                {% for backup in backups %}
+                    <div class="backup-item {{ backup.restoration_status }}">
+                        <strong>{{ backup.name }}</strong>
+                        <span class="status-badge" style="background: {{ backup.get_restoration_color }}; color: white;">
+                            {{ backup.get_restoration_status_display }}
+                        </span>
+                        <br>
+                        <small>Файл: {{ backup.backup_file }}</small><br>
+                        <small>Тип: {{ backup.get_backup_type_display }}</small><br>
+                        <small>Дата: {{ backup.backup_date|default:"-" }}</small><br>
+                        <small>Создан: {{ backup.created_at|date:"Y-m-d H:i:s" }}</small><br>
+                        <small>Размер: {{ backup.file_size }}</small><br>
+
+                        {% if backup.restoration_log %}
+                            <div class="log-toggle" onclick="toggleLog({{ backup.id }})">
+                                📋 Показать лог восстановления
+                            </div>
+                            <div id="log-{{ backup.id }}" class="restoration-log">
+                                {{ backup.restoration_log }}
+                            </div>
+                        {% endif %}
+
+                        <div class="backup-actions">
+                            {% if backup.file_exists %}
+                                <a href="javascript:void(0)"
+                                   onclick="confirmRestore({{ backup.id }}, '{{ backup.name|escapejs }}')"
+                                   class="btn btn-success"
+                                   {% if backup.restoration_status == 'in_progress' %}disabled{% endif %}>
+                                    🔄 Восстановить БД
+                                </a>
+                                <a href="/backups/{{ backup.backup_file }}"
+                                   class="btn btn-secondary"
+                                   download>
+                                    ⬇️ Скачать
+                                </a>
+                            {% else %}
+                                <button class="btn btn-danger" disabled>
+                                    ❌ Файл отсутствует
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Бэкапы пока не созданы</p>
+        {% endif %}
+    </div>
+
+    <!-- Кнопка возврата -->
+    <div style="margin-top: 20px;">
+        <a href="{% url 'admin:ticket_backupmanager_changelist' %}" class="btn" style="background: var(--secondary); color: var(--button-fg);">
+            ← Назад к списку бэкапов
         </a>
-    </li>
-    {{ block.super }}
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения -->
+<div id="confirmModal" class="modal">
+    <div class="modal-content">
+        <h3>⚠️ Подтверждение восстановления БД</h3>
+        <p>Вы собираетесь восстановить базу данных из бэкапа: <strong id="backupName"></strong></p>
+        <p><strong>Это действие:</strong></p>
+        <ul>
+            <li>Перезапишет все текущие данные</li>
+            <li>Может занять несколько минут</li>
+            <li>Не может быть отменено</li>
+        </ul>
+        <p style="color: #f44336; font-weight: bold;">
+            ⚠️ Перед восстановлением убедитесь, что у вас есть свежий бэкап текущих данных!
+        </p>
+        <div class="modal-actions">
+            <button onclick="closeModal()" class="btn btn-secondary">Отмена</button>
+            <button onclick="performRestore()" class="btn btn-danger" id="restoreBtn">
+                🔄 Да, восстановить БД
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extrajs %}
+<script src="{% static 'ticket/js/admin/backup-management.js' %}"></script>
 {% endblock %}

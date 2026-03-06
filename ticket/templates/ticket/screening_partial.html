@@ -1,3 +1,4 @@
+{% load static %}
 <div class="screening-details">
     <h2 style="color: #ffcc00; margin-bottom: 20px; text-align: center;">
         Информация о сеансе
@@ -28,12 +29,12 @@
             ЭКРАН
         </div>
 
-        <div id="selected-seats-info-{{ screening.id }}" style="margin: 20px 0; font-size: 20px; font-weight: bold; color: #ffcc00; text-align: center;">
+        <div class="selected-seats-info" id="selected-seats-info-{{ screening.id }}" style="margin: 20px 0; font-size: 20px; font-weight: bold; color: #ffcc00; text-align: center;">
             Выбрано мест: 0
         </div>
 
         {% for row, seats in rows.items %}
-        <div class="row" style="display: flex; justify-content: center; margin-bottom: 10px;">
+        <div class="row" style="display: flex; justify-content: center; margin-bottom: 10px; flex-wrap: wrap;">
             <div class="row-label" style="width: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #ffcc00;">
                 Ряд {{ row }}
             </div>
@@ -42,8 +43,8 @@
                  data-seat-id="{{ seat.id }}"
                  data-row="{{ seat.row }}"
                  data-number="{{ seat.number }}"
-                 onclick="selectSeatPartial(this, {{ screening.id }})"
-                 style="width: 45px; height: 45px; margin: 0 5px; display: flex; justify-content: center; align-items: center; background-color: {% if seat.id in booked_seat_ids %}#f44336{% else %}#4CAF50{% endif %}; color: white; cursor: {% if seat.id in booked_seat_ids %}not-allowed{% else %}pointer{% endif %}; border-radius: 5px; position: relative; transition: all 0.2s; font-weight: bold; user-select: none; opacity: {% if seat.id in booked_seat_ids %}0.7{% else %}1{% endif %};">
+                 onclick="selectSeat(this, {{ screening.id }})"
+                 style="width: 45px; height: 45px; margin: 0 5px 5px 0; display: flex; justify-content: center; align-items: center; background-color: {% if seat.id in booked_seat_ids %}#f44336{% else %}#4CAF50{% endif %}; color: white; cursor: {% if seat.id in booked_seat_ids %}not-allowed{% else %}pointer{% endif %}; border-radius: 5px; position: relative; transition: all 0.2s; font-weight: bold; user-select: none; opacity: {% if seat.id in booked_seat_ids %}0.7{% else %}1{% endif %};">
                 {{ seat.row }}-{{ seat.number }}
                 <span class="seat-number" style="font-size: 10px; position: absolute; bottom: 2px; right: 2px;">
                     {{ seat.number }}
@@ -84,11 +85,21 @@
         <div style="display: flex; gap: 15px; justify-content: center;">
             <a href="{% url 'login' %}?next={{ request.path }}" class="btn-buy" style="
                 background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+                padding: 10px 20px;
+                text-decoration: none;
+                border-radius: 8px;
+                color: white;
+                font-weight: bold;
             ">
                 Войти
             </a>
             <a href="{% url 'register' %}?next={{ request.path }}" class="btn-buy" style="
                 background: linear-gradient(135deg, #4a00e0 0%, #8e2de2 100%);
+                padding: 10px 20px;
+                text-decoration: none;
+                border-radius: 8px;
+                color: white;
+                font-weight: bold;
             ">
                 Регистрация
             </a>
@@ -96,3 +107,23 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+// Функции для работы с местами (используются из screenings.js)
+function selectSeat(seatElement, screeningId) {
+    if (typeof window.selectSeat === 'function') {
+        window.selectSeat(seatElement, screeningId);
+    } else {
+        console.error('selectSeat function not found. Make sure screenings.js is loaded.');
+    }
+}
+
+function validateBookingForm(screeningId) {
+    if (typeof window.validateBookingForm === 'function') {
+        return window.validateBookingForm(screeningId);
+    } else {
+        console.error('validateBookingForm function not found.');
+        return false;
+    }
+}
+</script>

@@ -1,332 +1,74 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Вход в кинотеатр</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-        }
+{% extends "ticket/base.html" %}
+{% load static %}
 
-        body {
-            background-color: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #000 0%, #222 100%);
-        }
+{% block title %}Вход - Кинотеатр Премьера{% endblock %}
 
-        .auth-container {
-            background: rgba(30, 30, 30, 0.9);
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
-            width: 100%;
-            max-width: 450px;
-            padding: 40px;
-            text-align: center;
-            border: 2px solid #ffcc00;
-        }
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ticket/css/user/auth.css' %}">
+{% endblock %}
 
-        .logo {
-            color: #ffcc00;
-            font-size: 36px;
-            margin-bottom: 25px;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
+{% block content %}
+<div class="auth-container">
+    <div class="auth-logo">КИНОТЕАТР ПРЕМЬЕРА</div>
+    <h2 class="auth-title">Вход</h2>
 
-        h2 {
-            color: #fff;
-            margin-bottom: 25px;
-            font-size: 28px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
+    <form method="post">
+        {% csrf_token %}
 
-        label {
-            display: block;
-            color: #ffcc00;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-
-        .btn-guest:hover {
-            background: linear-gradient(135deg, #777 0%, #555 100%) !important;
-            transform: translateY(-2px);
-            box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);
-        }
-
-        .input-with-icon {
-            position: relative;
-        }
-
-        input[type="email"],
-        input[type="text"],
-        input[type="password"] {
-            width: 100%;
-            padding: 14px 45px 14px 15px;
-            border: 2px solid #ff0000;
-            border-radius: 8px;
-            background: rgba(20, 20, 20, 0.8);
-            color: #fff;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-
-        input:focus {
-            border-color: #ffcc00;
-            outline: none;
-            box-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #ffcc00;
-            cursor: pointer;
-            font-size: 18px;
-            padding: 5px;
-            transition: all 0.3s;
-        }
-
-        .password-toggle:hover {
-            color: #ff0000;
-            transform: translateY(-50%) scale(1.1);
-        }
-
-        button[type="submit"] {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 15px;
-        }
-
-        button[type="submit"]:hover {
-            background: linear-gradient(135deg, #cc0000 0%, #ff0000 100%);
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
-        }
-
-        .auth-links {
-            margin-top: 25px;
-            color: #aaa;
-        }
-
-        .auth-links a {
-            color: #ffcc00;
-            text-decoration: none;
-            transition: color 0.3s;
-            font-weight: bold;
-        }
-
-        .auth-links a:hover {
-            color: #ff0000;
-            text-decoration: underline;
-        }
-
-        .messages {
-            margin-bottom: 25px;
-            padding: 15px;
-            border-radius: 8px;
-            background: rgba(255, 0, 0, 0.2);
-            border: 1px solid #ff0000;
-        }
-
-        .messages .error {
-            color: #ff6b6b;
-            list-style: none;
-        }
-
-        .messages .success {
-            color: #4caf50;
-        }
-
-        .messages .info {
-            color: #ffcc00;
-        }
-
-        .form-errors {
-            color: #ff6b6b;
-            margin-top: 5px;
-            font-size: 14px;
-        }
-        .admin-panel {
-            margin-top: 25px;
-            padding-top: 15px;
-            border-top: 1px solid #444;
-        }
-
-        .admin-link {
-            display: block;
-            background: rgba(255, 204, 0, 0.1);
-            color: #ffcc00;
-            text-align: center;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #ffcc00;
-            text-decoration: none;
-            transition: all 0.3s;
-            font-weight: bold;
-        }
-
-        .admin-link:hover {
-            background: rgba(255, 204, 0, 0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 3px 10px rgba(255, 204, 0, 0.3);
-        }
-    </style>
-</head>
-<body>
-    <div class="auth-container">
-        <div class="logo">КИНОТЕАТР ПРЕМЬЕРА</div>
-        <h2>Вход</h2>
-
-        {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-            <div class="{{ message.tags }}">{{ message }}</div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <form method="post">
-            {% csrf_token %}
-
-            <div class="form-group">
-                <label for="id_email">Email</label>
-                {{ form.email }}
-                {% if form.email.errors %}
-                <div class="form-errors">{{ form.email.errors }}</div>
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                <label for="id_password">Пароль</label>
-                <div class="input-with-icon">
-                    <input
-                        type="password"
-                        name="password"
-                        id="id_password"
-                        class="form-control"
-                        placeholder="Ваш пароль"
-                        required
-                    >
-                    <button type="button" class="password-toggle" onclick="togglePassword('id_password', this)">
-                        👁️
-                    </button>
-                </div>
-                {% if form.password.errors %}
-                <div class="form-errors">{{ form.password.errors }}</div>
-                {% endif %}
-            </div>
-
-            <button type="submit">Войти</button>
-        </form>
-
-        <div class="auth-links">
-            <p>Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a></p>
-            <p><a href="{% url 'password_reset_request' %}">Забыли пароль?</a></p>
-            <div class="admin-panel">
-                <a href="/admin/" class="admin-link">Панель администратора</a>
-            </div>
+        <div class="form-group">
+            <label for="id_email">Email</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+            <div class="form-errors">{{ form.email.errors }}</div>
+            {% endif %}
         </div>
 
-        <div class="guest-section" style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #444;">
-            <p style="color: #aaa; margin-bottom: 15px; text-align: center;">Или продолжите как гость</p>
-            <a href="{% url 'home' %}" class="btn-guest" style="
-                display: block;
-                background: linear-gradient(135deg, #666 0%, #444 100%);
-                color: #fff;
-                text-align: center;
-                padding: 12px;
-                border-radius: 8px;
-                text-decoration: none;
-                font-weight: bold;
-                transition: all 0.3s;
-            ">Продолжить как гость</a>
+        <div class="form-group">
+            <label for="id_password">Пароль</label>
+            <div class="input-with-icon">
+                <input
+                    type="password"
+                    name="password"
+                    id="id_password"
+                    class="form-control"
+                    placeholder="Ваш пароль"
+                    required
+                >
+                <button type="button" class="password-toggle" onclick="togglePassword('id_password', this)">
+                    👁️
+                </button>
+            </div>
+            {% if form.password.errors %}
+            <div class="form-errors">{{ form.password.errors }}</div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="auth-button">Войти</button>
+    </form>
+
+    <div class="auth-links">
+        <p>Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a></p>
+        <p><a href="{% url 'password_reset_request' %}">Забыли пароль?</a></p>
+        <div class="admin-panel">
+            <a href="/admin/" class="admin-link">Панель администратора</a>
         </div>
     </div>
 
-    <script>
-        // Функция переключения видимости пароля
-        function togglePassword(inputId, button) {
-            const passwordInput = document.getElementById(inputId);
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                button.textContent = '🔒';
-            } else {
-                passwordInput.type = 'password';
-                button.textContent = '👁️';
-            }
-        }
+    <div class="guest-section">
+        <p style="color: #aaa; margin-bottom: 15px;">Или продолжите как гость</p>
+        <a href="{% url 'home' %}" class="btn-guest">Продолжить как гость</a>
+    </div>
+</div>
+{% endblock %}
 
-        // Добавляем обработчики для существующих полей формы
-        document.addEventListener('DOMContentLoaded', function() {
-            const passwordInput = document.getElementById('id_password');
-            const emailInput = document.querySelector('input[name="email"]');
-
-            // Если поля уже есть (от Django формы), добавляем кнопку просмотра
-            if (passwordInput && !passwordInput.parentNode.querySelector('.password-toggle')) {
-                const toggleButton = document.createElement('button');
-                toggleButton.type = 'button';
-                toggleButton.className = 'password-toggle';
-                toggleButton.innerHTML = '👁️';
-                toggleButton.onclick = function() {
-                    togglePassword('id_password', this);
-                };
-
-                const inputContainer = document.createElement('div');
-                inputContainer.className = 'input-with-icon';
-                passwordInput.parentNode.insertBefore(inputContainer, passwordInput);
-                inputContainer.appendChild(passwordInput);
-                inputContainer.appendChild(toggleButton);
-            }
-
-            // Стилизуем email поле, если оно есть
-            if (emailInput) {
-                emailInput.style.padding = '14px 15px';
-                emailInput.style.width = '100%';
-                emailInput.style.border = '2px solid #ff0000';
-                emailInput.style.borderRadius = '8px';
-                emailInput.style.background = 'rgba(20, 20, 20, 0.8)';
-                emailInput.style.color = '#fff';
-                emailInput.style.fontSize = '16px';
-                emailInput.style.transition = 'all 0.3s';
-
-                emailInput.addEventListener('focus', function() {
-                    this.style.borderColor = '#ffcc00';
-                    this.style.outline = 'none';
-                    this.style.boxShadow = '0 0 10px rgba(255, 204, 0, 0.5)';
-                });
-
-                emailInput.addEventListener('blur', function() {
-                    this.style.borderColor = '#ff0000';
-                    this.style.boxShadow = 'none';
-                });
-            }
-        });
-    </script>
-</body>
-</html>
+{% block extra_js %}
+<script src="{% static 'ticket/js/user/auth.js' %}"></script>
+{% endblock %}

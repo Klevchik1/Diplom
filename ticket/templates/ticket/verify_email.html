@@ -1,150 +1,17 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Подтверждение email - Кинотеатр Премьера</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-        }
+{% extends "ticket/base.html" %}
+{% load static %}
 
-        body {
-            background-color: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #000 0%, #222 100%);
-        }
+{% block title %}Подтверждение email - Кинотеатр Премьера{% endblock %}
 
-        .auth-container {
-            background: rgba(30, 30, 30, 0.9);
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
-            width: 100%;
-            max-width: 500px;
-            padding: 40px;
-            text-align: center;
-            border: 2px solid #ffcc00;
-        }
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ticket/css/user/auth.css' %}">
+{% endblock %}
 
-        .logo {
-            color: #ffcc00;
-            font-size: 36px;
-            margin-bottom: 25px;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
+{% block content %}
+<div class="auth-container">
+    <div class="auth-logo">КИНОТЕАТР ПРЕМЬЕРА</div>
+    <h2 class="auth-title">Подтверждение Email</h2>
 
-        h2 {
-            color: #fff;
-            margin-bottom: 15px;
-            font-size: 28px;
-        }
-
-        .email-notice {
-            color: #ffcc00;
-            margin-bottom: 25px;
-            font-size: 16px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        label {
-            display: block;
-            color: #ffcc00;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 14px 15px;
-            border: 2px solid #ff0000;
-            border-radius: 8px;
-            background: rgba(20, 20, 20, 0.8);
-            color: #fff;
-            font-size: 18px;
-            text-align: center;
-            letter-spacing: 5px;
-            transition: all 0.3s;
-        }
-
-        input:focus {
-            border-color: #ffcc00;
-            outline: none;
-            box-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
-        }
-
-        button[type="submit"] {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 15px;
-        }
-
-        button[type="submit"]:hover {
-            background: linear-gradient(135deg, #cc0000 0%, #ff0000 100%);
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
-        }
-
-        .resend-link {
-            margin-top: 20px;
-            color: #aaa;
-        }
-
-        .resend-link a {
-            color: #ffcc00;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .resend-link a:hover {
-            color: #ff0000;
-            text-decoration: underline;
-        }
-
-        .messages {
-            margin-bottom: 25px;
-            padding: 15px;
-            border-radius: 8px;
-            background: rgba(255, 0, 0, 0.2);
-            border: 1px solid #ff0000;
-        }
-
-        .messages .success {
-            color: #4caf50;
-        }
-
-        .messages .error {
-            color: #ff6b6b;
-        }
-
-        .code-hint {
-            color: #aaa;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-    </style>
-</head>
-<body>
-    <!-- В начало verify_email.html после сообщений добавьте: -->
     {% if debug %}
     <div style="background: #ff6b6b; color: white; padding: 10px; margin: 10px 0; border-radius: 5px;">
         <strong>Отладка сессии:</strong><br>
@@ -153,65 +20,49 @@
         Email: {{ request.session.pending_registration_email }}
     </div>
     {% endif %}
-    <div class="auth-container">
-        <div class="logo">КИНОТЕАТР ПРЕМЬЕРА</div>
-        <h2>Подтверждение Email</h2>
 
-        {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-            <div class="{{ message.tags }}">{{ message }}</div>
-            {% endfor %}
-        </div>
-        {% endif %}
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-        <form method="post">
-            {% csrf_token %}
+    <form method="post">
+        {% csrf_token %}
 
-            <div class="form-group">
-                <label for="verification_code">Код подтверждения</label>
-                <input
-                    type="text"
-                    name="verification_code"
-                    id="verification_code"
-                    maxlength="6"
-                    placeholder="000000"
-                    required
-                    autocomplete="off"
-                    autofocus
-                >
-                <div class="code-hint">
-                    Введите 6-значный код из письма
-                </div>
+        <div class="form-group">
+            <label for="verification_code">Код подтверждения</label>
+            <input
+                type="text"
+                name="verification_code"
+                id="verification_code"
+                class="code-input"
+                maxlength="6"
+                placeholder="000000"
+                required
+                autocomplete="off"
+                autofocus
+            >
+            <div class="code-hint">
+                Введите 6-значный код из письма
             </div>
-
-            <button type="submit">Подтвердить Email</button>
-        </form>
-
-        <div class="resend-link">
-            <p>Не получили код? <a href="{% url 'resend_verification_code' %}">Отправить повторно</a></p>
         </div>
 
-        <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #444;">
-            <a href="{% url 'register' %}" style="color: #ffcc00; text-decoration: none;">← Вернуться к регистрации</a>
-        </div>
+        <button type="submit" class="auth-button">Подтвердить Email</button>
+    </form>
+
+    <div class="resend-link" style="margin-top: 20px;">
+        <p>Не получили код? <a href="{% url 'resend_verification_code' %}" style="color: #ffcc00;">Отправить повторно</a></p>
     </div>
 
-    <script>
-        // Автофокус на поле ввода кода
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('verification_code').focus();
-        });
+    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #444;">
+        <a href="{% url 'register' %}" style="color: #ffcc00; text-decoration: none;">← Вернуться к регистрации</a>
+    </div>
+</div>
+{% endblock %}
 
-        // Ограничение ввода только цифр
-        document.getElementById('verification_code').addEventListener('input', function(e) {
-            this.value = this.value.replace(/\D/g, '');
-
-            // Автопереход при вводе 6 цифр
-            if (this.value.length === 6) {
-                this.form.submit();
-            }
-        });
-    </script>
-</body>
-</html>
+{% block extra_js %}
+<script src="{% static 'ticket/js/user/auth.js' %}"></script>
+{% endblock %}

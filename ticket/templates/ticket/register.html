@@ -1,736 +1,200 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Регистрация в кинотеатре</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-        }
+{% extends "ticket/base.html" %}
+{% load static %}
 
-        body {
-            background-color: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #000 0%, #222 100%);
-        }
+{% block title %}Регистрация - Кинотеатр Премьера{% endblock %}
 
-        .auth-container {
-            background: rgba(30, 30, 30, 0.9);
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
-            width: 100%;
-            max-width: 500px;
-            padding: 40px;
-            text-align: center;
-            border: 2px solid #ffcc00;
-        }
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ticket/css/user/auth.css' %}">
+{% endblock %}
 
-        .logo {
-            color: #ffcc00;
-            font-size: 36px;
-            margin-bottom: 25px;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
+{% block content %}
+<div class="auth-container">
+    <div class="auth-logo">КИНОТЕАТР ПРЕМЬЕРА</div>
+    <h2 class="auth-title">Регистрация</h2>
 
-        h2 {
-            color: #fff;
-            margin-bottom: 25px;
-            font-size: 28px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
-            position: relative;
-        }
-
-        label {
-            display: block;
-            color: #ffcc00;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-
-        .input-with-icon {
-            position: relative;
-        }
-
-        input[type="email"],
-        input[type="text"],
-        input[type="password"] {
-            width: 100%;
-            padding: 14px 45px 14px 15px;
-            border: 2px solid #ff0000;
-            border-radius: 8px;
-            background: rgba(20, 20, 20, 0.8);
-            color: #fff;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-
-        input:focus {
-            border-color: #ffcc00;
-            outline: none;
-            box-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
-        }
-
-        .error-field {
-            border-color: #ff6b6b !important;
-            box-shadow: 0 0 10px rgba(255, 107, 107, 0.5) !important;
-            animation: shake 0.5s ease;
-        }
-
-        .valid-field {
-            border-color: #4CAF50 !important;
-            box-shadow: 0 0 10px rgba(76, 175, 80, 0.3) !important;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #ffcc00;
-            cursor: pointer;
-            font-size: 18px;
-            padding: 5px;
-            transition: all 0.3s;
-            z-index: 2;
-        }
-
-        .password-toggle:hover {
-            color: #ff0000;
-            transform: translateY(-50%) scale(1.1);
-        }
-
-        button[type="submit"] {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 15px;
-        }
-
-        button[type="submit"]:hover:not(:disabled) {
-            background: linear-gradient(135deg, #cc0000 0%, #ff0000 100%);
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
-        }
-
-        button[type="submit"]:disabled {
-            background: linear-gradient(135deg, #666 0%, #444 100%) !important;
-            cursor: not-allowed !important;
-            opacity: 0.6 !important;
-            transform: none !important;
-            box-shadow: none !important;
-        }
-
-        .auth-links {
-            margin-top: 25px;
-            color: #aaa;
-        }
-
-        .auth-links a {
-            color: #ffcc00;
-            text-decoration: none;
-            transition: color 0.3s;
-            font-weight: bold;
-        }
-
-        .auth-links a:hover {
-            color: #ff0000;
-            text-decoration: underline;
-        }
-
-        .messages {
-            margin-bottom: 25px;
-            padding: 15px;
-            border-radius: 8px;
-            background: rgba(255, 0, 0, 0.2);
-            border: 1px solid #ff0000;
-        }
-
-        .messages .error {
-            color: #ff6b6b;
-            list-style: none;
-        }
-
-        .field-error {
-            color: #ff6b6b;
-            font-size: 14px;
-            margin-top: 5px;
-            padding: 5px 10px;
-            background: rgba(255, 107, 107, 0.1);
-            border-radius: 4px;
-            border-left: 3px solid #ff6b6b;
-            animation: fadeIn 0.3s ease;
-            display: none;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .form-errors {
-            color: #ff6b6b;
-            margin-top: 5px;
-            font-size: 14px;
-            background: rgba(255, 107, 107, 0.1);
-            padding: 8px;
-            border-radius: 4px;
-            border-left: 3px solid #ff6b6b;
-        }
-
-        .help-text {
-            color: #ffcc00;
-            font-size: 14px;
-            margin-top: 5px;
-            padding: 8px;
-            background: rgba(20, 20, 20, 0.6);
-            border-radius: 5px;
-        }
-
-        .btn-guest:hover {
-            background: linear-gradient(135deg, #777 0%, #555 100%) !important;
-            transform: translateY(-2px);
-            box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);
-        }
-
-        .help-text ul {
-            padding-left: 20px;
-        }
-
-        .help-text li {
-            margin-bottom: 5px;
-        }
-
-        .admin-panel {
-            margin-top: 25px;
-            padding-top: 15px;
-            border-top: 1px solid #444;
-        }
-
-        .admin-link {
-            display: block;
-            background: rgba(255, 204, 0, 0.1);
-            color: #ffcc00;
-            text-align: center;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #ffcc00;
-            text-decoration: none;
-            transition: all 0.3s;
-            font-weight: bold;
-        }
-
-        .admin-link:hover {
-            background: rgba(255, 204, 0, 0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 3px 10px rgba(255, 204, 0, 0.3);
-        }
-
-        .non-field-errors {
-            background: rgba(255, 107, 107, 0.1);
-            color: #ff6b6b;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #ff6b6b;
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .non-field-errors ul {
-            padding-left: 20px;
-            margin: 0;
-        }
-
-        .non-field-errors li {
-            margin-bottom: 5px;
-        }
-    </style>
-</head>
-<body>
-    <div class="auth-container">
-        <div class="logo">КИНОТЕАТР ПРЕМЬЕРА</div>
-        <h2>Регистрация</h2>
-
-        {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-            <div class="{{ message.tags }}">{{ message }}</div>
+    {% if form.non_field_errors %}
+    <div class="non-field-errors">
+        <ul>
+            {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
             {% endfor %}
-        </div>
-        {% endif %}
+        </ul>
+    </div>
+    {% endif %}
 
-        <!-- Ошибки не связанные с конкретными полями -->
-        {% if form.non_field_errors %}
-        <div class="non-field-errors">
-            <ul>
-                {% for error in form.non_field_errors %}
-                <li>{{ error }}</li>
+    <form method="post" id="registrationForm">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="id_email">Email</label>
+            <input
+                type="email"
+                name="email"
+                id="id_email"
+                class="form-control {% if form.email.errors %}error-field{% endif %}"
+                placeholder="Ваш email"
+                value="{{ form.email.value|default:'' }}"
+                required
+                data-validate="email"
+            >
+            <div class="field-error" id="email_error"></div>
+            {% if form.email.errors %}
+            <div class="form-errors">
+                {% for error in form.email.errors %}
+                <div>{{ error }}</div>
                 {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-
-        <form method="post" id="registrationForm">
-            {% csrf_token %}
-
-            <div class="form-group">
-                <label for="id_email">Email</label>
-                <input
-                    type="email"
-                    name="email"
-                    id="id_email"
-                    class="form-control {% if form.email.errors %}error-field{% endif %}"
-                    placeholder="Ваш email"
-                    value="{{ form.email.value|default:'' }}"
-                    required
-                    data-validate="email"
-                >
-                <div class="field-error" id="email_error"></div>
-                {% if form.email.errors %}
-                <div class="form-errors">
-                    {% for error in form.email.errors %}
-                    <div>{{ error }}</div>
-                    {% endfor %}
-                </div>
-                {% endif %}
             </div>
-
-            <div class="form-group">
-                <label for="id_name">Имя</label>
-                <input
-                    type="text"
-                    name="name"
-                    id="id_name"
-                    class="form-control {% if form.name.errors %}error-field{% endif %}"
-                    placeholder="Ваше имя"
-                    value="{{ form.name.value|default:'' }}"
-                    required
-                    data-validate="name"
-                    minlength="2"
-                    maxlength="30"
-                >
-                <div class="field-error" id="name_error"></div>
-                {% if form.name.errors %}
-                <div class="form-errors">
-                    {% for error in form.name.errors %}
-                    <div>{{ error }}</div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                <label for="id_surname">Фамилия</label>
-                <input
-                    type="text"
-                    name="surname"
-                    id="id_surname"
-                    class="form-control {% if form.surname.errors %}error-field{% endif %}"
-                    placeholder="Ваша фамилия"
-                    value="{{ form.surname.value|default:'' }}"
-                    required
-                    data-validate="surname"
-                    minlength="2"
-                    maxlength="30"
-                >
-                <div class="field-error" id="surname_error"></div>
-                {% if form.surname.errors %}
-                <div class="form-errors">
-                    {% for error in form.surname.errors %}
-                    <div>{{ error }}</div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                <label for="id_number">Телефон</label>
-                <input
-                    type="text"
-                    name="number"
-                    id="id_number"
-                    class="form-control {% if form.number.errors %}error-field{% endif %}"
-                    placeholder="+7 (XXX) XXX-XX-XX"
-                    value="{{ form.number.value|default:'' }}"
-                    required
-                    data-validate="phone"
-                >
-                <div class="field-error" id="number_error"></div>
-                {% if form.number.errors %}
-                <div class="form-errors">
-                    {% for error in form.number.errors %}
-                    <div>{{ error }}</div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                <label for="id_password1">Пароль</label>
-                <div class="input-with-icon">
-                    <input
-                        type="password"
-                        name="password1"
-                        id="id_password1"
-                        class="form-control {% if form.password1.errors %}error-field{% endif %}"
-                        placeholder="Придумайте пароль"
-                        required
-                        data-validate="password"
-                        minlength="8"
-                    >
-                    <button type="button" class="password-toggle" onclick="togglePassword('id_password1', this)">
-                        👁️
-                    </button>
-                </div>
-                <div class="field-error" id="password1_error"></div>
-                {% if form.password1.errors %}
-                <div class="form-errors">
-                    {% for error in form.password1.errors %}
-                    <div>{{ error }}</div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-
-            <div class="form-group">
-                <label for="id_password2">Подтверждение пароля</label>
-                <div class="input-with-icon">
-                    <input
-                        type="password"
-                        name="password2"
-                        id="id_password2"
-                        class="form-control {% if form.password2.errors %}error-field{% endif %}"
-                        placeholder="Повторите пароль"
-                        required
-                        data-validate="confirm"
-                    >
-                    <button type="button" class="password-toggle" onclick="togglePassword('id_password2', this)">
-                        👁️
-                    </button>
-                </div>
-                <div class="field-error" id="password2_error"></div>
-                {% if form.password2.errors %}
-                <div class="form-errors">
-                    {% for error in form.password2.errors %}
-                    <div>{{ error }}</div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-
-            <button type="submit" id="submitBtn">Зарегистрироваться</button>
-        </form>
-
-        <div class="auth-links">
-            <p>Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
-            <div class="admin-panel">
-                <a href="/admin/" class="admin-link">Панель администратора</a>
-            </div>
+            {% endif %}
         </div>
 
-        <div class="guest-section" style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #444;">
-            <p style="color: #aaa; margin-bottom: 15px; text-align: center;">Или продолжите как гость</p>
-            <a href="{% url 'home' %}" class="btn-guest" style="
-                display: block;
-                background: linear-gradient(135deg, #666 0%, #444 100%);
-                color: #fff;
-                text-align: center;
-                padding: 12px;
-                border-radius: 8px;
-                text-decoration: none;
-                font-weight: bold;
-                transition: all 0.3s;
-            ">Продолжить как гость</a>
+        <div class="form-group">
+            <label for="id_name">Имя</label>
+            <input
+                type="text"
+                name="name"
+                id="id_name"
+                class="form-control {% if form.name.errors %}error-field{% endif %}"
+                placeholder="Ваше имя"
+                value="{{ form.name.value|default:'' }}"
+                required
+                data-validate="name"
+                minlength="2"
+                maxlength="30"
+            >
+            <div class="field-error" id="name_error"></div>
+            {% if form.name.errors %}
+            <div class="form-errors">
+                {% for error in form.name.errors %}
+                <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="id_surname">Фамилия</label>
+            <input
+                type="text"
+                name="surname"
+                id="id_surname"
+                class="form-control {% if form.surname.errors %}error-field{% endif %}"
+                placeholder="Ваша фамилия"
+                value="{{ form.surname.value|default:'' }}"
+                required
+                data-validate="surname"
+                minlength="2"
+                maxlength="30"
+            >
+            <div class="field-error" id="surname_error"></div>
+            {% if form.surname.errors %}
+            <div class="form-errors">
+                {% for error in form.surname.errors %}
+                <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="id_number">Телефон</label>
+            <input
+                type="text"
+                name="number"
+                id="id_number"
+                class="form-control {% if form.number.errors %}error-field{% endif %}"
+                placeholder="+7 (XXX) XXX-XX-XX"
+                value="{{ form.number.value|default:'' }}"
+                required
+                data-validate="phone"
+            >
+            <div class="field-error" id="number_error"></div>
+            {% if form.number.errors %}
+            <div class="form-errors">
+                {% for error in form.number.errors %}
+                <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="id_password1">Пароль</label>
+            <div class="input-with-icon">
+                <input
+                    type="password"
+                    name="password1"
+                    id="id_password1"
+                    class="form-control {% if form.password1.errors %}error-field{% endif %}"
+                    placeholder="Придумайте пароль"
+                    required
+                    data-validate="password"
+                    minlength="8"
+                >
+                <button type="button" class="password-toggle" onclick="togglePassword('id_password1', this)">
+                    👁️
+                </button>
+            </div>
+            <div class="field-error" id="password1_error"></div>
+            {% if form.password1.errors %}
+            <div class="form-errors">
+                {% for error in form.password1.errors %}
+                <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="id_password2">Подтверждение пароля</label>
+            <div class="input-with-icon">
+                <input
+                    type="password"
+                    name="password2"
+                    id="id_password2"
+                    class="form-control {% if form.password2.errors %}error-field{% endif %}"
+                    placeholder="Повторите пароль"
+                    required
+                    data-validate="confirm"
+                >
+                <button type="button" class="password-toggle" onclick="togglePassword('id_password2', this)">
+                    👁️
+                </button>
+            </div>
+            <div class="field-error" id="password2_error"></div>
+            {% if form.password2.errors %}
+            <div class="form-errors">
+                {% for error in form.password2.errors %}
+                <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="auth-button" id="submitBtn">Зарегистрироваться</button>
+    </form>
+
+    <div class="auth-links">
+        <p>Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
+        <div class="admin-panel">
+            <a href="/admin/" class="admin-link">Панель администратора</a>
         </div>
     </div>
 
-    <script>
-        // Форматирование номера телефона в реальном времени
-        document.getElementById('id_number').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
+    <div class="guest-section">
+        <p style="color: #aaa; margin-bottom: 15px;">Или продолжите как гость</p>
+        <a href="{% url 'home' %}" class="btn-guest">Продолжить как гость</a>
+    </div>
+</div>
+{% endblock %}
 
-            if (value.startsWith('7') || value.startsWith('8')) {
-                value = value.substring(1);
-            }
-
-            if (value.length > 0) {
-                value = '+7 (' + value;
-
-                if (value.length > 7) {
-                    value = value.substring(0, 7) + ') ' + value.substring(7);
-                }
-                if (value.length > 12) {
-                    value = value.substring(0, 12) + '-' + value.substring(12);
-                }
-                if (value.length > 15) {
-                    value = value.substring(0, 15) + '-' + value.substring(15);
-                }
-            }
-
-            e.target.value = value;
-            validateField(e.target);
-        });
-
-        // Функция переключения видимости пароля
-        function togglePassword(inputId, button) {
-            const passwordInput = document.getElementById(inputId);
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                button.textContent = '🔒';
-            } else {
-                passwordInput.type = 'password';
-                button.textContent = '👁️';
-            }
-        }
-
-        // Добавляем класс ошибки при загрузке страницы, если есть ошибки
-        document.addEventListener('DOMContentLoaded', function() {
-            const errorFields = document.querySelectorAll('.error-field');
-            errorFields.forEach(field => {
-                field.style.borderColor = '#ff6b6b';
-                field.style.boxShadow = '0 0 10px rgba(255, 107, 107, 0.5)';
-            });
-
-            // Инициализация динамической валидации
-            initializeValidation();
-        });
-
-        // ============ ДИНАМИЧЕСКАЯ ВАЛИДАЦИЯ ============
-
-        function initializeValidation() {
-            const form = document.getElementById('registrationForm');
-            const submitBtn = document.getElementById('submitBtn');
-            const fields = form.querySelectorAll('[data-validate]');
-
-            // Изначально блокируем кнопку
-            submitBtn.disabled = true;
-            submitBtn.style.opacity = '0.6';
-            submitBtn.style.cursor = 'not-allowed';
-
-            // Валидаторы для каждого типа поля
-            const validators = {
-                email: function(value) {
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!value.trim()) return 'Email обязателен для заполнения';
-                    if (!emailRegex.test(value)) return 'Введите корректный email адрес';
-                    if (value.length > 100) return 'Email не должен превышать 100 символов';
-                    return null;
-                },
-
-                name: function(value) {
-                    const nameRegex = /^[а-яА-Яa-zA-Z\- ]+$/;
-                    if (!value.trim()) return 'Имя обязательно для заполнения';
-                    if (value.length < 2) return 'Имя должно содержать минимум 2 символа';
-                    if (value.length > 30) return 'Имя не должно превышать 30 символов';
-                    if (!nameRegex.test(value)) return 'Имя может содержать только буквы и дефисы';
-                    return null;
-                },
-
-                surname: function(value) {
-                    const surnameRegex = /^[а-яА-Яa-zA-Z\- ]+$/;
-                    if (!value.trim()) return 'Фамилия обязательна для заполнения';
-                    if (value.length < 2) return 'Фамилия должна содержать минимум 2 символа';
-                    if (value.length > 30) return 'Фамилия не должна превышать 30 символов';
-                    if (!surnameRegex.test(value)) return 'Фамилия может содержать только буквы и дефисы';
-                    return null;
-                },
-
-                phone: function(value) {
-                    if (!value.trim()) return 'Телефон обязателен для заполнения';
-
-                    // Проверяем формат +7 (999) 999-99-99
-                    const phoneRegex = /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/;
-                    if (!phoneRegex.test(value)) {
-                        return 'Формат: +7 (999) 123-45-67';
-                    }
-
-                    // Проверяем длину (11 цифр без +7 и форматирования)
-                    const cleanNumber = value.replace(/\D/g, '');
-                    if (cleanNumber.length !== 11) {
-                        return 'Номер должен содержать 11 цифр';
-                    }
-
-                    return null;
-                },
-
-                password: function(value) {
-                    if (!value.trim()) return 'Пароль обязателен для заполнения';
-                    if (value.length < 8) return 'Пароль должен содержать минимум 8 символов';
-                    if (/^\d+$/.test(value)) return 'Пароль не должен состоять только из цифр';
-                    if (value.toLowerCase() === 'password' ||
-                        value.toLowerCase() === '12345678' ||
-                        value.toLowerCase() === 'qwertyui') {
-                        return 'Пароль слишком простой';
-                    }
-                    return null;
-                },
-
-                confirm: function(value) {
-                    const password = document.getElementById('id_password1').value;
-                    if (!value.trim()) return 'Подтвердите пароль';
-                    if (value !== password) return 'Пароли не совпадают';
-                    return null;
-                }
-            };
-
-            // Функция проверки поля
-            function validateField(field) {
-                const validatorType = field.getAttribute('data-validate');
-                const value = field.value;
-                const validator = validators[validatorType];
-                const errorElement = document.getElementById(field.name + '_error');
-
-                if (!validator) return true;
-
-                const error = validator(value);
-
-                if (error) {
-                    // Показываем ошибку
-                    showError(field, errorElement, error);
-                    return false;
-                } else {
-                    // Очищаем ошибку
-                    clearError(field, errorElement);
-                    return true;
-                }
-            }
-
-            // Показать ошибку
-            function showError(field, errorElement, message) {
-                errorElement.textContent = message;
-                errorElement.style.display = 'block';
-                field.classList.remove('valid-field');
-                field.classList.add('error-field');
-            }
-
-            // Очистить ошибку
-            function clearError(field, errorElement) {
-                errorElement.textContent = '';
-                errorElement.style.display = 'none';
-                field.classList.remove('error-field');
-                field.classList.add('valid-field');
-
-                // Убираем класс valid-field через 2 секунды
-                setTimeout(() => {
-                    field.classList.remove('valid-field');
-                }, 2000);
-            }
-
-            // Проверить всю форму
-            function validateForm() {
-                let isValid = true;
-
-                fields.forEach(field => {
-                    if (!validateField(field)) {
-                        isValid = false;
-                    }
-                });
-
-                // Обновляем состояние кнопки
-                submitBtn.disabled = !isValid;
-                submitBtn.style.opacity = isValid ? '1' : '0.6';
-                submitBtn.style.cursor = isValid ? 'pointer' : 'not-allowed';
-
-                return isValid;
-            }
-
-            // Добавляем события валидации для каждого поля
-            fields.forEach(field => {
-                // Валидация при вводе (с задержкой для лучшего UX)
-                let timeout;
-                field.addEventListener('input', function() {
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => {
-                        validateField(this);
-                        validateForm();
-                    }, 300);
-                });
-
-                // Валидация при потере фокуса
-                field.addEventListener('blur', function() {
-                    validateField(this);
-                    validateForm();
-                });
-
-                // Валидация при изменении
-                field.addEventListener('change', function() {
-                    validateField(this);
-                    validateForm();
-                });
-            });
-
-            // Особые проверки для паролей
-            const passwordField = document.getElementById('id_password1');
-            const confirmField = document.getElementById('id_password2');
-
-            if (passwordField && confirmField) {
-                passwordField.addEventListener('input', function() {
-                    // При изменении основного пароля проверяем подтверждение
-                    validateField(passwordField);
-                    validateField(confirmField);
-                    validateForm();
-                });
-
-                confirmField.addEventListener('input', function() {
-                    validateField(confirmField);
-                    validateForm();
-                });
-            }
-
-            // Валидация при отправке формы
-            form.addEventListener('submit', function(e) {
-                if (!validateForm()) {
-                    e.preventDefault();
-
-                    // Показываем все ошибки
-                    fields.forEach(field => {
-                        if (field.classList.contains('error-field')) {
-                            validateField(field);
-                        }
-                    });
-
-                    // Фокус на первое поле с ошибкой
-                    const firstError = form.querySelector('.error-field');
-                    if (firstError) {
-                        firstError.focus();
-                    }
-
-                    return false;
-                }
-            });
-
-            // Начальная проверка формы
-            validateForm();
-        }
-    </script>
-</body>
-</html>
+{% block extra_js %}
+<script src="{% static 'ticket/js/user/auth.js' %}"></script>
+{% endblock %}

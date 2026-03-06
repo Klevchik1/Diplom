@@ -1,0 +1,439 @@
+/* ===== ОСНОВНЫЕ ПЕРЕМЕННЫЕ ДЛЯ АДМИНКИ ===== */
+:root {
+    --cinema-red: #ff0000;
+    --cinema-dark-red: #cc0000;
+    --cinema-yellow: #ffcc00;
+    --cinema-purple: #4a00e0;
+    --cinema-light-purple: #8e2de2;
+    --cinema-black: #000000;
+    --cinema-dark-gray: #222222;
+    --cinema-card: rgba(30, 30, 30, 0.95);
+    --cinema-white: #ffffff;
+    --cinema-gray: #aaaaaa;
+
+    /* Переопределение Django */
+    --primary: var(--cinema-red);
+    --secondary: var(--cinema-purple);
+    --accent: var(--cinema-yellow);
+    --body-bg: var(--cinema-black);
+    --body-fg: var(--cinema-white);
+    --header-bg: rgba(20, 20, 20, 0.98);
+    --header-color: var(--cinema-yellow);
+    --header-link-color: var(--cinema-yellow);
+    --breadcrumbs-bg: rgba(30, 30, 30, 0.9);
+    --darkened-bg: rgba(40, 40, 40, 0.9);
+    --border-color: var(--cinema-red);
+    --button-bg: var(--cinema-red);
+    --button-hover-bg: var(--cinema-dark-red);
+    --default-button-bg: var(--cinema-purple);
+    --default-button-hover-bg: var(--cinema-light-purple);
+    --link-fg: var(--cinema-yellow);
+    --link-hover-color: var(--cinema-red);
+    --link-selected-fg: var(--cinema-white);
+}
+
+/* ===== СБРОС И БАЗОВЫЕ СТИЛИ ===== */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(135deg, var(--cinema-black) 0%, var(--cinema-dark-gray) 100%) !important;
+    color: var(--cinema-white) !important;
+    font-family: 'Arial', sans-serif !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* ===== ШАПКА ===== */
+#header {
+    background: var(--header-bg) !important;
+    color: var(--cinema-yellow) !important;
+    border-bottom: 2px solid var(--cinema-yellow) !important;
+    height: 50px !important;
+    padding: 0 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    box-shadow: 0 2px 10px rgba(255, 0, 0, 0.2) !important;
+    position: relative !important;
+    z-index: 1000 !important;
+}
+
+#branding {
+    display: flex !important;
+    align-items: center !important;
+    height: 100% !important;
+}
+
+#site-name {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 18px !important;
+    font-weight: bold !important;
+    letter-spacing: 0.5px !important;
+}
+
+#site-name a {
+    color: var(--cinema-yellow) !important;
+    text-decoration: none !important;
+    padding: 8px 15px !important;
+    background: rgba(255, 0, 0, 0.2) !important;
+    border-radius: 6px !important;
+    border: 1px solid var(--cinema-yellow) !important;
+    display: inline-block !important;
+    transition: all 0.3s ease !important;
+    line-height: 1.2 !important;
+}
+
+#site-name a:hover {
+    background: rgba(255, 0, 0, 0.4) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 8px rgba(255, 0, 0, 0.3) !important;
+}
+
+/* ===== ПОЛЬЗОВАТЕЛЬСКОЕ МЕНЮ ===== */
+#header #user-tools {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 12px !important;
+    text-align: right !important;
+}
+
+#header #user-tools br {
+    display: none !important;
+}
+
+#header #user-tools a {
+    color: var(--cinema-yellow) !important;
+    text-decoration: none !important;
+    padding: 5px 10px !important;
+    background: rgba(255, 0, 0, 0.2) !important;
+    border-radius: 4px !important;
+    margin-left: 5px !important;
+    font-size: 12px !important;
+    display: inline-block !important;
+    line-height: 1.2 !important;
+    border: 1px solid transparent !important;
+    transition: all 0.3s ease !important;
+}
+
+#header #user-tools a:hover {
+    background: rgba(255, 0, 0, 0.4) !important;
+    border-color: var(--cinema-yellow) !important;
+}
+
+/* ===== БОКОВОЕ МЕНЮ ===== */
+#nav-sidebar {
+    background: var(--cinema-card) !important;
+    border-right: 2px solid var(--cinema-red) !important;
+    padding: 15px 0 !important;
+    width: 220px !important;
+    box-shadow: 2px 0 10px rgba(255, 0, 0, 0.1) !important;
+}
+
+#nav-sidebar .module {
+    background: transparent !important;
+    border: none !important;
+    margin: 0 0 15px 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+}
+
+#nav-sidebar .module h2 {
+    background: linear-gradient(135deg, var(--cinema-red) 0%, var(--cinema-dark-red) 100%) !important;
+    color: var(--cinema-white) !important;
+    padding: 10px 15px !important;
+    margin: 0 0 5px 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    font-size: 13px !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+#nav-sidebar .module ul {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+#nav-sidebar .module li {
+    list-style: none !important;
+    margin: 0 !important;
+}
+
+#nav-sidebar .module li a {
+    color: var(--cinema-gray) !important;
+    text-decoration: none !important;
+    padding: 8px 15px !important;
+    display: block !important;
+    transition: all 0.2s ease !important;
+    border-left: 3px solid transparent !important;
+    font-size: 13px !important;
+    line-height: 1.3 !important;
+}
+
+#nav-sidebar .module li a:hover {
+    color: var(--cinema-yellow) !important;
+    background: rgba(255, 0, 0, 0.1) !important;
+    border-left-color: var(--cinema-yellow) !important;
+}
+
+#nav-sidebar .module li.selected a {
+    color: var(--cinema-yellow) !important;
+    background: rgba(255, 0, 0, 0.2) !important;
+    border-left-color: var(--cinema-red) !important;
+    font-weight: bold !important;
+}
+
+/* ===== ОСНОВНОЙ КОНТЕНТ ===== */
+#content {
+    padding: 20px !important;
+    margin: 0 !important;
+    min-height: calc(100vh - 50px) !important;
+}
+
+#content-main {
+    background: var(--cinema-card) !important;
+    border: 2px solid var(--cinema-red) !important;
+    border-radius: 10px !important;
+    padding: 20px !important;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.2) !important;
+    margin-bottom: 20px !important;
+}
+
+/* ===== КНОПКИ ===== */
+.button, input[type="submit"], input[type="button"],
+.submit-row input, a.button, .btn {
+    background: linear-gradient(135deg, var(--cinema-red) 0%, var(--cinema-dark-red) 100%) !important;
+    color: var(--cinema-white) !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 38px !important;
+    line-height: 1 !important;
+    vertical-align: middle !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 5px rgba(255, 0, 0, 0.3) !important;
+    margin: 2px !important;
+    min-width: 80px !important;
+}
+
+.button:hover, input[type="submit"]:hover, input[type="button"]:hover,
+a.button:hover, .submit-row input:hover {
+    background: linear-gradient(135deg, var(--cinema-dark-red) 0%, #990000 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 10px rgba(255, 0, 0, 0.4) !important;
+}
+
+.button.default, input[type="submit"].default {
+    background: linear-gradient(135deg, var(--cinema-purple) 0%, var(--cinema-light-purple) 100%) !important;
+}
+
+/* ===== ФОРМЫ ===== */
+.form-row {
+    padding: 10px 0 !important;
+    border-bottom: 1px solid rgba(255, 0, 0, 0.1) !important;
+}
+
+.form-row:last-child {
+    border-bottom: none !important;
+}
+
+label {
+    color: var(--cinema-yellow) !important;
+    font-weight: bold !important;
+    font-size: 13px !important;
+    margin-bottom: 5px !important;
+    display: block !important;
+}
+
+input[type="text"], input[type="password"], input[type="email"],
+input[type="number"], input[type="date"], input[type="time"],
+select, textarea {
+    background: rgba(20, 20, 20, 0.9) !important;
+    border: 2px solid var(--cinema-red) !important;
+    color: var(--cinema-white) !important;
+    border-radius: 6px !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    width: 100% !important;
+    max-width: 400px !important;
+    transition: all 0.3s ease !important;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--cinema-yellow) !important;
+    outline: none !important;
+    box-shadow: 0 0 8px rgba(255, 204, 0, 0.3) !important;
+}
+
+/* ===== ТАБЛИЦЫ ===== */
+#changelist .results {
+    background: var(--cinema-card) !important;
+    border: 2px solid var(--cinema-red) !important;
+    border-radius: 8px !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    margin-bottom: 20px !important;
+    box-shadow: 0 5px 15px rgba(255, 0, 0, 0.1) !important;
+}
+
+#result_list {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    min-width: 1000px !important;
+}
+
+#result_list thead th {
+    background: linear-gradient(135deg, #222 0%, #333 100%) !important;
+    color: var(--cinema-yellow) !important;
+    padding: 12px 15px !important;
+    border-bottom: 2px solid var(--cinema-red) !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    font-size: 12px !important;
+    text-align: left !important;
+}
+
+#result_list tbody td, #result_list tbody th {
+    padding: 10px 15px !important;
+    border-bottom: 1px solid rgba(255, 0, 0, 0.1) !important;
+    color: var(--cinema-white) !important;
+    font-size: 13px !important;
+    vertical-align: middle !important;
+}
+
+#result_list tbody tr:hover {
+    background: rgba(255, 0, 0, 0.05) !important;
+}
+
+/* ===== ПРАВАЯ ПАНЕЛЬ ФИЛЬТРОВ ===== */
+#changelist-filter {
+    background: var(--cinema-card) !important;
+    border: 2px solid var(--cinema-red) !important;
+    border-radius: 8px !important;
+    padding: 15px !important;
+    margin: 0 0 20px 20px !important;
+    width: 250px !important;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.2) !important;
+}
+
+#changelist-filter h2 {
+    background: linear-gradient(135deg, var(--cinema-red) 0%, var(--cinema-dark-red) 100%) !important;
+    color: var(--cinema-white) !important;
+    padding: 10px !important;
+    margin: -15px -15px 15px -15px !important;
+    border-radius: 6px 6px 0 0 !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* ===== ПОИСК ===== */
+#changelist-search {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-bottom: 20px !important;
+    flex-wrap: wrap !important;
+}
+
+#searchbar {
+    height: 38px !important;
+    line-height: 38px !important;
+    padding: 0 15px !important;
+    min-width: 300px !important;
+    flex-grow: 1 !important;
+    background: rgba(20, 20, 20, 0.9) !important;
+    border: 2px solid var(--cinema-red) !important;
+    color: var(--cinema-white) !important;
+    border-radius: 6px !important;
+    font-size: 14px !important;
+    transition: all 0.3s ease !important;
+}
+
+/* ===== ВЫПАДАЮЩИЕ СПИСКИ ===== */
+select {
+    height: 38px !important;
+    line-height: 38px !important;
+    padding: 0 40px 0 15px !important;
+    background: rgba(20, 20, 20, 0.9) url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffcc00'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e") no-repeat right 12px center/16px !important;
+    border: 2px solid var(--cinema-red) !important;
+    color: var(--cinema-white) !important;
+    border-radius: 6px !important;
+    font-size: 14px !important;
+    appearance: none !important;
+    cursor: pointer !important;
+    min-height: 38px !important;
+}
+
+select option {
+    padding: 10px 15px !important;
+    line-height: 1.4 !important;
+    background: rgba(30, 30, 30, 0.95) !important;
+    color: var(--cinema-white) !important;
+    font-size: 14px !important;
+    min-height: 36px !important;
+}
+
+/* ===== ХЛЕБНЫЕ КРОШКИ ===== */
+.breadcrumbs {
+    background: rgba(30, 30, 30, 0.9) !important;
+    border: 1px solid var(--cinema-red) !important;
+    border-radius: 6px !important;
+    padding: 10px 15px !important;
+    margin: 0 0 20px 0 !important;
+    color: var(--cinema-yellow) !important;
+    font-size: 12px !important;
+}
+
+/* ===== СООБЩЕНИЯ ===== */
+.messagelist {
+    margin: 0 0 20px 0 !important;
+    padding: 0 !important;
+}
+
+.messagelist li {
+    background: rgba(255, 0, 0, 0.2) !important;
+    border: 1px solid var(--cinema-red) !important;
+    color: var(--cinema-white) !important;
+    border-radius: 6px !important;
+    padding: 12px 15px !important;
+    margin: 0 0 10px 0 !important;
+    list-style: none !important;
+    font-size: 13px !important;
+}
+
+/* ===== АДАПТИВНОСТЬ ===== */
+@media (max-width: 768px) {
+    #header {
+        height: auto !important;
+        padding: 10px !important;
+        flex-direction: column !important;
+    }
+
+    #nav-sidebar {
+        width: 100% !important;
+        margin-bottom: 20px !important;
+    }
+
+    #changelist-filter {
+        width: 100% !important;
+        margin: 0 0 20px 0 !important;
+    }
+}

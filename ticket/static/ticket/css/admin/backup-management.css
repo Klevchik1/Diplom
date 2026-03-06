@@ -1,0 +1,193 @@
+/* ===== УПРАВЛЕНИЕ БЭКАПАМИ ===== */
+.backup-section {
+    background: var(--darkened-bg);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    border: 1px solid var(--border-color);
+    color: var(--body-fg);
+}
+
+.backup-form {
+    margin: 15px 0;
+    padding: 15px;
+    background: var(--body-bg);
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+/* Кнопки */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin: 5px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: var(--button-fg);
+}
+
+.btn-secondary {
+    background: var(--secondary);
+    color: var(--button-fg);
+}
+
+.btn-success {
+    background: #4caf50;
+    color: white;
+}
+
+.btn-warning {
+    background: #ff9800;
+    color: white;
+}
+
+.btn-danger {
+    background: #f44336;
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Список бэкапов */
+.backup-list {
+    margin-top: 20px;
+}
+
+.backup-item {
+    background: var(--body-bg);
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 4px;
+    border-left: 4px solid var(--primary);
+    color: var(--body-fg);
+    position: relative;
+}
+
+.backup-item.restoring {
+    border-left-color: #ff9800;
+    background: rgba(255, 152, 0, 0.1);
+}
+
+.backup-item.completed {
+    border-left-color: #4caf50;
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.backup-item.failed {
+    border-left-color: #f44336;
+    background: rgba(244, 67, 54, 0.1);
+}
+
+.backup-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Формы */
+.form-group {
+    margin: 15px 0;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--body-fg);
+}
+
+input[type="date"] {
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 14px;
+    margin-right: 10px;
+    background: var(--body-bg);
+    color: var(--body-fg);
+}
+
+/* Статусы */
+.status-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.restoration-log {
+    margin-top: 10px;
+    padding: 10px;
+    background: var(--darkened-bg);
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+}
+
+.log-toggle {
+    color: var(--link-fg);
+    cursor: pointer;
+    font-size: 12px;
+    margin-top: 5px;
+    display: inline-block;
+}
+
+.log-toggle:hover {
+    text-decoration: underline;
+}
+
+/* Модальное окно */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: var(--body-bg);
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    width: 500px;
+    border-radius: 8px;
+    color: var(--body-fg);
+}
+
+.modal-actions {
+    text-align: right;
+    margin-top: 20px;
+}
+
+/* Заголовки */
+h1, h2, h3 {
+    color: var(--body-fg);
+}
+
+p {
+    color: var(--body-fg);
+}
