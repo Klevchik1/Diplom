@@ -826,6 +826,16 @@ class Ticket(models.Model):
                 pass
 
     def save(self, *args, **kwargs):
+        # Проверяем, что место свободно (только для новых билетов)
+        if not self.pk:  # Новый билет
+            existing_ticket = Ticket.objects.filter(
+                screening=self.screening,
+                seat=self.seat
+            ).exists()
+
+            if existing_ticket:
+                raise ValidationError(f"Место {self.seat.row}-{self.seat.number} уже занято на этот сеанс")
+
         # Автоматически устанавливаем статус при первом сохранении
         if not self.pk and not self.status_id:
             try:
@@ -891,16 +901,19 @@ class Ticket(models.Model):
         try:
             # Если все условия соблюдены, сразу обрабатываем возврат
             refunded_status = TicketStatus.objects.get(code='refunded')
-            self.status = refunded_status
-            self.refund_requested_at = timezone.now()
-            self.refund_processed_at = timezone.now()  # сразу обработан
-            self.updated_at = timezone.now()
 
-            is_new = self._state.adding
-            super().save()  # Сохраняем через super(), чтобы избежать рекурсии
+            # ВАЖНО: Сначала удаляем билет, чтобы освободить место
+            # Но сохраняем информацию о возврате для логирования
+            movie_title = self.screening.movie.title
+            seat_info = f"Ряд {self.seat.row}, Место {self.seat.number}"
+            user_email = self.user.email
+            price = self.price
+
+            # Удаляем билет (освобождаем место)
+            self.delete()
 
             # Логируем возврат
-            logger.info(f"Автоматический возврат билета #{self.id}, фильм: {self.screening.movie.title}")
+            logger.info(f"Автоматический возврат билета на фильм {movie_title}, место {seat_info}")
 
             # Логируем операцию возврата
             try:
@@ -908,20 +921,19 @@ class Ticket(models.Model):
                 OperationLogger.log_system_operation(
                     action_type='UPDATE',
                     module_type='TICKETS',
-                    description=f'Билет #{self.id} возвращен (автоматически)',
-                    object_id=self.pk,
-                    object_repr=str(self),
+                    description=f'Билет на фильм {movie_title} (место {seat_info}) возвращен',
                     additional_data={
-                        'movie': self.screening.movie.title,
-                        'user': self.user.email,
-                        'refund_amount': str(self.price),
+                        'movie': movie_title,
+                        'user': user_email,
+                        'seat': seat_info,
+                        'refund_amount': str(price),
                         'reason': 'Автоматический возврат по запросу пользователя'
                     }
                 )
             except Exception as e:
                 logger.error(f"Error logging refund: {e}")
 
-            return True, '✅ Билет успешно возвращен! Полная стоимость будет возвращена.'
+            return True, '✅ Билет успешно возвращен! Место освобождено.'
 
         except TicketStatus.DoesNotExist as e:
             logger.error(f"Статус 'refunded' не найден: {e}")
@@ -933,17 +945,40 @@ class Ticket(models.Model):
     def process_refund(self):
         """Обработка возврата (админ)"""
         try:
-            refunded_status = TicketStatus.objects.get(code='refunded')
             if self.status.code != 'refund_requested':
                 return False, 'Билет не запрашивал возврат'
 
-            self.status = refunded_status
-            self.refund_processed_at = timezone.now()
-            self.updated_at = timezone.now()
-            self.save()
-            return True, 'Возврат обработан'
+            # Сохраняем информацию для логирования
+            movie_title = self.screening.movie.title
+            seat_info = f"Ряд {self.seat.row}, Место {self.seat.number}"
+            user_email = self.user.email
+            price = self.price
+
+            # Удаляем билет (освобождаем место)
+            self.delete()
+
+            # Логируем операцию возврата
+            try:
+                from .logging_utils import OperationLogger
+                OperationLogger.log_system_operation(
+                    action_type='UPDATE',
+                    module_type='TICKETS',
+                    description=f'Билет на фильм {movie_title} (место {seat_info}) возвращен администратором',
+                    additional_data={
+                        'movie': movie_title,
+                        'user': user_email,
+                        'seat': seat_info,
+                        'refund_amount': str(price),
+                        'reason': 'Возврат обработан администратором'
+                    }
+                )
+            except Exception as e:
+                logger.error(f"Error logging refund: {e}")
+
+            return True, 'Возврат обработан, место освобождено'
+
         except TicketStatus.DoesNotExist:
-            return False, 'Статус "Возвращен" не найден'
+            return False, 'Статус не найден'
 
     def cancel_refund_request(self):
         """Отмена запроса на возврат"""
@@ -970,6 +1005,7 @@ class Ticket(models.Model):
     def get_group_tickets(self):
         """Получить все билеты из той же группы"""
         if self.ticket_group:
+            # Возвращаем все билеты группы, включая существующие
             return Ticket.objects.filter(ticket_group=self.ticket_group)
         return Ticket.objects.filter(id=self.id)
 
