@@ -310,12 +310,15 @@ def home(request):
     hall_filter = request.GET.get('hall', '')
     genre_filter = request.GET.get('genre', '')
     age_rating_filter = request.GET.get('age_rating', '')
-    selected_date = request.GET.get('date', today.isoformat())
 
-    # Преобразуем выбранную дату
-    try:
-        selected_date = datetime.strptime(selected_date, '%Y-%m-%d').date()
-    except (ValueError, TypeError):
+    date_param = request.GET.get('date', '')
+
+    if date_param and date_param.strip():
+        try:
+            selected_date = datetime.strptime(date_param, '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            selected_date = today
+    else:
         selected_date = today
 
     # Генерируем список дат для фильтра (5 дней)
@@ -649,23 +652,32 @@ def download_ticket_single(request, ticket_id):
     else:
         tickets = [ticket]
 
-    # ЛОГИРОВАНИЕ СКАЧИВАНИЯ PDF
-    OperationLogger.log_operation(
-        request=request,
-        action_type='EXPORT',
-        module_type='TICKETS',
-        description=f'Скачивание PDF билета для фильма {ticket.screening.movie.title}',
-        object_id=ticket.id,
-        object_repr=str(ticket),
-        additional_data={
-            'format': 'PDF',
-            'movie': ticket.screening.movie.title,
-            'ticket_count': len(tickets),
-            'group_id': str(ticket.ticket_group.group_uuid) if ticket.ticket_group else None,
-            'status': ticket.status.code if ticket.status else 'unknown',
-            'is_refunded': ticket.status and ticket.status.code == 'refunded'
-        }
-    )
+    # ИСПРАВЛЕНИЕ 2: Получаем объекты ActionType и ModuleType для логирования
+    try:
+        from .models import ActionType, ModuleType
+        action_type = ActionType.objects.get(code='EXPORT')
+        module_type = ModuleType.objects.get(code='TICKETS')
+
+        # ЛОГИРОВАНИЕ СКАЧИВАНИЯ PDF
+        OperationLogger.log_operation(
+            request=request,
+            action_type=action_type,  # Передаём объект, а не строку
+            module_type=module_type,  # Передаём объект, а не строку
+            description=f'Скачивание PDF билета для фильма {ticket.screening.movie.title}',
+            object_id=ticket.id,
+            object_repr=str(ticket),
+            additional_data={
+                'format': 'PDF',
+                'movie': ticket.screening.movie.title,
+                'ticket_count': len(tickets),
+                'group_id': str(ticket.ticket_group.group_uuid) if ticket.ticket_group else None,
+                'status': ticket.status.code if ticket.status else 'unknown',
+                'is_refunded': ticket.status and ticket.status.code == 'refunded'
+            }
+        )
+    except Exception as e:
+        logger.error(f"Logging error: {e}")
+        # Продолжаем выполнение даже если логирование не удалось
 
     try:
         pdf_buffer = generate_enhanced_ticket_pdf(tickets)
@@ -680,15 +692,15 @@ def download_ticket_single(request, ticket_id):
         return response
     except Exception as e:
         logger.error(f"Ошибка генерации PDF: {str(e)}")
-        messages.error(request, "Ошибка при генерации билета. Пожалуйста, попробуйте позже.")
+        messages.error(request, f"Ошибка при генерации билета: {str(e)}")
         return redirect('profile')
 
 
 @login_required
-def download_ticket_group(request, group_uuid):
+def download_ticket_group(request, group_id):
     """Скачивание группы билетов по UUID"""
     try:
-        ticket_group = TicketGroup.objects.get(group_uuid=group_uuid, user=request.user)
+        ticket_group = TicketGroup.objects.get(group_uuid=group_id, user=request.user)
         tickets = ticket_group.tickets.all().select_related(
             'screening__movie', 'screening__hall', 'seat', 'status'
         )
@@ -707,32 +719,41 @@ def download_ticket_group(request, group_uuid):
         messages.error(request, 'В этой группе есть возвращённые билеты. Скачивание невозможно.')
         return redirect('profile')
 
-    # ЛОГИРОВАНИЕ СКАЧИВАНИЯ PDF ГРУППЫ
-    OperationLogger.log_operation(
-        request=request,
-        action_type='EXPORT',
-        module_type='TICKETS',
-        description=f'Скачивание PDF группы билетов для фильма {tickets[0].screening.movie.title}',
-        object_id=tickets[0].id,
-        object_repr=f"Группа билетов {group_uuid}",
-        additional_data={
-            'format': 'PDF',
-            'movie': tickets[0].screening.movie.title,
-            'ticket_count': len(tickets),
-            'group_id': group_uuid,
-            'has_refunded_tickets': has_refunded_tickets
-        }
-    )
+    # ИСПРАВЛЕНИЕ 1: Получаем объекты ActionType и ModuleType для логирования
+    try:
+        from .models import ActionType, ModuleType
+        action_type = ActionType.objects.get(code='EXPORT')
+        module_type = ModuleType.objects.get(code='TICKETS')
+
+        # ЛОГИРОВАНИЕ СКАЧИВАНИЯ PDF ГРУППЫ
+        OperationLogger.log_operation(
+            request=request,
+            action_type=action_type,  # Передаём объект, а не строку
+            module_type=module_type,  # Передаём объект, а не строку
+            description=f'Скачивание PDF группы билетов для фильма {tickets[0].screening.movie.title}',
+            object_id=tickets[0].id,
+            object_repr=f"Группа билетов {group_id}",
+            additional_data={
+                'format': 'PDF',
+                'movie': tickets[0].screening.movie.title,
+                'ticket_count': len(tickets),
+                'group_id': group_id,
+                'has_refunded_tickets': has_refunded_tickets
+            }
+        )
+    except Exception as e:
+        logger.error(f"Logging error: {e}")
+        # Продолжаем выполнение даже если логирование не удалось
 
     try:
         pdf_buffer = generate_enhanced_ticket_pdf(tickets)
         response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
-        filename = f"билет_{tickets[0].screening.movie.title}_{group_uuid[:8]}.pdf"
+        filename = f"билет_{tickets[0].screening.movie.title}_{group_id[:8]}.pdf"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
     except Exception as e:
         logger.error(f"Ошибка генерации PDF: {str(e)}")
-        messages.error(request, "Ошибка при генерации билета. Пожалуйста, попробуйте позже.")
+        messages.error(request, f"Ошибка при генерации билета: {str(e)}")
         return redirect('profile')
 
 
@@ -767,6 +788,7 @@ def profile(request):
 
                 groups_dict[group_id] = {
                     'group': group,
+                    'group_uuid': group.group_uuid,
                     'movie_title': ticket.screening.movie.title,
                     'movie_poster': ticket.screening.movie.poster,
                     'hall_name': ticket.screening.hall.name,
@@ -778,8 +800,12 @@ def profile(request):
                     'ticket_count': group.tickets_count,
                     'total_price': group.total_amount,
                     'group_status': group_status,
+                    'status_display': dict(TicketStatus.objects.values_list('code', 'name')).get(group_status, group_status),
                     'can_be_downloaded': group_status != 'refunded' or request.user.is_staff,
                     'is_future_screening': ticket.screening.start_time > timezone.now(),
+                    'first_ticket_id': None,
+                    'refund_processed_at': None,
+                    'refund_message': 'Возврат возможен за 30 минут до сеанса',
                 }
 
             # Добавляем информацию о месте
@@ -788,13 +814,22 @@ def profile(request):
                 'number': ticket.seat.number,
                 'ticket_id': ticket.id,
                 'status': ticket.status.code if ticket.status else 'unknown',
-                'status_display': ticket.get_status_display()
+                'status_display': ticket.get_status_display() if hasattr(ticket, 'get_status_display') else ticket.status.name if ticket.status else 'Неизвестно'
             })
+
+            # Запоминаем первый ticket_id для возврата
+            if groups_dict[group_id]['first_ticket_id'] is None:
+                groups_dict[group_id]['first_ticket_id'] = ticket.id
+
+            # Запоминаем дату возврата если есть
+            if ticket.refund_processed_at and not groups_dict[group_id]['refund_processed_at']:
+                groups_dict[group_id]['refund_processed_at'] = ticket.refund_processed_at
         else:
             # Билет без группы (старые или одиночные)
             group_id = f"single_{ticket.id}"
             groups_dict[group_id] = {
                 'group': None,
+                'group_uuid': None,
                 'movie_title': ticket.screening.movie.title,
                 'movie_poster': ticket.screening.movie.poster,
                 'hall_name': ticket.screening.hall.name,
@@ -807,13 +842,17 @@ def profile(request):
                     'number': ticket.seat.number,
                     'ticket_id': ticket.id,
                     'status': ticket.status.code if ticket.status else 'unknown',
-                    'status_display': ticket.get_status_display()
+                    'status_display': ticket.get_status_display() if hasattr(ticket, 'get_status_display') else ticket.status.name if ticket.status else 'Неизвестно'
                 }],
                 'ticket_count': 1,
                 'total_price': ticket.price,
                 'group_status': ticket.status.code if ticket.status else 'unknown',
+                'status_display': ticket.get_status_display() if hasattr(ticket, 'get_status_display') else ticket.status.name if ticket.status else 'Неизвестно',
                 'can_be_downloaded': (ticket.status and ticket.status.code != 'refunded') or request.user.is_staff,
                 'is_future_screening': ticket.screening.start_time > timezone.now(),
+                'first_ticket_id': ticket.id,
+                'refund_processed_at': ticket.refund_processed_at,
+                'refund_message': 'Возврат возможен за 30 минут до сеанса',
             }
 
     # Преобразуем словарь в список и сортируем

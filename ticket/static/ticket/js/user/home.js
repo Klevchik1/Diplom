@@ -5,13 +5,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Устанавливаем минимальную дату как сегодня для фильтров даты
     const today = new Date().toISOString().split('T')[0];
 
-    // Обновляем активную дату в URL при загрузке
-    const urlParams = new URLSearchParams(window.location.search);
-    const currentDate = urlParams.get('date') || today;
-    const selectedDateInput = document.getElementById('selected-date');
-    if (selectedDateInput) {
-        selectedDateInput.value = currentDate;
-    }
+    // ИЗМЕНЕНИЕ: Не обновляем дату из URL при загрузке
+    // Всегда используем сегодня по умолчанию
 
     // Инициализируем обработчики для формы
     initFilterForm();
@@ -31,27 +26,15 @@ function selectDate(date) {
         selectedDateInput.value = date;
     }
 
-    // Создаем скрытые поля для сохранения фильтров
     const form = document.getElementById('filter-form');
     if (!form) return;
 
-    // Удаляем старые скрытые поля если есть
-    const oldHiddenFields = form.querySelectorAll('input[type="hidden"][name="search"], input[type="hidden"][name="hall"], input[type="hidden"][name="genre"], input[type="hidden"][name="age_rating"]');
-    oldHiddenFields.forEach(field => field.remove());
+    // ИЗМЕНЕНИЕ: Не добавляем скрытые поля - они уже есть в форме
 
-    // Добавляем скрытые поля с текущими значениями фильтров
-    if (searchValue) {
-        addHiddenField(form, 'search', searchValue);
-    }
-    if (hallValue) {
-        addHiddenField(form, 'hall', hallValue);
-    }
-    if (genreValue) {
-        addHiddenField(form, 'genre', genreValue);
-    }
-    if (ageRatingValue) {
-        addHiddenField(form, 'age_rating', ageRatingValue);
-    }
+    // Обновляем URL без параметра date (чтобы при обновлении не сохранялась дата)
+    const url = new URL(window.location);
+    url.searchParams.set('date', date);
+    window.history.pushState({}, '', url);
 
     // Отправляем форму
     form.submit();
@@ -62,10 +45,7 @@ function applyFilters() {
     const form = document.getElementById('filter-form');
     if (!form) return;
 
-    const dateValue = document.getElementById('selected-date')?.value || '';
-
-    // Добавляем скрытое поле с датой
-    addHiddenField(form, 'date', dateValue);
+    // ИЗМЕНЕНИЕ: Не добавляем скрытое поле с датой, так как оно уже есть в форме
 
     form.submit();
 }
@@ -93,10 +73,11 @@ function initFilterForm() {
     const form = document.getElementById('filter-form');
     if (form) {
         form.addEventListener('submit', function(e) {
-            // Убедимся, что дата сохраняется
+            // ИЗМЕНЕНИЕ: Убеждаемся, что дата передается правильно
             const dateValue = document.getElementById('selected-date')?.value;
-            if (dateValue) {
-                addHiddenField(this, 'date', dateValue);
+            const dateInput = this.querySelector('input[name="date"]');
+            if (dateInput && dateValue) {
+                dateInput.value = dateValue;
             }
         });
     }

@@ -171,26 +171,24 @@
                     {% endif %}
                     <div style="flex: 1;">
                         <h3>{{ group.movie_title }}</h3>
-                        <small style="color: #aaa;">Группа из {{ group.ticket_count }} билет(а)</small>
+                        <small style="color: #aaa;">{{ group.ticket_count }} билет(а)</small>
                     </div>
 
-                    {% if group.group_status == 'refunded' %}
-                        {% if user.is_staff %}
-                            <a href="{% url 'download_ticket_group' group.group_id %}" class="btn-save"
-                               style="padding: 8px 15px; font-size: 14px;">
-                                📥 Скачать (админ)
-                            </a>
-                        {% else %}
-                            <span class="btn-save" style="opacity: 0.7; cursor: not-allowed; padding: 8px 15px; font-size: 14px;"
-                                  title="Билет возвращён. Скачивание недоступно.">
-                                ⛔ Недоступно
-                            </span>
-                        {% endif %}
-                    {% else %}
-                        <a href="{% url 'download_ticket_group' group.group_id %}" class="btn-save"
+                    <!-- Кнопки скачивания -->
+                    {% if group.group_uuid %}
+                        <!-- Для билетов с группой -->
+                        <a href="{% url 'download_ticket_group' group.group_uuid %}" class="btn-save"
                            style="padding: 8px 15px; font-size: 14px;">
                             📥 Скачать билеты
                         </a>
+                    {% else %}
+                        <!-- Для одиночных билетов -->
+                        {% for seat in group.seats %}
+                            <a href="{% url 'download_ticket_single' seat.ticket_id %}" class="btn-save"
+                               style="padding: 8px 15px; font-size: 14px; margin-left: 5px;">
+                                📥 Скачать (р{{ seat.row }}-м{{ seat.number }})
+                            </a>
+                        {% endfor %}
                     {% endif %}
                 </div>
 
@@ -210,7 +208,7 @@
                     <div class="info-item">
                         <strong>Места:</strong><br>
                         {% for seat in group.seats %}
-                            Ряд {{ seat.row }}, Место {{ seat.number }}{% if not forloop.last %}; {% endif %}
+                            Ряд {{ seat.row }}, Место {{ seat.number }}{% if not forloop.last %}<br>{% endif %}
                         {% endfor %}
                     </div>
                     <div class="info-item">
@@ -220,45 +218,47 @@
                     <div class="info-item">
                         <strong>Статус:</strong><br>
                         <span class="status-{{ group.group_status }}">
-                            {{ group.status_display }}
+                            {% if group.group_status == 'active' %}
+                                Активен
+                            {% elif group.group_status == 'refunded' %}
+                                Возвращён
+                            {% elif group.group_status == 'partially_refunded' %}
+                                Частично возвращён
+                            {% elif group.group_status == 'refund_requested' %}
+                                Запрос на возврат
+                            {% else %}
+                                {{ group.group_status }}
+                            {% endif %}
                         </span>
-
-                        {% if group.refund_processed_at %}
-                            <br><small style="color: #aaa;">
-                                Возврат: {{ group.refund_processed_at|date:"d.m.Y H:i" }}
-                            </small>
-                        {% endif %}
                     </div>
                 </div>
 
+                <!-- Блок с действиями (возврат) -->
                 <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #444;">
-                    {% if group.group_status == 'active' and group.can_be_refunded %}
+                    {% if group.group_status == 'active' and group.is_future_screening %}
+                        <!-- Если билет активен и сеанс в будущем -->
                         <form method="post" action="{% url 'request_ticket_refund' group.first_ticket_id %}"
-                              onsubmit="return confirmRefund()">
+                              onsubmit="return confirm('Вы уверены, что хотите вернуть билет? Возврат возможен только за 30 минут до сеанса.')">
                             {% csrf_token %}
                             <button type="submit" class="btn-refund">
                                 🔄 Вернуть билет
                             </button>
                             <small style="color: #ccc; margin-left: 10px;">
-                                {{ group.refund_message }}
+                                Можно вернуть до {{ group.start_time|date:"d.m.Y H:i" }}
                             </small>
                         </form>
                     {% elif group.group_status == 'refunded' %}
+                        <!-- Если билет возвращён -->
                         <div class="refund-processed">
                             <p style="color: #2196F3; margin: 0;">
-                                ✅ Билет возвращен {{ group.refund_processed_at|date:"d.m.Y H:i" }}
-                            </p>
-                            <p style="color: #ccc; font-size: 14px; margin: 5px 0 0 0;">
-                                Полная стоимость возвращена
+                                ✅ Билет возвращён
                             </p>
                         </div>
-                    {% elif group.group_status == 'active' and not group.can_be_refunded %}
+                    {% elif group.group_status == 'active' and not group.is_future_screening %}
+                        <!-- Если билет активен, но сеанс прошёл -->
                         <div class="screening-ended">
                             <p style="color: #F44336; margin: 0;">
-                                ⚠️ Возврат невозможен
-                            </p>
-                            <p style="color: #ccc; font-size: 14px; margin: 5px 0 0 0;">
-                                {{ group.refund_message }}
+                                ⚠️ Возврат невозможен (сеанс уже прошёл)
                             </p>
                         </div>
                     {% endif %}
@@ -273,6 +273,12 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+function confirmRefund() {
+    return confirm('Вы уверены, что хотите вернуть билет? Возврат возможен только за 30 минут до сеанса.');
+}
+</script>
 {% endblock %}
 
 {% block extra_js %}

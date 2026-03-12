@@ -97,7 +97,7 @@ def generate_enhanced_ticket_pdf(tickets):
     elements = []
 
     first_ticket = tickets[0]
-    total_price = sum(ticket.screening.price for ticket in tickets)
+    total_price = sum(ticket.price for ticket in tickets)
 
     # Минималистичные стили
     minimal_styles = {
@@ -154,8 +154,20 @@ def generate_enhanced_ticket_pdf(tickets):
     # === ФИЛЬМ ===
     elements.append(Paragraph(f"<b>ФИЛЬМ:</b> {first_ticket.screening.movie.title}", minimal_styles['Title']))
     elements.append(Paragraph(f"Жанр: {first_ticket.screening.movie.genre}", minimal_styles['Info']))
-    elements.append(Paragraph(f"Продолжительность: {format_duration(first_ticket.screening.movie.duration)}",
-                              minimal_styles['Info']))
+
+    # ИСПРАВЛЕНИЕ: Форматируем длительность правильно
+    duration_minutes = first_ticket.screening.movie.duration
+    if duration_minutes:
+        hours = duration_minutes // 60
+        minutes = duration_minutes % 60
+        if hours > 0:
+            duration_str = f"{hours} ч {minutes} мин"
+        else:
+            duration_str = f"{minutes} мин"
+    else:
+        duration_str = "Не указано"
+
+    elements.append(Paragraph(f"Продолжительность: {duration_str}", minimal_styles['Info']))
     elements.append(Spacer(1, 0.2 * cm))
 
     # === СЕАНС ===
@@ -178,19 +190,26 @@ def generate_enhanced_ticket_pdf(tickets):
         seats_data.append([
             Paragraph(str(ticket.seat.row), minimal_styles['Seat']),
             Paragraph(str(ticket.seat.number), minimal_styles['Seat']),
-            Paragraph(f"{ticket.screening.price} ₽", minimal_styles['Seat'])
+            Paragraph(f"{ticket.price} ₽", minimal_styles['Seat'])
         ])
 
-    seats_table = Table(seats_data, colWidths=[2 * cm, 2 * cm, 2 * cm], repeatRows=1)
+    # УВЕЛИЧИВАЕМ РАЗМЕРЫ ЯЧЕЕК: было [2*cm, 2*cm, 2*cm]
+    seats_table = Table(seats_data, colWidths=[3.5 * cm, 3.5 * cm, 4 * cm], repeatRows=1)
     seats_table.setStyle(TableStyle([
         ('FONTNAME', (0, 0), (-1, 0), bold_font_name),
-        ('FONTSIZE', (0, 0), (-1, 0), 9),
+        ('FONTSIZE', (0, 0), (-1, 0), 11),  # Увеличили шрифт заголовков
+        ('FONTSIZE', (0, 1), (-1, -1), 10),  # Увеличили шрифт данных
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),  # Добавили фон для заголовка
+        ('TOPPADDING', (0, 0), (-1, -1), 8),  # Увеличили верхний отступ
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),  # Увеличили нижний отступ
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),  # Увеличили левый отступ
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),  # Увеличили правый отступ
     ]))
     elements.append(seats_table)
-    elements.append(Spacer(1, 0.2 * cm))
+    elements.append(Spacer(1, 0.3 * cm))  # Увеличили отступ после таблицы
 
     # === ИТОГО ===
     elements.append(
@@ -200,7 +219,7 @@ def generate_enhanced_ticket_pdf(tickets):
     # === QR-КОД ===
     qr_data = {
         "ticket_id": tickets[0].id,
-        "group_id": tickets[0].group_id,
+        "group_id": str(tickets[0].ticket_group.group_uuid) if tickets[0].ticket_group else None,
         "film": first_ticket.screening.movie.title,
         "datetime": first_ticket.screening.start_time.isoformat(),
         "hall": first_ticket.screening.hall.name,
@@ -233,6 +252,7 @@ def generate_enhanced_ticket_pdf(tickets):
     elements.append(Spacer(1, 0.1 * cm))
 
     # === ИНФОРМАЦИЯ ПОД QR-КОДОМ ===
+    from django.utils import timezone
     elements.append(
         Paragraph(f"ID: {tickets[0].id} | {timezone.now().strftime('%d.%m.%Y %H:%M')}", minimal_styles['Small']))
     elements.append(Spacer(1, 0.2 * cm))
@@ -240,7 +260,6 @@ def generate_enhanced_ticket_pdf(tickets):
     # === ПРАВИЛА ===
     rules_text = """
     • Билет действителен только на указанный сеанс
-    • Приходите за 15 минут до начала
     • Сохраняйте билет до конца сеанса
     """
     elements.append(Paragraph(rules_text, minimal_styles['Small']))
@@ -252,13 +271,12 @@ def generate_enhanced_ticket_pdf(tickets):
     • Возврат возможен не позднее чем за 30 минут до начала сеанса<br/>
     • Возвращается полная стоимость билета<br/>
     • Для возврата обратитесь в личном кабинете<br/>
-    • Возврат обрабатывается в течение 24 часов
     """
     elements.append(Paragraph(refund_text, minimal_styles['Small']))
     elements.append(Spacer(1, 0.2 * cm))
 
     # Контакты
-    elements.append(Paragraph("📞 +7 (950) 080-19-02", minimal_styles['Small']))
+    elements.append(Paragraph(" +7 (950) 080-19-02", minimal_styles['Small']))
 
     doc.build(elements)
     buffer.seek(0)
@@ -267,11 +285,29 @@ def generate_enhanced_ticket_pdf(tickets):
 
 def format_duration(duration):
     """Форматирование длительности фильма"""
-    total_seconds = int(duration.total_seconds())
-    hours = total_seconds // 3600
-    minutes = (total_seconds % 3600) // 60
+    # Если duration - это число (минуты)
+    if isinstance(duration, int):
+        minutes = duration
+    # Если duration - это строка
+    elif isinstance(duration, str):
+        try:
+            minutes = int(duration)
+        except ValueError:
+            return duration
+    # Если duration - это timedelta
+    elif hasattr(duration, 'total_seconds'):
+        total_seconds = int(duration.total_seconds())
+        minutes = total_seconds // 60
+    else:
+        try:
+            minutes = int(duration)
+        except (TypeError, ValueError):
+            return str(duration)
+
+    hours = minutes // 60
+    remaining_minutes = minutes % 60
 
     if hours > 0:
-        return f"{hours} ч {minutes} мин"
+        return f"{hours} ч {remaining_minutes} мин"
     else:
         return f"{minutes} мин"
