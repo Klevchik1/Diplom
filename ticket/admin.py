@@ -60,8 +60,7 @@ class LoggingModelAdmin(admin.ModelAdmin):
             request=request,
             action_type=action,
             instance=obj,
-            description=f"{action} {obj._meta.verbose_name} '{str(obj)}'",
-            module_type=module_type
+            description=f"{action} {obj._meta.verbose_name} '{str(obj)}'"
         )
         super().save_model(request, obj, form, change)
 
@@ -92,8 +91,7 @@ class LoggingModelAdmin(admin.ModelAdmin):
             request=request,
             action_type='DELETE',
             instance=obj,
-            description=f"DELETE {obj._meta.verbose_name} '{str(obj)}'",
-            module_type=module_type
+            description=f"DELETE {obj._meta.verbose_name} '{str(obj)}'"
         )
         super().delete_model(request, obj)
 
@@ -125,8 +123,7 @@ class LoggingModelAdmin(admin.ModelAdmin):
                 request=request,
                 action_type='DELETE',
                 instance=obj,
-                description=f"DELETE {obj._meta.verbose_name} '{str(obj)}' (mass delete)",
-                module_type=module_type
+                description=f"DELETE {obj._meta.verbose_name} '{str(obj)}' (mass delete)"
             )
         super().delete_queryset(request, queryset)
 
