@@ -11,7 +11,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
+# Загружаем переменные из .env файла
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -185,3 +188,5 @@ SESSION_COOKIE_AGE = 3600  # 1 час в секундах
 SESSION_COOKIE_SECURE = False  # True для HTTPS в продакшене
 SESSION_COOKIE_HTTPONLY = True
 SESSION_SAVE_EVERY_REQUEST = True  # Важно: сохранять сессию при каждом запросе
+
+KINOPOISK_API_KEY = os.getenv('KINOPOISK_API_KEY')
