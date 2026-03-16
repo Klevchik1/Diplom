@@ -3,12 +3,14 @@
 import requests
 from django.core.management.base import BaseCommand
 from django.conf import settings
+from django.db import IntegrityError, DataError
 from ticket.models import Movie, Genre, AgeRating, Director, Actor, Country
 from datetime import datetime
 import os
 from django.core.files import File
 from django.core.files.temp import NamedTemporaryFile
 import logging
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +36,16 @@ class Command(BaseCommand):
             action='store_true',
             help='Скачивать постеры фильмов'
         )
+        parser.add_argument(
+            '--skip-existing',
+            action='store_true',
+            help='Пропускать существующие фильмы (не считать ошибкой)'
+        )
+        parser.add_argument(
+            '--verbose',
+            action='store_true',
+            help='Подробный вывод для отладки'
+        )
 
     def handle(self, *args, **options):
         # Проверяем наличие API-ключа
@@ -45,12 +57,15 @@ class Command(BaseCommand):
             self.stderr.write('Добавьте в .env строку: KINOPOISK_API_KEY=ваш_ключ')
             return
 
+        self.verbose = options.get('verbose', False)
+
         self.stdout.write(self.style.SUCCESS(f'✅ API ключ загружен: {api_key[:5]}...'))
-        self.stdout.write(self.style.WARNING('Начинаю импорт фильмов...'))
+        self.stdout.write('Начинаю импорт фильмов...')
 
         pages = options['pages']
         year_start = options['year_start']
         download_posters = options['download_posters']
+        skip_existing = options['skip_existing']
 
         # Базовый URL API
         base_url = "https://api.poiskkino.dev/v1.4"
@@ -59,7 +74,14 @@ class Command(BaseCommand):
             "accept": "application/json"
         }
 
+        # Получаем все существующие жанры из БД для быстрой проверки
+        existing_genres = {g.name: g for g in Genre.objects.all()}
+        self.stdout.write(f"📚 В БД найдено жанров: {len(existing_genres)}")
+
         total_imported = 0
+        total_skipped = 0
+        total_errors = 0
+        total_processed = 0
 
         for page in range(1, pages + 1):
             self.stdout.write(f"\n📄 Импорт страницы {page} из {pages}...")
@@ -72,9 +94,6 @@ class Command(BaseCommand):
                 "sortType": "-1",  # по убыванию рейтинга
                 "type": "movie",  # только фильмы (не сериалы)
                 "year": f"{year_start}-2025",  # фильмы последних лет
-                "selectFields": ["id", "name", "description", "shortDescription",
-                                 "year", "movieLength", "poster", "genres",
-                                 "ageRating", "countries", "persons"]
             }
 
             try:
@@ -95,125 +114,201 @@ class Command(BaseCommand):
                 self.stdout.write(f"  Найдено {len(movies)} фильмов")
 
                 for movie_data in movies:
+                    total_processed += 1
                     try:
-                        result = self.import_movie(movie_data, download_posters)
-                        if result:
+                        result = self.import_movie(
+                            movie_data,
+                            download_posters,
+                            skip_existing,
+                            existing_genres
+                        )
+
+                        if result == "imported":
                             total_imported += 1
-                            self.stdout.write(self.style.SUCCESS(f'  ✅ {result}'))
-                        else:
-                            self.stdout.write(self.style.WARNING(f'  ⚠️ Пропущен: {movie_data.get("name", "Без названия")}'))
+                            name = movie_data.get("name", "Без названия")
+                            year = movie_data.get("year", "")
+                            self.stdout.write(self.style.SUCCESS(f'  ✅ {name} ({year})'))
+                        elif result == "skipped_exists":
+                            total_skipped += 1
+                            if self.verbose:
+                                name = movie_data.get("name", "Без названия")
+                                self.stdout.write(self.style.WARNING(f'  ⏭️ {name} (уже есть)'))
+                        elif result == "skipped_no_name":
+                            total_skipped += 1
+                        elif result == "error":
+                            total_errors += 1
+
                     except Exception as e:
-                        self.stderr.write(self.style.ERROR(f'  ❌ Ошибка при импорте: {e}'))
+                        total_errors += 1
+                        error_msg = str(e)[:100]
+                        if self.verbose:
+                            self.stderr.write(self.style.ERROR(f'  ❌ Ошибка: {error_msg}'))
+                            if self.verbose:
+                                traceback.print_exc(limit=1)
 
             except requests.exceptions.RequestException as e:
                 self.stderr.write(self.style.ERROR(f'Ошибка запроса к API: {e}'))
                 continue
 
-        self.stdout.write(self.style.SUCCESS(f'\n✅ Импорт завершен! Импортировано фильмов: {total_imported}'))
+        # Итоговая статистика
+        self.stdout.write(self.style.SUCCESS(f'\n{"=" * 50}'))
+        self.stdout.write(self.style.SUCCESS(f'✅ ИМПОРТ ЗАВЕРШЕН!'))
+        self.stdout.write(self.style.SUCCESS(f'📊 Статистика:'))
+        self.stdout.write(self.style.SUCCESS(f'   • Обработано фильмов: {total_processed}'))
+        self.stdout.write(self.style.SUCCESS(f'   • Импортировано новых: {total_imported}'))
+        self.stdout.write(self.style.SUCCESS(f'   • Пропущено (уже есть): {total_skipped}'))
+        self.stdout.write(self.style.SUCCESS(f'   • Ошибок: {total_errors}'))
+        self.stdout.write(self.style.SUCCESS(f'{"=" * 50}'))
 
-    def import_movie(self, data, download_posters=False):
+    def get_or_create_genre_safe(self, genre_name, existing_genres):
+        """Безопасное получение или создание жанра без исключений"""
+        if not genre_name:
+            return None
+
+        # Проверяем в существующих
+        if genre_name in existing_genres:
+            return existing_genres[genre_name]
+
+        # Пробуем создать
+        try:
+            genre, created = Genre.objects.get_or_create(
+                name=genre_name,
+                defaults={'description': f'Импортировано из API'}
+            )
+            existing_genres[genre_name] = genre
+            return genre
+        except IntegrityError:
+            # Возможно, жанр был создан в другом потоке
+            genre = Genre.objects.filter(name=genre_name).first()
+            if genre:
+                existing_genres[genre_name] = genre
+                return genre
+        except Exception as e:
+            logger.error(f"Ошибка создания жанра {genre_name}: {e}")
+            return None
+
+    def import_movie(self, data, download_posters=False, skip_existing=False, existing_genres=None):
         """Импорт одного фильма в базу данных"""
+
+        if existing_genres is None:
+            existing_genres = {}
 
         # Проверяем обязательные поля
         name = data.get('name')
         if not name:
-            return None
+            return "skipped_no_name"
+
+        # Ограничиваем длину названия (ваше поле title = max_length=50)
+        original_name = name
+        if len(name) > 50:
+            name = name[:47] + "..."
 
         # Проверяем, есть ли уже такой фильм
         if Movie.objects.filter(title=name).exists():
-            return f"{name} (уже есть в БД)"
+            return "skipped_exists"
 
-        # Получаем или создаем жанр
-        genre_name = "Неизвестно"
+        # ПОЛУЧАЕМ ЖАНР - теперь без исключений
+        genre = None
         if data.get('genres') and len(data['genres']) > 0:
-            genre_name = data['genres'][0].get('name', 'Неизвестно')
+            genre_name = data['genres'][0].get('name')
+            if genre_name:
+                genre = self.get_or_create_genre_safe(genre_name, existing_genres)
 
-        genre, _ = Genre.objects.get_or_create(
-            name=genre_name,
-            defaults={'description': f'Импортировано из API'}
-        )
+        if not genre:
+            # Жанр по умолчанию
+            genre = self.get_or_create_genre_safe("Неизвестно", existing_genres)
+            if not genre:
+                # Если даже неизвестный жанр не создался, пробуем найти любой
+                genre = Genre.objects.first()
 
-        # Получаем или создаем возрастной рейтинг
+        # Получаем возрастной рейтинг
+        age_rating = None
         age_rating_value = data.get('ageRating')
         if age_rating_value:
-            # Приводим к формату как в БД (например, "16" -> "16+")
             age_str = f"{age_rating_value}+"
         else:
-            age_str = "0+"  # По умолчанию
+            age_str = "0+"
 
-        age_rating, _ = AgeRating.objects.get_or_create(name=age_str)
+        try:
+            age_rating, _ = AgeRating.objects.get_or_create(name=age_str)
+        except Exception:
+            age_rating = AgeRating.objects.filter(name="0+").first()
+
+        # Подготовка описания
+        description = data.get('description', '')
+        if not description or len(description.strip()) < 10:
+            description = data.get('shortDescription', 'Описание отсутствует')
+        if len(description) > 1000:
+            description = description[:997] + "..."
+
+        short_description = data.get('shortDescription', '')
+        if not short_description and description:
+            short_description = description[:197] + "..." if len(description) > 200 else description
+        if len(short_description) > 200:
+            short_description = short_description[:197] + "..."
+
+        # Длительность фильма
+        duration = data.get('movieLength', 90)
+        if not duration or duration < 1:
+            duration = 90
+
+        # Год выпуска
+        year = data.get('year', 2024)
+        if not year or year < 1900:
+            year = 2024
 
         # Создаем фильм
-        movie = Movie(
-            title=name,
-            short_description=data.get('shortDescription', '')[:200] or '',
-            description=data.get('description', '') or 'Описание отсутствует',
-            duration=data.get('movieLength', 90) or 90,  # если нет, ставим 90 минут
-            release_year=data.get('year', 2024),
-            genre=genre,
-            age_rating=age_rating
-        )
+        try:
+            movie = Movie(
+                title=name,
+                short_description=short_description,
+                description=description,
+                duration=duration,
+                release_year=year,
+                genre=genre,
+                age_rating=age_rating
+            )
 
-        # Если нужно скачать постер
-        if download_posters and data.get('poster') and data['poster'].get('url'):
-            poster_url = data['poster']['url']
-            try:
-                self.download_poster(movie, poster_url)
-            except Exception as e:
-                logger.error(f"Не удалось скачать постер для {name}: {e}")
+            # Если нужно скачать постер
+            if download_posters and data.get('poster') and data['poster'].get('url'):
+                poster_url = data['poster']['url']
+                if poster_url and not poster_url.endswith('null'):
+                    try:
+                        self.download_poster(movie, poster_url, original_name)
+                    except Exception as e:
+                        logger.error(f"Не удалось скачать постер для {name}: {e}")
 
-        movie.save()
+            movie.save()
 
-        # Импортируем страны
-        if data.get('countries'):
-            for country_data in data['countries']:
-                country_name = country_data.get('name')
-                if country_name:
-                    country, _ = Country.objects.get_or_create(
-                        name=country_name,
-                        defaults={'code': country_name[:2].upper()}
-                    )
-                    # Здесь можно добавить связь фильма со страной,
-                    # если у вас есть такая модель в проекте
+            # Импортируем страны (опционально)
+            if data.get('countries'):
+                for country_data in data['countries']:
+                    country_name = country_data.get('name')
+                    if country_name and len(country_name) < 20:
+                        try:
+                            Country.objects.get_or_create(
+                                name=country_name,
+                                defaults={'code': country_name[:2].upper()}
+                            )
+                        except Exception:
+                            pass
 
-        # Импортируем режиссеров и актеров
-        if data.get('persons'):
-            directors = []
-            actors = []
+            return "imported"
 
-            for person in data['persons']:
-                profession = person.get('profession')
-                person_name = person.get('name')
+        except DataError as e:
+            if "value too long" in str(e):
+                logger.error(f"Слишком длинное значение для {name}: {e}")
+            return "error"
+        except IntegrityError as e:
+            if "already exists" in str(e):
+                return "skipped_exists"
+            logger.error(f"Ошибка целостности для {name}: {e}")
+            return "error"
+        except Exception as e:
+            logger.error(f"Неизвестная ошибка для {name}: {e}")
+            return "error"
 
-                if not person_name:
-                    continue
-
-                # Разделяем имя и фамилию (примерно)
-                name_parts = person_name.split(' ', 1)
-                first_name = name_parts[0]
-                last_name = name_parts[1] if len(name_parts) > 1 else ''
-
-                if profession == 'режиссеры' or profession == 'director':
-                    director, _ = Director.objects.get_or_create(
-                        name=first_name,
-                        surname=last_name
-                    )
-                    directors.append(director)
-                elif profession == 'актеры' or profession == 'actor':
-                    actor, _ = Actor.objects.get_or_create(
-                        name=first_name,
-                        surname=last_name
-                    )
-                    actors.append(actor)
-
-            # Сохраняем связи (если есть соответствующие through-модели)
-            # Раскомментируйте, если у вас есть MovieDirector и MovieActor
-            # movie.directors.set(directors)
-            # movie.actors.set(actors)
-
-        return f"{movie.title} ({movie.release_year})"
-
-    def download_poster(self, movie, poster_url):
+    def download_poster(self, movie, poster_url, movie_name):
         """Скачивание постера для фильма"""
         import requests
         from django.core.files.base import ContentFile
@@ -227,7 +322,11 @@ class Command(BaseCommand):
             if ext not in ['jpg', 'jpeg', 'png', 'webp']:
                 ext = 'jpg'
 
-            filename = f"{movie.title.lower().replace(' ', '_')}.{ext}"
+            # Создаем безопасное имя файла
+            safe_name = "".join(c for c in movie_name if c.isalnum() or c in (' ', '-', '_')).rstrip()
+            safe_name = safe_name.replace(' ', '_')[:50]
+            filename = f"{safe_name}.{ext}"
+
             movie.poster.save(filename, ContentFile(response.content), save=False)
 
         except Exception as e:
