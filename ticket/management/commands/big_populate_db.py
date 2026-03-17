@@ -26,6 +26,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.clear_old_data()
         self.create_admin()
+        self.create_manager()
         self.create_countries()
         self.create_action_and_module_types()
         self.create_ticket_statuses()
@@ -109,6 +110,39 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f'✅ Создан администратор: {admin.email}'))
         else:
             self.stdout.write(self.style.SUCCESS('✅ Администратор уже существует'))
+
+    def create_manager(self):
+        """Создание менеджера и добавление в группу Manager"""
+        self.stdout.write('Создание менеджера...')
+
+        # Создаем группу Manager если её нет
+        manager_group, created = Group.objects.get_or_create(name='Manager')
+        if created:
+            self.stdout.write(self.style.SUCCESS('  ✅ Создана группа Manager'))
+
+        # Создаем пользователя-менеджера
+        if not User.objects.filter(email='manager@example.com').exists():
+            manager = User.objects.create_user(
+                email='manager@example.com',
+                password='manager',
+                name='Иван',
+                surname='Менеджеров',
+                number='+79991112233',
+                is_staff=False,  # Не админ
+                is_superuser=False,  # Не суперпользователь
+                is_email_verified=True  # Сразу верифицируем
+            )
+
+            # Добавляем в группу Manager
+            manager.groups.add(manager_group)
+
+            self.stdout.write(self.style.SUCCESS(f'  ✅ Создан менеджер: {manager.email}'))
+            self.stdout.write(self.style.SUCCESS(f'      Имя: {manager.name} {manager.surname}'))
+            self.stdout.write(self.style.SUCCESS(f'      Пароль: manager'))
+        else:
+            self.stdout.write(self.style.SUCCESS('  ✅ Менеджер уже существует'))
+
+        return manager_group
 
     def create_countries(self):
         """Создание стран для режиссёров и актёров"""

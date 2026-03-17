@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Панель менеджера{% endblock %} | Кинотеатр Премьера</title>
+    <link rel="stylesheet" href="{% static 'ticket/css/manager/manager-base.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Шапка в точности как на главной -->
+    <div class="site-header">
+        <div class="site-logo">КИНОТЕАТР ПРЕМЬЕРА</div>
+        <div class="site-user-panel">
+            <a href="{% url 'home' %}">На главную</a>
+            <a href="{% url 'about' %}">О кинотеатре</a>
+            <a href="{% url 'profile' %}">Личный кабинет</a>
+            <span>Привет, {{ user.name }}!</span>
+            <a href="{% url 'logout' %}">Выйти</a>
+        </div>
+    </div>
+
+    <div class="manager-container">
+        <!-- Заголовок панели -->
+        <div class="manager-header">
+            <h1>👔 Панель управления менеджера</h1>
+            <div class="user-info">
+                <span>{{ user.name }} {{ user.surname }}</span>
+                <span>{{ user.email }}</span>
+            </div>
+        </div>
+
+        <!-- Навигация -->
+        <nav class="manager-nav">
+            <a href="{% url 'manager_dashboard' %}" {% if request.resolver_match.url_name == 'manager_dashboard' %}class="active"{% endif %}>📊 Дашборд</a>
+            <a href="{% url 'manager_movies' %}" {% if request.resolver_match.url_name == 'manager_movies' %}class="active"{% endif %}>🎥 Фильмы</a>
+            <a href="{% url 'manager_screenings' %}" {% if request.resolver_match.url_name == 'manager_screenings' %}class="active"{% endif %}>🎫 Сеансы</a>
+            <a href="{% url 'manager_statistics' %}" {% if request.resolver_match.url_name == 'manager_statistics' %}class="active"{% endif %}>📈 Статистика</a>
+        </nav>
+
+        <!-- Сообщения -->
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Контент -->
+        {% block content %}{% endblock %}
+    </div>
+
+    {% csrf_token %}
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,41 @@
+{% extends 'ticket/manager/base_manager.html' %}
+{% load static %}
+
+{% block title %}Удаление сеанса{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ticket/css/manager/manager-forms.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="form-container confirmation-container">
+    <h2>❌ Подтверждение удаления</h2>
+
+    <p>
+        Вы уверены, что хотите удалить сеанс<br>
+        <strong>{{ screening.movie.title }}</strong><br>
+        <span style="font-size: 16px; color: #666;">
+            {{ screening.hall.name }} | {{ screening.start_time|date:"d.m.Y H:i" }}
+        </span>
+    </p>
+
+    {% if screening.tickets.exists %}
+        <div class="danger-message">
+            ⚠️ НЕВОЗМОЖНО УДАЛИТЬ!<br>
+            На этот сеанс уже куплены билеты ({{ screening.tickets.count }} шт.).<br>
+            Сначала нужно обработать возвраты.
+        </div>
+        <div class="form-actions">
+            <a href="{% url 'manager_screenings' %}" class="btn">Вернуться к списку</a>
+        </div>
+    {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-actions">
+                <a href="{% url 'manager_screenings' %}" class="btn btn-secondary">Отмена</a>
+                <button type="submit" class="btn btn-danger">Удалить сеанс</button>
+            </div>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

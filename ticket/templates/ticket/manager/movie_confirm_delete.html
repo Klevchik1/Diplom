@@ -1,0 +1,34 @@
+{% extends 'ticket/manager/base_manager.html' %}
+{% load static %}
+
+{% block title %}Удаление фильма{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ticket/css/manager/manager-forms.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="form-container confirmation-container">
+    <h2>❌ Подтверждение удаления</h2>
+
+    <p>
+        Вы уверены, что хотите удалить фильм<br>
+        <strong>"{{ movie.title }}" ({{ movie.release_year }})</strong>?
+    </p>
+
+    {% if movie.screenings.exists %}
+        <div class="warning-message">
+            ⚠️ У этого фильма есть сеансы ({{ movie.screenings.count }} шт.).<br>
+            При удалении фильма все связанные сеансы также будут удалены!
+        </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-actions">
+            <a href="{% url 'manager_movies' %}" class="btn btn-secondary">Отмена</a>
+            <button type="submit" class="btn btn-danger">Удалить фильм</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'ticket/manager/base_manager.html' %}
+
+{% block content %}
+<!-- Статистика -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>Всего фильмов</h3>
+        <div class="value">{{ total_movies|default:"0" }}</div>
+    </div>
+    <div class="stat-card">
+        <h3>Сеансов сегодня</h3>
+        <div class="value">{{ today_screenings|default:"0" }}</div>
+    </div>
+    <div class="stat-card">
+        <h3>Продано билетов</h3>
+        <div class="value">{{ today_tickets|default:"0" }}</div>
+    </div>
+    <div class="stat-card">
+        <h3>Выручка сегодня</h3>
+        <div class="value">{{ today_revenue|default:"0" }} ₽</div>
+    </div>
+</div>
+
+<!-- Таблица -->
+<div class="table-container">
+    <h2>Ближайшие сеансы</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ФИЛЬМ</th>
+                <th>ЗАЛ</th>
+                <th>ДАТА И ВРЕМЯ</th>
+                <th>ЦЕНА</th>
+                <th>СТАТУС</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for screening in upcoming_screenings %}
+            <tr>
+                <td>{{ screening.movie.title }}</td>
+                <td>{{ screening.hall.name }}</td>
+                <td>{{ screening.start_time|date:"d.m.Y H:i" }}</td>
+                <td>{{ screening.ticket_price }} ₽</td>
+                <td>
+                    {% if screening.start_time > now %}
+                        <span class="badge badge-success">Предстоит</span>
+                    {% else %}
+                        <span class="badge badge-warning">Идет</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center; color: #666;">Нет ближайших сеансов</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

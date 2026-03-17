@@ -1,0 +1,53 @@
+{% extends 'ticket/manager/base_manager.html' %}
+{% load static %}
+
+{% block title %}Управление фильмами{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h2>🎥 Управление фильмами</h2>
+    <a href="{% url 'manager_movie_add' %}" class="btn">➕ Добавить фильм</a>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Постер</th>
+                <th>Название</th>
+                <th>Жанр</th>
+                <th>Год</th>
+                <th>Возраст</th>
+                <th>Длительность</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for movie in movies %}
+            <tr>
+                <td>
+                    {% if movie.poster %}
+                        <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" class="poster-preview">
+                    {% else %}
+                        <span>Нет постера</span>
+                    {% endif %}
+                </td>
+                <td>{{ movie.title }}</td>
+                <td>{{ movie.genre.name }}</td>
+                <td>{{ movie.release_year }}</td>
+                <td>{{ movie.age_rating.name }}</td>
+                <td>{{ movie.get_duration_display }}</td>
+                <td>
+                    <a href="{% url 'manager_movie_edit' movie.id %}" class="btn btn-sm btn-warning">✏️ Ред.</a>
+                    <a href="{% url 'manager_movie_delete' movie.id %}" class="btn btn-sm btn-danger" data-confirm="Удалить фильм?">❌ Уд.</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center">Нет фильмов</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

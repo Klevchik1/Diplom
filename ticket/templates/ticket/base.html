@@ -21,6 +21,14 @@
 
             {% if user.is_authenticated %}
                 <a href="{% url 'profile' %}" class="btn">Личный кабинет</a>
+
+                {# Показываем ссылку на панель менеджера, если пользователь админ или менеджер #}
+                {% if user.is_staff or user.groups.all.0.name == 'Manager' %}
+                    <a href="{% url 'manager_dashboard' %}" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        👔 Панель менеджера
+                    </a>
+                {% endif %}
+
                 {% if user.is_staff %}
                     <a href="/admin/" class="btn-admin">Админ-панель</a>
                 {% endif %}

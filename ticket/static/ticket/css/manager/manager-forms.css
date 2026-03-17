@@ -1,0 +1,135 @@
+/* ===== ФОРМЫ В СТИЛЕ САЙТА ===== */
+.form-container {
+    background: rgba(30, 30, 30, 0.95);
+    padding: 30px;
+    border: 2px solid #ff0000;
+    border-radius: 10px;
+    max-width: 800px;
+    margin: 0 auto;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+}
+
+.form-container h2 {
+    color: #ffcc00;
+    font-size: 24px;
+    margin: 0 0 25px 0;
+    text-align: center;
+    text-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+    padding-bottom: 15px;
+    border-bottom: 1px solid #ff0000;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    color: #ffcc00;
+    margin-bottom: 8px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #ff0000;
+    border-radius: 8px;
+    background: rgba(20, 20, 20, 0.8);
+    color: white;
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #ffcc00;
+    outline: none;
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+}
+
+.form-group input[type="file"] {
+    padding: 10px;
+    background: rgba(20, 20, 20, 0.8);
+}
+
+.form-group input[type="file"]::-webkit-file-upload-button {
+    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.form-group input[type="file"]::-webkit-file-upload-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 10px rgba(255, 0, 0, 0.4);
+}
+
+.help-text {
+    display: block;
+    color: #aaa;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.errorlist {
+    list-style: none;
+    padding: 10px;
+    margin: 10px 0 0 0;
+    background: rgba(244, 67, 54, 0.1);
+    border: 1px solid #f44336;
+    border-radius: 5px;
+    color: #ff6b6b;
+}
+
+.errorlist li {
+    margin: 0;
+    font-size: 13px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #ff0000;
+}
+
+#image-preview {
+    margin: 20px 0;
+    text-align: center;
+}
+
+#image-preview img {
+    max-width: 200px;
+    max-height: 300px;
+    border-radius: 8px;
+    border: 3px solid #ffcc00;
+    box-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .form-container {
+        padding: 20px;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions a,
+    .form-actions button {
+        width: 100%;
+        text-align: center;
+    }
+}

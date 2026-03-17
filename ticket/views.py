@@ -33,6 +33,11 @@ from .utils import generate_enhanced_ticket_pdf, generate_ticket_pdf
 from .report_utils import ReportGenerator
 from .logging_utils import OperationLogger
 from decimal import Decimal
+from django.contrib.auth.decorators import user_passes_test
+from django.db.models import Count, Sum, Q, Avg, F
+from django.db.models.functions import TruncDate, TruncWeek, TruncMonth
+from datetime import datetime, timedelta
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -1666,3 +1671,399 @@ def generate_report(request):
             'end_date': end_date
         }
     })
+
+
+def is_manager(user):
+    """Проверка, является ли пользователь менеджером или staff"""
+    return user.is_authenticated and (user.is_staff or user.groups.filter(name='Manager').exists())
+
+
+@user_passes_test(is_manager, login_url='login')
+def manager_dashboard(request):
+    """Главная страница панели менеджера"""
+    # Статистика для дашборда
+    today = timezone.now().date()
+
+    # Количество фильмов
+    total_movies = Movie.objects.count()
+
+    # Количество сеансов сегодня
+    today_screenings = Screening.objects.filter(
+        start_time__date=today
+    ).count()
+
+    # Количество проданных билетов сегодня
+    today_tickets = Ticket.objects.filter(
+        created_at__date=today,
+        status__code='active'
+    ).count()
+
+    # Выручка сегодня
+    today_revenue = Ticket.objects.filter(
+        created_at__date=today,
+        status__code='active'
+    ).aggregate(total=Sum('price'))['total'] or 0
+
+    # Ближайшие сеансы
+    upcoming_screenings = Screening.objects.filter(
+        start_time__gt=timezone.now()
+    ).select_related('movie', 'hall').order_by('start_time')[:5]
+
+    context = {
+        'total_movies': total_movies,
+        'today_screenings': today_screenings,
+        'today_tickets': today_tickets,
+        'today_revenue': today_revenue,
+        'upcoming_screenings': upcoming_screenings,
+    }
+
+    return render(request, 'ticket/manager/dashboard.html', context)
+
+
+@user_passes_test(is_manager, login_url='login')
+def manager_movies(request):
+    """Управление фильмами для менеджера"""
+    movies = Movie.objects.all().select_related('genre', 'age_rating').order_by('-created_at')
+    return render(request, 'ticket/manager/movies.html', {'movies': movies})
+
+
+@user_passes_test(is_manager, login_url='login')
+def manager_movie_add(request):
+    """Добавление фильма менеджером"""
+    if request.method == 'POST':
+        form = MovieForm(request.POST, request.FILES)
+        if form.is_valid():
+            movie = form.save()
+
+            OperationLogger.log_operation(
+                request=request,
+                action_type='CREATE',
+                module_type='MOVIES',
+                description=f'Менеджер создал фильм: {movie.title}',
+                object_id=movie.pk,
+                object_repr=str(movie)
+            )
+
+            messages.success(request, f'Фильм "{movie.title}" успешно добавлен.')
+            return redirect('manager_movies')
+    else:
+        form = MovieForm()
+
+    return render(request, 'ticket/manager/movie_form.html', {'form': form, 'action': 'add'})
+
+
+@user_passes_test(is_manager, login_url='login')
+def manager_movie_edit(request, movie_id):
+    """Редактирование фильма менеджером"""
+    movie = get_object_or_404(Movie, pk=movie_id)
+
+    if request.method == 'POST':
+        form = MovieForm(request.POST, request.FILES, instance=movie)
+        if form.is_valid():
+            movie = form.save()
+
+            OperationLogger.log_operation(
+                request=request,
+                action_type='UPDATE',
+                module_type='MOVIES',
+                description=f'Менеджер обновил фильм: {movie.title}',
+                object_id=movie.pk,
+                object_repr=str(movie)
+            )
+
+            messages.success(request, f'Фильм "{movie.title}" успешно обновлен.')
+            return redirect('manager_movies')
+    else:
+        form = MovieForm(instance=movie)
+
+    return render(request, 'ticket/manager/movie_form.html', {'form': form, 'movie': movie, 'action': 'edit'})
+
+
+@user_passes_test(is_manager, login_url='login')
+def manager_movie_delete(request, movie_id):
+    """Удаление фильма менеджером"""
+    movie = get_object_or_404(Movie, pk=movie_id)
+
+    if request.method == 'POST':
+        title = movie.title
+
+        OperationLogger.log_operation(
+            request=request,
+            action_type='DELETE',
+            module_type='MOVIES',
+            description=f'Менеджер удалил фильм: {title}',
+            object_id=movie.pk,
+            object_repr=str(movie)
+        )
+
+        movie.delete()
+        messages.success(request, f'Фильм "{title}" успешно удален.')
+        return redirect('manager_movies')
+
+    return render(request, 'ticket/manager/movie_confirm_delete.html', {'movie': movie})
+
+
+@user_passes_test(is_manager, login_url='login')
+def manager_screenings(request):
+    """Управление сеансами для менеджера"""
+    screenings = Screening.objects.all().select_related(
+        'movie', 'hall', 'hall__hall_type'
+    ).order_by('start_time')
+
+    # Фильтры
+    date_filter = request.GET.get('date', '')
+    movie_filter = request.GET.get('movie', '')
+    hall_filter = request.GET.get('hall', '')
+
+    if date_filter:
+        try:
+            filter_date = datetime.strptime(date_filter, '%Y-%m-%d').date()
+            screenings = screenings.filter(start_time__date=filter_date)
+        except ValueError:
+            pass
+
+    if movie_filter:
+        screenings = screenings.filter(movie_id=movie_filter)
+
+    if hall_filter:
+        screenings = screenings.filter(hall_id=hall_filter)
+
+    movies = Movie.objects.all().order_by('title')
+    halls = Hall.objects.all()
+
+    context = {
+        'screenings': screenings,
+        'movies': movies,
+        'halls': halls,
+        'filters': {
+            'date': date_filter,
+            'movie': movie_filter,
+            'hall': hall_filter,
+        }
+    }
+
+    return render(request, 'ticket/manager/screenings.html', context)
+
+
+@user_passes_test(is_manager, login_url='login')
+def manager_screening_add(request):
+    """Добавление сеанса менеджером"""
+    if request.method == 'POST':
+        form = ScreeningForm(request.POST)
+        if form.is_valid():
+            screening = form.save(commit=False)
+
+            # Расчет времени окончания
+            if screening.movie and screening.start_time:
+                duration_timedelta = timedelta(minutes=screening.movie.duration)
+                screening.end_time = screening.start_time + duration_timedelta + timedelta(minutes=10)
+                screening.ticket_price = screening.calculate_ticket_price()
+
+            try:
+                screening.clean()  # Валидация
+                screening.save()
+
+                OperationLogger.log_operation(
+                    request=request,
+                    action_type='CREATE',
+                    module_type='SCREENINGS',
+                    description=f'Менеджер создал сеанс: {screening.movie.title} в {screening.hall.name}',
+                    object_id=screening.pk,
+                    object_repr=str(screening)
+                )
+
+                messages.success(request, 'Сеанс успешно добавлен.')
+                return redirect('manager_screenings')
+            except ValidationError as e:
+                for error in e.messages:
+                    messages.error(request, error)
+    else:
+        form = ScreeningForm()
+
+    return render(request, 'ticket/manager/screening_form.html', {'form': form, 'action': 'add'})
+
+
+@user_passes_test(is_manager, login_url='login')
+def manager_screening_edit(request, screening_id):
+    """Редактирование сеанса менеджером"""
+    screening = get_object_or_404(Screening, pk=screening_id)
+
+    if request.method == 'POST':
+        form = ScreeningForm(request.POST, instance=screening)
+        if form.is_valid():
+            updated_screening = form.save(commit=False)
+
+            # Пересчет времени окончания и цены
+            if updated_screening.movie and updated_screening.start_time:
+                duration_timedelta = timedelta(minutes=updated_screening.movie.duration)
+                updated_screening.end_time = updated_screening.start_time + duration_timedelta + timedelta(minutes=10)
+
+                if (updated_screening.hall != screening.hall) or (updated_screening.start_time != screening.start_time):
+                    updated_screening.ticket_price = updated_screening.calculate_ticket_price()
+
+            try:
+                updated_screening.clean()
+                updated_screening.save()
+
+                OperationLogger.log_operation(
+                    request=request,
+                    action_type='UPDATE',
+                    module_type='SCREENINGS',
+                    description=f'Менеджер обновил сеанс: {screening.movie.title}',
+                    object_id=screening.pk,
+                    object_repr=str(screening)
+                )
+
+                messages.success(request, 'Сеанс успешно обновлен.')
+                return redirect('manager_screenings')
+            except ValidationError as e:
+                for error in e.messages:
+                    messages.error(request, error)
+    else:
+        form = ScreeningForm(instance=screening)
+
+    return render(request, 'ticket/manager/screening_form.html', {'form': form, 'screening': screening, 'action': 'edit'})
+
+
+@user_passes_test(is_manager, login_url='login')
+def manager_screening_delete(request, screening_id):
+    """Удаление сеанса менеджером"""
+    screening = get_object_or_404(Screening, pk=screening_id)
+
+    if request.method == 'POST':
+        movie_title = screening.movie.title
+        hall_name = screening.hall.name
+        start_time = screening.start_time
+
+        # Проверяем, есть ли купленные билеты
+        if screening.tickets.exists():
+            messages.error(request, 'Нельзя удалить сеанс, на который уже куплены билеты.')
+            return redirect('manager_screenings')
+
+        OperationLogger.log_operation(
+            request=request,
+            action_type='DELETE',
+            module_type='SCREENINGS',
+            description=f'Менеджер удалил сеанс: {movie_title} в {hall_name}',
+            object_id=screening.pk,
+            object_repr=str(screening)
+        )
+
+        screening.delete()
+        messages.success(request, 'Сеанс успешно удален.')
+        return redirect('manager_screenings')
+
+    return render(request, 'ticket/manager/screening_confirm_delete.html', {'screening': screening})
+
+
+@user_passes_test(is_manager, login_url='login')
+def manager_statistics(request):
+    """Статистика и отчеты для менеджера"""
+    period = request.GET.get('period', 'week')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    today = timezone.now().date()
+
+    # Определяем диапазон дат
+    if start_date and end_date:
+        try:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+        except ValueError:
+            start_date = today - timedelta(days=30)
+            end_date = today
+    else:
+        if period == 'day':
+            start_date = today
+            end_date = today
+        elif period == 'week':
+            start_date = today - timedelta(days=7)
+            end_date = today
+        elif period == 'month':
+            start_date = today - timedelta(days=30)
+            end_date = today
+        else:
+            start_date = today - timedelta(days=30)
+            end_date = today
+
+    # Фильтр по датам для билетов
+    date_filter = Q(created_at__date__gte=start_date, created_at__date__lte=end_date)
+
+    # Основная статистика
+    total_tickets = Ticket.objects.filter(date_filter, status__code='active').count()
+    total_revenue = Ticket.objects.filter(date_filter, status__code='active').aggregate(
+        total=Sum('price')
+    )['total'] or 0
+
+    refunded_tickets = Ticket.objects.filter(
+        date_filter,
+        status__code='refunded'
+    ).count()
+
+    # Продажи по дням
+    sales_by_day = Ticket.objects.filter(
+        date_filter,
+        status__code='active'
+    ).annotate(
+        day=TruncDate('created_at')
+    ).values('day').annotate(
+        tickets=Count('id'),
+        revenue=Sum('price')
+    ).order_by('day')
+
+    # Популярные фильмы
+    popular_movies = Movie.objects.filter(
+        screenings__tickets__created_at__date__gte=start_date,
+        screenings__tickets__created_at__date__lte=end_date,
+        screenings__tickets__status__code='active'
+    ).annotate(
+        tickets_sold=Count('screenings__tickets'),
+        revenue=Sum('screenings__tickets__price')
+    ).order_by('-tickets_sold')[:10]
+
+    # Загруженность залов
+    hall_occupancy = []
+    halls = Hall.objects.all()
+
+    for hall in halls:
+        total_seats = hall.rows * hall.seats_per_row
+        screenings_in_period = Screening.objects.filter(
+            hall=hall,
+            start_time__date__gte=start_date,
+            start_time__date__lte=end_date
+        )
+
+        total_tickets_sold = Ticket.objects.filter(
+            screening__in=screenings_in_period,
+            status__code='active'
+        ).count()
+
+        total_possible_tickets = screenings_in_period.count() * total_seats
+
+        if total_possible_tickets > 0:
+            occupancy_percent = (total_tickets_sold / total_possible_tickets) * 100
+        else:
+            occupancy_percent = 0
+
+        hall_occupancy.append({
+            'hall': hall,
+            'total_seats': total_seats,
+            'screenings_count': screenings_in_period.count(),
+            'tickets_sold': total_tickets_sold,
+            'occupancy_percent': round(occupancy_percent, 1)
+        })
+
+    context = {
+        'period': period,
+        'start_date': start_date,
+        'end_date': end_date,
+        'total_tickets': total_tickets,
+        'total_revenue': total_revenue,
+        'refunded_tickets': refunded_tickets,
+        'sales_by_day': sales_by_day,
+        'popular_movies': popular_movies,
+        'hall_occupancy': hall_occupancy,
+    }
+
+    return render(request, 'ticket/manager/statistics.html', context)
