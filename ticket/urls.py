@@ -47,16 +47,19 @@ urlpatterns = [
     # Руководство пользователя
     path('about/', views.about, name='about'),
     # Менеджер панель
-    path('manager/', views.manager_dashboard, name='manager_dashboard'),
+    path('manager/dashboard/', views.manager_dashboard, name='manager_dashboard'),
     path('manager/movies/', views.manager_movies, name='manager_movies'),
     path('manager/movies/add/', views.manager_movie_add, name='manager_movie_add'),
-    path('manager/movies/edit/<int:movie_id>/', views.manager_movie_edit, name='manager_movie_edit'),
-    path('manager/movies/delete/<int:movie_id>/', views.manager_movie_delete, name='manager_movie_delete'),
+    path('manager/movies/<int:movie_id>/edit/', views.manager_movie_edit, name='manager_movie_edit'),
+    path('manager/movies/<int:movie_id>/delete/', views.manager_movie_delete, name='manager_movie_delete'),
     path('manager/screenings/', views.manager_screenings, name='manager_screenings'),
     path('manager/screenings/add/', views.manager_screening_add, name='manager_screening_add'),
-    path('manager/screenings/edit/<int:screening_id>/', views.manager_screening_edit, name='manager_screening_edit'),
-    path('manager/screenings/delete/<int:screening_id>/', views.manager_screening_delete, name='manager_screening_delete'),
+    path('manager/screenings/<int:screening_id>/edit/', views.manager_screening_edit, name='manager_screening_edit'),
+    path('manager/screenings/<int:screening_id>/delete/', views.manager_screening_delete, name='manager_screening_delete'),
     path('manager/statistics/', views.manager_statistics, name='manager_statistics'),
+    path('manager/api/countries/', views.manager_api_countries, name='manager_api_countries'),
+    path('manager/api/quick-add-director/', views.manager_quick_add_director, name='manager_quick_add_director'),
+    path('manager/api/quick-add-actor/', views.manager_quick_add_actor, name='manager_quick_add_actor'),
 ]
 
 if settings.DEBUG:

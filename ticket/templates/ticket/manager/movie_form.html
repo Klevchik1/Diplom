@@ -5,19 +5,50 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'ticket/css/manager/manager-forms.css' %}">
+<link rel="stylesheet" href="{% static 'ticket/css/manager/modal.css' %}">
+<link rel="stylesheet" href="{% static 'ticket/css/manager/movie-form.css' %}">
+<!-- Опционально: подключаем Select2 для красивого выбора -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 {% endblock %}
 
 {% block content %}
 <div class="form-container">
     <h2>{% if action == 'add' %}➕ Добавление нового фильма{% else %}✏️ Редактирование фильма "{{ movie.title }}"{% endif %}</h2>
 
-    <form method="post" enctype="multipart/form-data" data-validate="true">
+    <!-- Кнопки быстрого добавления -->
+    <div class="quick-add-buttons">
+        <button type="button" class="btn-quick-add" id="quick-add-director">
+            <span>➕</span> Быстро добавить режиссёра
+        </button>
+        <button type="button" class="btn-quick-add" id="quick-add-actor">
+            <span>➕</span> Быстро добавить актёра
+        </button>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" data-validate="true" id="movie-form">
         {% csrf_token %}
 
         {% for field in form %}
         <div class="form-group">
             <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
+
+            {% if field.name == 'directors' or field.name == 'actors' %}
+                <div class="field-with-quickadd">
+                    <div class="select-wrapper">
+                        {{ field }}
+                    </div>
+                    <div class="help-text-small">
+                        {% if field.name == 'directors' %}
+                            Удерживайте Ctrl (Cmd) для выбора нескольких режиссёров
+                        {% else %}
+                            Удерживайте Ctrl (Cmd) для выбора нескольких актёров
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                {{ field }}
+            {% endif %}
+
             {% if field.help_text %}
                 <small class="help-text">{{ field.help_text }}</small>
             {% endif %}
@@ -31,7 +62,12 @@
         </div>
         {% endfor %}
 
-        <div id="image-preview"></div>
+        <div id="image-preview">
+            {% if movie and movie.poster %}
+                <h4>Текущий постер:</h4>
+                <img src="{{ movie.poster.url }}" alt="{{ movie.title }}">
+            {% endif %}
+        </div>
 
         <div class="form-actions">
             <a href="{% url 'manager_movies' %}" class="btn btn-secondary">Отмена</a>
@@ -44,5 +80,8 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'ticket/js/manager/manager-forms.js' %}"></script>
+<!-- Опционально: подключаем jQuery и Select2 для красивого выбора -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="{% static 'ticket/js/manager/movie-form.js' %}"></script>
 {% endblock %}

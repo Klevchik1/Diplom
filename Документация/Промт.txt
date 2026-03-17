@@ -47,11 +47,12 @@ cinema-management-system/           # Корень проекта (Git-репо�
 │   │   │   ├── backup_db.py
 │   │   │   ├── big_populate_db.py
 │   │   │   ├── cleanup_expired_registrations.py
+│   │   │   ├── create_manager.py       # НОВОЕ: Создание менеджера
 │   │   │   ├── createsuperuser_custom.py
 │   │   │   ├── import_kinopoisk_movies.py
-│   │   │   ├── populate_db.py
 │   │   │   ├── restore_db.py
-│   │   │   └── run_bot.py
+│   │   │   ├── run_bot.py
+│   │   │   └── setup_manager_permissions.py  # НОВОЕ: Настройка прав менеджера
 │   │   └── __init__.py
 │   │
 │   ├── migrations/                      # Миграции БД
@@ -66,6 +67,10 @@ cinema-management-system/           # Корень проекта (Git-репо�
 │   │       │   │   ├── backup-management.css
 │   │       │   │   ├── dashboard.css
 │   │       │   │   └── reports.css
+│   │       │   ├── manager/              # НОВОЕ: Стили для панели менеджера
+│   │       │   │   ├── manager-base.css
+│   │       │   │   ├── manager-forms.css
+│   │       │   │   └── manager-statistics.css
 │   │       │   └── user/
 │   │       │       ├── about.css
 │   │       │       ├── auth.css
@@ -78,6 +83,10 @@ cinema-management-system/           # Корень проекта (Git-репо�
 │   │           ├── admin/
 │   │           │   ├── admin-base.js
 │   │           │   └── backup-management.js
+│   │           ├── manager/               # НОВОЕ: JS для панели менеджера
+│   │           │   ├── manager-base.js
+│   │           │   ├── manager-forms.js
+│   │           │   └── manager-statistics.js
 │   │           └── user/
 │   │               ├── auth.js
 │   │               ├── base.js
@@ -96,7 +105,7 @@ cinema-management-system/           # Корень проекта (Git-репо�
 │   │   ├── __init__.py
 │   │   └── bot.py
 │   │
-│   ├── templates/                        # HTML шаблоны приложения
+│   ├── templates/                        # HTML шаблоны
 │   │   ├── admin/                         # Кастомные шаблоны для админки Django
 │   │   │   ├── ticket/
 │   │   │   │   ├── backupmanager/
@@ -109,21 +118,33 @@ cinema-management-system/           # Корень проекта (Git-репо�
 │   │   │   │       └── change_form.html
 │   │   │   ├── backup_management.html
 │   │   │   ├── base_site.html
+│   │   │   ├── import_form.html           # НОВОЕ: Импорт данных
+│   │   │   ├── import_result.html         # НОВОЕ: Результаты импорта
 │   │   │   └── login.html
-│   │   └── ticket/                         # Основные шаблоны приложения
+│   │   └── ticket/
 │   │       ├── admin/                       # Шаблоны для кастомной админки с отчетами
 │   │       │   └── reports/
 │   │       │       ├── halls_report.html
 │   │       │       ├── movies_report.html
-│   │       │       ├── reports.html
 │   │       │       ├── revenue_report.html
-│   │       │       └── sales_report.html
+│   │       │       ├── sales_report.html
+│   │       │       ├── export_logs.html      # НОВОЕ: Экспорт логов
+│   │       │       └── reports.html
+│   │       ├── manager/                      # НОВОЕ: Шаблоны панели менеджера
+│   │       │   ├── base_manager.html
+│   │       │   ├── dashboard.html
+│   │       │   ├── movie_confirm_delete.html
+│   │       │   ├── movie_form.html
+│   │       │   ├── movies.html
+│   │       │   ├── screening_confirm_delete.html
+│   │       │   ├── screening_form.html
+│   │       │   ├── screenings.html
+│   │       │   └── statistics.html
 │   │       ├── about.html
 │   │       ├── admin_dashboard.html
 │   │       ├── base.html
 │   │       ├── email_change_verification.html
 │   │       ├── email_verification.html
-│   │       ├── export_logs.html
 │   │       ├── hall_form.html
 │   │       ├── home.html
 │   │       ├── login.html
@@ -143,6 +164,7 @@ cinema-management-system/           # Корень проекта (Git-репо�
 │   │
 │   ├── templatetags/                      # Кастомные теги шаблонов
 │   │   ├── __init__.py
+│   │   ├── custom_filters.py               # НОВОЕ: Кастомные фильтры
 │   │   ├── report_filters.py
 │   │   ├── ru_date.py
 │   │   └── ru_filters.py
@@ -164,10 +186,12 @@ cinema-management-system/           # Корень проекта (Git-репо�
 │   ├── export_utils.py
 │   ├── forms.py
 │   ├── logging_utils.py
+│   ├── middleware.py                       # НОВОЕ: Middleware для обработки запросов
 │   ├── models.py
 │   ├── pdf_utils.py
 │   ├── report_utils.py
 │   ├── tests.py
+│   ├── tmdb_client.py                      # НОВОЕ: Клиент для TMDB API
 │   ├── urls.py
 │   ├── utils.py
 │   ├── views.py
@@ -176,16 +200,6 @@ cinema-management-system/           # Корень проекта (Git-репо�
 ├── БД/                                   # Документация по БД
 │   ├── ER-модель.mwb
 │   └── Инфологическая модель БД.drawio
-│
-├── Блокнот/                              # Заметки и документация
-│   ├── Возврат билета.txt
-│   ├── Модель Ticket.txt
-│   ├── Подключение к БД.txt
-│   ├── Руководство по установке.txt
-│   ├── Создание БД.txt
-│   ├── Схема зала.txt
-│   ├── Фильтрация.txt
-│   └── Фрагменты тестов.txt
 │
 ├── Диаграммы/                             # UML и прочие диаграммы
 │   ├── Архитектурный шаблон MVT.drawio
@@ -197,8 +211,7 @@ cinema-management-system/           # Корень проекта (Git-репо�
 │   ├── Диаграмма контекстная.drawio
 │   ├── Диаграмма потоков данных DFD.drawio
 │   ├── Диаграмма прецедентов.drawio
-│   ├── Диаграмма развертывания.drawio
-│   └── Инфологическая модель БД.drawio
+│   └── Диаграмма развертывания.drawio
 │
 ├── Документация/                          # Дипломные и курсовые материалы
 │   ├── 22024_Кинотеатр.pptx
@@ -217,6 +230,7 @@ cinema-management-system/           # Корень проекта (Git-репо�
 │   ├── screening-details.drawio
 │   └── screening_partial.drawio
 │
+├── .env                                    # НОВОЕ: Переменные окружения
 ├── .gitignore
 ├── manage.py
 ├── README.md

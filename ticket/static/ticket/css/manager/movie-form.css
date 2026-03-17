@@ -1,0 +1,393 @@
+/* ===== СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ ФОРМЫ ФИЛЬМА ===== */
+
+/* Контейнер формы */
+.form-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 25px;
+    background: rgba(30, 30, 30, 0.95);
+    border: 2px solid #ff0000;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+    overflow: hidden; /* Предотвращает выход содержимого */
+}
+
+/* Заголовок */
+.form-container h2 {
+    color: #ffcc00;
+    font-size: 24px;
+    margin: 0 0 20px 0;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #ff0000;
+    text-align: center;
+    word-wrap: break-word;
+}
+
+/* Группа полей */
+.form-group {
+    margin-bottom: 20px;
+    width: 100%;
+    clear: both;
+}
+
+.form-group label {
+    display: block;
+    color: #ffcc00;
+    margin-bottom: 8px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* Все поля ввода */
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    max-width: 100%; /* Ограничиваем максимальную ширину */
+    padding: 12px 15px;
+    border: 2px solid #ff0000;
+    border-radius: 8px;
+    background: rgba(20, 20, 20, 0.8);
+    color: white;
+    font-size: 16px;
+    transition: all 0.3s;
+    box-sizing: border-box; /* Важно: padding не увеличивает ширину */
+}
+
+/* Специально для textarea */
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+    max-height: 200px;
+}
+
+/* Поле длительности */
+#id_duration {
+    width: 100%;
+    max-width: 100%;
+}
+
+.field-with-quickadd {
+    margin-bottom: 5px;
+    width: 100%;
+}
+
+.select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+/* Стили для самого select */
+.select-wrapper select {
+    width: 100%;
+    max-width: 100%;
+    padding: 10px;
+    border: 2px solid #ff0000;
+    border-radius: 8px;
+    background: rgba(20, 20, 20, 0.8) !important; /* Тёмный фон */
+    color: white !important; /* Белый текст */
+    min-height: 120px;
+    font-size: 14px;
+    box-sizing: border-box;
+    -webkit-appearance: none; /* Убирает стандартные стили браузера */
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* Стили для опций в выпадающем списке */
+.select-wrapper select option {
+    background: #1e1e1e !important; /* Тёмный фон */
+    color: white !important; /* Белый текст */
+    padding: 10px;
+    font-size: 14px;
+}
+
+/* Стили при наведении на опцию */
+.select-wrapper select option:hover {
+    background: #ff0000 !important;
+    color: white !important;
+}
+
+/* Стили для выбранной опции */
+.select-wrapper select option:checked {
+    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%) !important;
+    color: white !important;
+}
+
+/* Для браузеров на основе WebKit (Chrome, Safari, Edge) */
+.select-wrapper select::-webkit-listbox {
+    background: #1e1e1e;
+    color: white;
+}
+
+.select-wrapper select::-webkit-listbox option {
+    background: #1e1e1e;
+    color: white;
+}
+
+/* Для Firefox */
+.select-wrapper select {
+    scrollbar-color: #ff0000 #1e1e1e;
+    scrollbar-width: thin;
+}
+
+.select-wrapper select option {
+    background-color: #1e1e1e;
+    color: white;
+}
+
+/* Убираем белый фон при фокусе */
+.select-wrapper select:focus {
+    outline: none;
+    border-color: #ffcc00;
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+    background: rgba(20, 20, 20, 0.9) !important;
+}
+
+/* Если используется Select2 */
+.select2-container--default .select2-selection--multiple {
+    background-color: rgba(20, 20, 20, 0.8) !important;
+    border: 2px solid #ff0000 !important;
+    border-radius: 8px !important;
+    min-height: 100px;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%) !important;
+    color: white !important;
+    border: none !important;
+    padding: 5px 10px !important;
+    border-radius: 5px !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: white !important;
+    margin-right: 5px;
+    border: none !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    background: transparent !important;
+    color: #ffcc00 !important;
+}
+
+.select2-dropdown {
+    background-color: #1e1e1e !important;
+    border: 2px solid #ff0000 !important;
+    border-radius: 8px !important;
+}
+
+.select2-results__option {
+    color: white !important;
+    padding: 8px 12px !important;
+}
+
+.select2-results__option--highlighted {
+    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%) !important;
+}
+
+.select2-search__field {
+    background-color: #333 !important;
+    color: white !important;
+    border: 1px solid #ff0000 !important;
+    border-radius: 5px !important;
+    padding: 5px !important;
+}
+
+/* Текст подсказки */
+.help-text-small {
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 5px;
+    font-style: italic;
+    word-wrap: break-word;
+}
+
+/* Кнопки быстрого добавления */
+.quick-add-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.btn-quick-add {
+    background: linear-gradient(135deg, #4a00e0 0%, #8e2de2 100%);
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    flex: 1 1 auto; /* Кнопки растягиваются */
+    min-width: 200px; /* Минимальная ширина */
+}
+
+.btn-quick-add:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(74, 0, 224, 0.4);
+}
+
+.btn-quick-add span {
+    font-size: 16px;
+}
+
+/* Текстовые поля */
+.help-text {
+    display: block;
+    color: #aaa;
+    font-size: 12px;
+    margin-top: 5px;
+    word-wrap: break-word;
+}
+
+/* Ошибки */
+.errorlist {
+    list-style: none;
+    padding: 10px;
+    margin: 10px 0 0 0;
+    background: rgba(244, 67, 54, 0.1);
+    border: 1px solid #f44336;
+    border-radius: 5px;
+    color: #ff6b6b;
+    word-wrap: break-word;
+}
+
+.errorlist li {
+    margin: 0;
+    font-size: 13px;
+}
+
+/* Предпросмотр изображения */
+#image-preview {
+    margin: 20px 0;
+    text-align: center;
+    width: 100%;
+}
+
+#image-preview h4 {
+    color: #ffcc00;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+#image-preview img {
+    max-width: 100%;
+    max-height: 250px;
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+    border: 3px solid #ffcc00;
+    box-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
+}
+
+/* Кнопки действий */
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #ff0000;
+    flex-wrap: wrap;
+}
+
+.form-actions .btn,
+.form-actions .btn-secondary {
+    padding: 12px 25px;
+    font-size: 16px;
+    min-width: 120px;
+    text-align: center;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .form-container {
+        padding: 15px;
+    }
+
+    .quick-add-buttons {
+        flex-direction: column;
+    }
+
+    .btn-quick-add {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions .btn,
+    .form-actions .btn-secondary {
+        width: 100%;
+    }
+
+    .select-wrapper select {
+        min-height: 100px;
+    }
+
+    /* Уменьшаем padding на мобильных */
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 10px;
+        font-size: 14px;
+    }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+    .form-container h2 {
+        font-size: 20px;
+    }
+
+    .btn-quick-add {
+        font-size: 13px;
+        padding: 10px 15px;
+    }
+
+    .form-group label {
+        font-size: 13px;
+    }
+}
+
+/* Принудительное исправление для всех браузеров */
+select,
+select option,
+.select-wrapper select,
+.select-wrapper select option {
+    background-color: #1e1e1e !important;
+    color: white !important;
+}
+
+/* Для Internet Explorer */
+select::-ms-expand {
+    display: none;
+}
+
+select:-ms-expand {
+    display: none;
+}
+
+/* Убираем стандартные стили Firefox */
+@-moz-document url-prefix() {
+    .select-wrapper select {
+        background-color: #1e1e1e !important;
+        color: white !important;
+        text-shadow: none !important;
+    }
+
+    .select-wrapper select option {
+        background-color: #1e1e1e !important;
+        color: white !important;
+    }
+}

@@ -11,7 +11,8 @@ from .models import (
     User, Movie, Hall, Screening, OperationLog,
     Genre, AgeRating, Director, Actor, Country, HallType,
     ActionType, ModuleType, TicketStatus, TicketGroup,
-    EmailChangeRequest, PendingRegistration, PasswordResetRequest
+    EmailChangeRequest, PendingRegistration, PasswordResetRequest,
+    MovieDirector, MovieActor
 )
 from django import forms
 from django.utils.html import format_html

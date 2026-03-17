@@ -1,0 +1,192 @@
+/* ===== МОДАЛЬНЫЕ ОКНА ===== */
+.modal {
+    display: block;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    overflow: auto;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background: rgba(30, 30, 30, 0.95);
+    margin: 5% auto;
+    padding: 25px;
+    border: 2px solid #ff0000;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+    animation: slideIn 0.3s;
+    position: relative;
+    box-sizing: border-box;
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ff0000;
+}
+
+.modal-header h3 {
+    color: #ffcc00;
+    margin: 0;
+    font-size: 20px;
+    word-wrap: break-word;
+    padding-right: 30px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: #ffcc00;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: all 0.3s;
+    position: absolute;
+    top: 15px;
+    right: 20px;
+}
+
+.modal-close:hover {
+    color: #ff0000;
+    transform: scale(1.2);
+}
+
+.modal-body {
+    margin-bottom: 20px;
+}
+
+/* Форма в модальном окне */
+#quick-add-form {
+    width: 100%;
+}
+
+#quick-add-form .form-group {
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+#quick-add-form input,
+#quick-add-form select,
+#quick-add-form textarea {
+    width: 100%;
+    max-width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #ff0000;
+    border-radius: 8px;
+    background: rgba(20, 20, 20, 0.8);
+    color: white;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+#quick-add-form textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #ff0000;
+    flex-wrap: wrap;
+}
+
+.modal-actions .btn,
+.modal-actions .btn-secondary {
+    padding: 10px 20px;
+    font-size: 14px;
+    min-width: 100px;
+    text-align: center;
+}
+
+.modal-message {
+    padding: 12px 15px;
+    border-radius: 5px;
+    margin-top: 15px;
+    font-weight: bold;
+    text-align: center;
+    animation: slideIn 0.3s;
+    word-wrap: break-word;
+}
+
+.modal-message.success {
+    background: rgba(76, 175, 80, 0.2);
+    border: 1px solid #4CAF50;
+    color: #4CAF50;
+}
+
+.modal-message.error {
+    background: rgba(244, 67, 54, 0.2);
+    border: 1px solid #f44336;
+    color: #f44336;
+}
+
+/* Адаптивность для модального окна */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+        padding: 20px;
+    }
+
+    .modal-header h3 {
+        font-size: 18px;
+        padding-right: 25px;
+    }
+
+    .modal-close {
+        font-size: 24px;
+        top: 12px;
+        right: 15px;
+    }
+
+    .modal-actions {
+        flex-direction: column;
+    }
+
+    .modal-actions .btn,
+    .modal-actions .btn-secondary {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        padding: 15px;
+    }
+
+    .modal-header h3 {
+        font-size: 16px;
+    }
+
+    #quick-add-form input,
+    #quick-add-form select,
+    #quick-add-form textarea {
+        font-size: 13px;
+        padding: 8px 10px;
+    }
+}

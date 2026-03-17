@@ -15,6 +15,11 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from .forms import DirectorForm, ActorForm
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from .forms import DirectorForm, ActorForm
 
 from .email_utils import send_verification_email, send_welcome_email, send_password_reset_email, send_email_change_verification
 from .forms import (
@@ -2067,3 +2072,80 @@ def manager_statistics(request):
     }
 
     return render(request, 'ticket/manager/statistics.html', context)
+
+
+@user_passes_test(is_manager, login_url='login')
+def manager_api_countries(request):
+    """API для получения списка стран"""
+    countries = Country.objects.all().values('id', 'name').order_by('name')
+    return JsonResponse({'countries': list(countries)})
+
+
+@user_passes_test(is_manager, login_url='login')
+@require_POST
+def manager_quick_add_director(request):
+    """Быстрое добавление режиссёра через AJAX"""
+    form = DirectorForm(request.POST)
+    if form.is_valid():
+        director = form.save()
+
+        OperationLogger.log_operation(
+            request=request,
+            action_type='CREATE',
+            module_type='MOVIES',
+            description=f'Быстрое добавление режиссёра: {director.name} {director.surname}',
+            object_id=director.pk,
+            object_repr=str(director)
+        )
+
+        return JsonResponse({
+            'success': True,
+            'id': director.id,
+            'name': str(director),
+            'message': f'✅ Режиссёр {director.name} {director.surname} успешно добавлен!'
+        })
+    else:
+        errors = []
+        for field, field_errors in form.errors.items():
+            label = form.fields[field].label if field in form.fields else field
+            for error in field_errors:
+                errors.append(f"{label}: {error}")
+        return JsonResponse({
+            'success': False,
+            'message': '❌ ' + '; '.join(errors) if errors else '❌ Ошибка в форме'
+        })
+
+
+@user_passes_test(is_manager, login_url='login')
+@require_POST
+def manager_quick_add_actor(request):
+    """Быстрое добавление актёра через AJAX"""
+    form = ActorForm(request.POST)
+    if form.is_valid():
+        actor = form.save()
+
+        OperationLogger.log_operation(
+            request=request,
+            action_type='CREATE',
+            module_type='MOVIES',
+            description=f'Быстрое добавление актёра: {actor.name} {actor.surname}',
+            object_id=actor.pk,
+            object_repr=str(actor)
+        )
+
+        return JsonResponse({
+            'success': True,
+            'id': actor.id,
+            'name': str(actor),
+            'message': f'✅ Актёр {actor.name} {actor.surname} успешно добавлен!'
+        })
+    else:
+        errors = []
+        for field, field_errors in form.errors.items():
+            label = form.fields[field].label if field in form.fields else field
+            for error in field_errors:
+                errors.append(f"{label}: {error}")
+        return JsonResponse({
+            'success': False,
+            'message': '❌ ' + '; '.join(errors) if errors else '❌ Ошибка в форме'
+        })
