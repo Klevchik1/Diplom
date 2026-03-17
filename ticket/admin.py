@@ -1,14 +1,8 @@
 import os
-from django.contrib import admin
-from django.contrib import messages
 from django.contrib.auth.admin import UserAdmin
-from django.core.management import call_command
 from django.http import HttpResponse
-from django.shortcuts import render
-from django.urls import path
 from django.utils import timezone
 from django.utils.html import format_html
-from django.utils.safestring import mark_safe
 
 from .export_utils import LogExporter
 from .forms import ReportFilterForm, MovieForm, ScreeningAdminForm
@@ -21,11 +15,16 @@ from .models import (
 )
 from .models import Hall, Movie, Screening, Seat, Ticket, User, Genre
 from .report_utils import ReportGenerator
-from django import forms
 from django.core.exceptions import ValidationError
-from django.http import JsonResponse, HttpResponseRedirect
-from django.urls import reverse
-
+from django.http import JsonResponse
+from django.contrib import admin
+from django.urls import path
+from django import forms
+from django.shortcuts import render
+from django.contrib import messages
+from django.core.management import call_command
+import io
+import sys
 
 class LoggingModelAdmin(admin.ModelAdmin):
     """Базовый класс для автоматического логирования операций в админке"""
@@ -286,8 +285,7 @@ class GenreAdmin(LoggingModelAdmin):
 
     def movie_count(self, obj):
         """Количество фильмов в этом жанре"""
-        return obj.movie_set.count()
-
+        return obj.movies.count()
     movie_count.short_description = 'Количество фильмов'
 
     actions = ['merge_duplicate_genres']
@@ -423,6 +421,65 @@ class MovieAdmin(LoggingModelAdmin):
         return "-"
 
     display_actors.short_description = 'Актёры'
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('import-from-api/',
+                 self.admin_site.admin_view(self.import_from_api_view),
+                 name='movie-import-from-api'),
+        ]
+        return custom_urls + urls
+
+    def import_from_api_view(self, request):
+        if request.method == 'POST':
+            form = ImportMoviesForm(request.POST)
+            if form.is_valid():
+                # Запускаем команду импорта
+                pages = form.cleaned_data['pages']
+                year_start = form.cleaned_data['year_start']
+                download_posters = form.cleaned_data['download_posters']
+                import_persons = form.cleaned_data['import_persons']
+                skip_existing = form.cleaned_data['skip_existing']
+
+                # Перехватываем вывод команды
+                stdout = sys.stdout
+                string_io = io.StringIO()
+                sys.stdout = string_io
+
+                try:
+                    call_command(
+                        'import_kinopoisk_movies',
+                        pages=pages,
+                        year_start=year_start,
+                        download_posters=download_posters,
+                        import_persons=import_persons,
+                        skip_existing=skip_existing
+                    )
+                    output = string_io.getvalue()
+                    messages.success(request, "Импорт успешно выполнен!")
+
+                except Exception as e:
+                    output = str(e)
+                    messages.error(request, f"Ошибка импорта: {e}")
+
+                finally:
+                    sys.stdout = stdout
+
+                return render(request, 'admin/import_result.html', {
+                    'title': 'Результат импорта',
+                    'output': output,
+                    'opts': self.model._meta,
+                })
+        else:
+            form = ImportMoviesForm()
+
+        context = {
+            'title': 'Импорт фильмов из API Кинопоиска',
+            'form': form,
+            'opts': self.model._meta,
+        }
+        return render(request, 'admin/import_form.html', context)
 
 
 @admin.register(Screening)
@@ -1254,3 +1311,38 @@ class OperationLogAdmin(admin.ModelAdmin):
             extra_context = {}
         extra_context['export_url'] = '/admin/ticket/operationlog/export-logs/'
         return super().changelist_view(request, extra_context=extra_context)
+
+
+class ImportMoviesForm(forms.Form):
+    pages = forms.IntegerField(
+        label='Количество страниц',
+        min_value=1,
+        max_value=10,
+        initial=2,
+        help_text='По 50 фильмов на странице'
+    )
+    year_start = forms.IntegerField(
+        label='Начальный год',
+        min_value=2000,
+        max_value=2025,
+        initial=2020,
+        help_text='Импортировать фильмы начиная с этого года'
+    )
+    download_posters = forms.BooleanField(
+        label='Скачивать постеры',
+        required=False,
+        initial=True,
+        help_text='Загружать изображения постеров'
+    )
+    import_persons = forms.BooleanField(
+        label='Импортировать актёров и режиссёров',
+        required=False,
+        initial=True,
+        help_text='Добавлять информацию об актёрах и режиссёрах'
+    )
+    skip_existing = forms.BooleanField(
+        label='Пропускать существующие фильмы',
+        required=False,
+        initial=True,
+        help_text='Не импортировать фильмы, которые уже есть в БД'
+    )

@@ -1,0 +1,24 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <h1>{{ title }}</h1>
+    
+    <div style="background: #f8f9fa; padding: 20px; margin-bottom: 20px; border-radius: 5px;">
+        <p>Импорт фильмов из API Poiskkino.dev (бывший Кинопоиск).</p>
+        <p>Будет импортировано до {{ form.pages.value|default:2 }} страниц по 50 фильмов на странице.</p>
+    </div>
+    
+    <form method="post" style="max-width: 600px;">
+        {% csrf_token %}
+        {{ form.as_p }}
+        
+        <div style="margin-top: 20px;">
+            <button type="submit" style="background: #417690; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">
+                Начать импорт
+            </button>
+            <a href="{% url 'admin:ticket_movie_changelist' %}" style="margin-left: 10px; color: #666;">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

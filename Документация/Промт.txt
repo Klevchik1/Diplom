@@ -29,7 +29,7 @@ cinema-management-system/           # Корень проекта (Git-репо�
 │   │
 │   ├── management/                     # Кастомные команды
 │   │   ├── commands/
-│   │   │   ├── posters/               # Постеры для populate_db
+│   │   │   ├── posters/               # Постеры для big_populate_db
 │   │   │   │   ├── avatar.jpg
 │   │   │   │   ├── barbie.jpg
 │   │   │   │   ├── dune.jpg
@@ -48,6 +48,7 @@ cinema-management-system/           # Корень проекта (Git-репо�
 │   │   │   ├── big_populate_db.py
 │   │   │   ├── cleanup_expired_registrations.py
 │   │   │   ├── createsuperuser_custom.py
+│   │   │   ├── import_kinopoisk_movies.py
 │   │   │   ├── populate_db.py
 │   │   │   ├── restore_db.py
 │   │   │   └── run_bot.py
