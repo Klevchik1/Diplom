@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.contrib.auth.models import Group  # ДОБАВИТЬ ЭТУ СТРОКУ
 from django.utils import timezone
 from datetime import timedelta, datetime, time
 import random
@@ -23,77 +24,214 @@ fake = Faker('ru_RU')
 class Command(BaseCommand):
     help = 'Заполняет базу данных расширенными тестовыми данными кинотеатра'
 
-    def handle(self, *args, **options):
-        self.clear_old_data()
-        self.create_admin()
-        self.create_manager()
-        self.create_countries()
-        self.create_action_and_module_types()
-        self.create_ticket_statuses()
-        self.create_hall_types()
-        genres = self.create_genres()
-        age_ratings = self.create_age_ratings()
-        halls = self.create_halls()
-        directors, actors = self.create_directors_and_actors()
-        movies = self.create_movies(genres, age_ratings, directors, actors)
-        self.create_screenings(halls, movies)
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--skip-movies',
+            action='store_true',
+            help='Пропустить создание фильмов',
+        )
+        parser.add_argument(
+            '--skip-halls',
+            action='store_true',
+            help='Пропустить создание залов',
+        )
+        parser.add_argument(
+            '--skip-screenings',
+            action='store_true',
+            help='Пропустить создание сеансов',
+        )
+        parser.add_argument(
+            '--skip-statuses',
+            action='store_true',
+            help='Пропустить создание статусов билетов',
+        )
+        parser.add_argument(
+            '--skip-countries',
+            action='store_true',
+            help='Пропустить создание стран',
+        )
+        parser.add_argument(
+            '--skip-directors-actors',
+            action='store_true',
+            help='Пропустить создание режиссёров и актёров',
+        )
+        parser.add_argument(
+            '--interactive',
+            action='store_true',
+            help='Интерактивный режим с вопросами о заполнении',
+        )
 
-        self.stdout.write(self.style.SUCCESS('✅ База успешно заполнена тестовыми данными!'))
+    def handle(self, *args, **options):
+        interactive = options.get('interactive', False)
+
+        # Интерактивный режим
+        if interactive:
+            self.stdout.write(self.style.WARNING('\n🔧 ИНТЕРАКТИВНЫЙ РЕЖИМ ЗАПОЛНЕНИЯ БАЗЫ ДАННЫХ\n'))
+
+            # Спрашиваем про очистку данных
+            clear_data = self.get_user_input(
+                'Очистить старые данные? (y/n): ',
+                default='y'
+            ) == 'y'
+
+            if clear_data:
+                self.clear_old_data()
+            else:
+                self.stdout.write(self.style.WARNING('⚠️ Пропускаем очистку старых данных\n'))
+
+            # Спрашиваем про каждую опцию
+            skip_admin = self.get_user_input('Создать администратора? (y/n): ', default='y') != 'y'
+            skip_manager = self.get_user_input('Создать менеджера? (y/n): ', default='y') != 'y'
+            skip_countries = self.get_user_input('Создать страны? (y/n): ', default='y') != 'y'
+            skip_types = self.get_user_input('Создать типы действий и модулей? (y/n): ', default='y') != 'y'
+            skip_statuses = self.get_user_input('Создать статусы билетов? (y/n): ', default='y') != 'y'
+            skip_hall_types = self.get_user_input('Создать типы залов? (y/n): ', default='y') != 'y'
+            skip_halls = self.get_user_input('Создать залы? (y/n): ', default='y') != 'y'
+            skip_genres = self.get_user_input('Создать жанры? (y/n): ', default='y') != 'y'
+            skip_age_ratings = self.get_user_input('Создать возрастные рейтинги? (y/n): ', default='y') != 'y'
+            skip_directors_actors = self.get_user_input('Создать режиссёров и актёров? (y/n): ', default='y') != 'y'
+            skip_movies = self.get_user_input('Создать фильмы? (y/n): ', default='y') != 'y'
+
+            if not skip_movies:
+                skip_screenings = self.get_user_input('Создать сеансы для фильмов? (y/n): ', default='y') != 'y'
+            else:
+                skip_screenings = True
+
+            # Выполняем операции с учётом выбранных опций
+            if not skip_admin:
+                self.create_admin()
+            if not skip_manager:
+                self.create_manager()
+            if not skip_countries:
+                self.create_countries()
+            if not skip_types:
+                self.create_action_and_module_types()
+            if not skip_statuses:
+                self.create_ticket_statuses()
+            if not skip_hall_types:
+                hall_types = self.create_hall_types()
+            else:
+                hall_types = {ht.name: ht for ht in HallType.objects.all()}
+
+            if not skip_halls:
+                halls = self.create_halls()
+            else:
+                halls = list(Hall.objects.all())
+
+            if not skip_genres:
+                genres = self.create_genres()
+            else:
+                genres = {g.name: g for g in Genre.objects.all()}
+
+            if not skip_age_ratings:
+                age_ratings = self.create_age_ratings()
+            else:
+                age_ratings = {ar.name: ar for ar in AgeRating.objects.all()}
+
+            if not skip_directors_actors:
+                directors, actors = self.create_directors_and_actors()
+            else:
+                directors = list(Director.objects.all())
+                actors = list(Actor.objects.all())
+
+            if not skip_movies and halls and genres and age_ratings:
+                movies = self.create_movies(genres, age_ratings, directors, actors)
+                if not skip_screenings and movies and halls:
+                    self.create_screenings(halls, movies)
+                elif not skip_screenings:
+                    self.stdout.write(self.style.WARNING('⚠️ Невозможно создать сеансы: нет фильмов или залов'))
+            elif not skip_movies:
+                self.stdout.write(self.style.WARNING('⚠️ Невозможно создать фильмы: нет жанров или возрастных рейтингов'))
+
+        else:
+            # Обычный режим с параметрами командной строки
+            skip_movies = options.get('skip_movies', False)
+            skip_halls = options.get('skip_halls', False)
+            skip_screenings = options.get('skip_screenings', False)
+            skip_statuses = options.get('skip_statuses', False)
+            skip_countries = options.get('skip_countries', False)
+            skip_directors_actors = options.get('skip_directors_actors', False)
+
+            self.clear_old_data()
+            self.create_admin()
+            self.create_manager()
+
+            if not skip_countries:
+                self.create_countries()
+
+            self.create_action_and_module_types()
+
+            if not skip_statuses:
+                self.create_ticket_statuses()
+
+            hall_types = self.create_hall_types()
+
+            if not skip_halls:
+                halls = self.create_halls()
+            else:
+                halls = list(Hall.objects.all())
+
+            genres = self.create_genres()
+            age_ratings = self.create_age_ratings()
+
+            if not skip_directors_actors:
+                directors, actors = self.create_directors_and_actors()
+            else:
+                directors = list(Director.objects.all())
+                actors = list(Actor.objects.all())
+
+            if not skip_movies:
+                movies = self.create_movies(genres, age_ratings, directors, actors)
+                if not skip_screenings:
+                    self.create_screenings(halls, movies)
+
+        self.stdout.write(self.style.SUCCESS('\n✅ База успешно заполнена тестовыми данными!'))
+
+    def get_user_input(self, prompt, default='y'):
+        """Получение ввода пользователя с проверкой"""
+        while True:
+            response = input(prompt).strip().lower()
+            if not response:
+                response = default
+            if response in ['y', 'n', 'yes', 'no']:
+                return response[0]
+            self.stdout.write(self.style.ERROR('Пожалуйста, введите y или n'))
 
     def clear_old_data(self):
         """Очистка старых данных (кроме суперпользователей)"""
         self.stdout.write('Очистка старых данных...')
 
         # Удаляем в правильном порядке из-за внешних ключей
-        self.stdout.write('  Удаление билетов...')
-        Ticket.objects.all().delete()
+        models_to_clear = [
+            ('Билетов', Ticket),
+            ('Групп билетов', TicketGroup),
+            ('Сеансов', Screening),
+            ('Мест', Seat),
+            ('Фильмов', Movie),
+            ('Связей фильмов с режиссёрами', MovieDirector),
+            ('Связей фильмов с актёрами', MovieActor),
+            ('Режиссёров', Director),
+            ('Актёров', Actor),
+            ('Возрастных рейтингов', AgeRating),
+            ('Залов', Hall),
+            ('Типов залов', HallType),
+            ('Жанров', Genre),
+            ('Статусов билетов', TicketStatus),
+            ('Стран', Country),
+            ('Типов действий', ActionType),
+            ('Типов модулей', ModuleType),
+            ('Временных регистраций', PendingRegistration),
+            ('Запросов сброса пароля', PasswordResetRequest),
+            ('Запросов смены email', EmailChangeRequest),
+            ('Бэкапов', BackupManager),
+            ('Логов операций', OperationLog),
+        ]
 
-        self.stdout.write('  Удаление групп билетов...')
-        TicketGroup.objects.all().delete()
-
-        self.stdout.write('  Удаление сеансов...')
-        Screening.objects.all().delete()
-
-        self.stdout.write('  Удаление мест...')
-        Seat.objects.all().delete()
-
-        self.stdout.write('  Удаление фильмов...')
-        Movie.objects.all().delete()
-
-        self.stdout.write('  Удаление режиссёров и актёров...')
-        MovieDirector.objects.all().delete()
-        MovieActor.objects.all().delete()
-        Director.objects.all().delete()
-        Actor.objects.all().delete()
-
-        self.stdout.write('  Удаление возрастных рейтингов...')
-        AgeRating.objects.all().delete()
-
-        self.stdout.write('  Удаление залов...')
-        Hall.objects.all().delete()
-
-        self.stdout.write('  Удаление типов залов...')
-        HallType.objects.all().delete()
-
-        self.stdout.write('  Удаление жанров...')
-        Genre.objects.all().delete()
-
-        self.stdout.write('  Удаление статусов билетов...')
-        TicketStatus.objects.all().delete()
-
-        self.stdout.write('  Удаление стран...')
-        Country.objects.all().delete()
-
-        self.stdout.write('  Удаление типов действий и модулей...')
-        ActionType.objects.all().delete()
-        ModuleType.objects.all().delete()
-
-        # Удаляем временные регистрации и запросы
-        PendingRegistration.objects.all().delete()
-        PasswordResetRequest.objects.all().delete()
-        EmailChangeRequest.objects.all().delete()
-        BackupManager.objects.all().delete()
-        OperationLog.objects.all().delete()
+        for name, model in models_to_clear:
+            count = model.objects.count()
+            if count > 0:
+                model.objects.all().delete()
+                self.stdout.write(f'  ✅ Удалено {name}: {count} записей')
 
         self.stdout.write(self.style.SUCCESS('✅ Старые данные удалены'))
 
@@ -107,7 +245,7 @@ class Command(BaseCommand):
                 surname='Системы',
                 number='+79001234567'
             )
-            self.stdout.write(self.style.SUCCESS(f'✅ Создан администратор: {admin.email}'))
+            self.stdout.write(self.style.SUCCESS(f'✅ Создан администратор: {admin.email} (пароль: admin)'))
         else:
             self.stdout.write(self.style.SUCCESS('✅ Администратор уже существует'))
 
@@ -161,6 +299,7 @@ class Command(BaseCommand):
             {'name': 'Япония', 'code': 'JP'},
             {'name': 'Китай', 'code': 'CN'},
             {'name': 'Южная Корея', 'code': 'KR'},
+            {'name': 'Новая Зеландия', 'code': 'NZ'},
         ]
 
         countries = {}
@@ -660,14 +799,16 @@ class Command(BaseCommand):
                         f'  ⚠️ Создан фильм: {movie.title} ({age_rating_name}, постер не найден: {data["poster"]})'))
 
             # Добавляем режиссёров (случайным образом)
-            movie_directors = random.sample(directors, k=random.randint(1, 2))
-            for director in movie_directors:
-                MovieDirector.objects.create(movie=movie, director=director)
+            if directors:
+                movie_directors = random.sample(directors, k=min(random.randint(1, 2), len(directors)))
+                for director in movie_directors:
+                    MovieDirector.objects.create(movie=movie, director=director)
 
             # Добавляем актёров (случайным образом)
-            movie_actors = random.sample(actors, k=random.randint(3, 5))
-            for actor in movie_actors:
-                MovieActor.objects.create(movie=movie, actor=actor)
+            if actors:
+                movie_actors = random.sample(actors, k=min(random.randint(3, 5), len(actors)))
+                for actor in movie_actors:
+                    MovieActor.objects.create(movie=movie, actor=actor)
 
             movies.append(movie)
 
@@ -789,35 +930,3 @@ class Command(BaseCommand):
             count = screenings_per_movie.get(movie.id, 0)
             if count > 0:
                 self.stdout.write(self.style.SUCCESS(f'  ✅ {movie.title}: {count} сеансов'))
-
-    def add_arguments(self, parser):
-        parser.add_argument(
-            '--skip-movies',
-            action='store_true',
-            help='Пропустить создание фильмов',
-        )
-        parser.add_argument(
-            '--skip-halls',
-            action='store_true',
-            help='Пропустить создание залов',
-        )
-        parser.add_argument(
-            '--skip-screenings',
-            action='store_true',
-            help='Пропустить создание сеансов',
-        )
-        parser.add_argument(
-            '--skip-statuses',
-            action='store_true',
-            help='Пропустить создание статусов билетов',
-        )
-        parser.add_argument(
-            '--skip-countries',
-            action='store_true',
-            help='Пропустить создание стран',
-        )
-        parser.add_argument(
-            '--skip-directors-actors',
-            action='store_true',
-            help='Пропустить создание режиссёров и актёров',
-        )

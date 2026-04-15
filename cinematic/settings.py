@@ -96,7 +96,7 @@ BACKUP_DIR = os.path.join(BASE_DIR, 'backups')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'cinematic',
+        'NAME': 'cinema',
         'USER': 'postgres',
         'PASSWORD': '123',
         'HOST': '192.168.25.58',
