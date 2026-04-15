@@ -1,6 +1,23 @@
 // Глобальный менеджер мест
 window.seatManagers = {};
 
+// Функция для безопасного парсинга цены
+function parseTicketPrice(priceText) {
+    if (!priceText) return 0;
+
+    // Удаляем все символы кроме цифр, точки и запятой
+    const cleanText = priceText.replace(/[^\d.,]/g, '');
+
+    // Заменяем запятую на точку если есть
+    const normalizedText = cleanText.replace(',', '.');
+
+    // Парсим как float
+    const price = parseFloat(normalizedText);
+
+    // Проверяем что получилось число
+    return isNaN(price) ? 0 : price;
+}
+
 // Инициализация страницы сеанса
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Screenings.js loaded');
@@ -10,13 +27,19 @@ document.addEventListener('DOMContentLoaded', function() {
     if (screeningInput) {
         const screeningId = screeningInput.value;
         const priceElement = document.querySelector('.screening-price');
-        const price = priceElement ? parseFloat(priceElement.textContent.replace(/[^\d.,]/g, '').replace(',', '.')) : 0;
+
+        // Используем безопасный парсинг
+        const price = priceElement ? parseTicketPrice(priceElement.textContent) : 0;
+
+        console.log('Initial load - Screening ID:', screeningId, 'Price:', price);
 
         // Проверяем, авторизован ли пользователь
         const isGuest = document.querySelector('.guest-notification') !== null;
 
         if (!isGuest) {
             initSeatManager(screeningId, price);
+        } else {
+            console.log('Guest user detected, booking disabled');
         }
     }
 });
@@ -27,15 +50,18 @@ function initSeatManager(screeningId, price) {
         window.seatManagers = {};
     }
 
+    // Проверяем что цена - число
+    const validPrice = isNaN(price) ? 0 : price;
+
     if (!window.seatManagers[screeningId]) {
         window.seatManagers[screeningId] = {
             selectedSeats: [],
             selectedSeatsInfo: document.getElementById('selected-seats-info-' + screeningId),
             selectedSeatsInput: document.getElementById('selected-seats-input-' + screeningId),
             bookButton: document.getElementById('book-button-' + screeningId),
-            screeningPrice: parseFloat(price) || 0
+            screeningPrice: validPrice
         };
-        console.log('Initialized seat manager for screening:', screeningId, 'with price:', window.seatManagers[screeningId].screeningPrice);
+        console.log('Initialized seat manager for screening:', screeningId, 'with price:', validPrice);
     }
     updateSelectedSeatsInfo(screeningId);
 }
@@ -83,7 +109,12 @@ function updateSelectedSeatsInfo(screeningId) {
     }
 
     const count = manager.selectedSeats.length;
-    const totalPrice = count * manager.screeningPrice;
+
+    // Защита от NaN
+    const price = isNaN(manager.screeningPrice) ? 0 : manager.screeningPrice;
+    const totalPrice = count * price;
+
+    console.log('Update seats info - Count:', count, 'Price:', price, 'Total:', totalPrice);
 
     if (manager.selectedSeatsInfo) {
         manager.selectedSeatsInfo.textContent = count === 0 ?
@@ -173,8 +204,11 @@ function selectScreening(screeningId) {
                 // Инициализируем менеджер для нового сеанса после загрузки
                 setTimeout(() => {
                     const priceElement = document.querySelector('.screening-price');
-                    const price = priceElement ? parseFloat(priceElement.textContent.replace(/[^\d.,]/g, '').replace(',', '.')) : 0;
+                    // Используем безопасный парсинг
+                    const price = priceElement ? parseTicketPrice(priceElement.textContent) : 0;
                     const isGuest = document.querySelector('.guest-notification') !== null;
+
+                    console.log('AJAX load - Screening ID:', screeningId, 'Price:', price);
 
                     if (!isGuest) {
                         initSeatManager(screeningId, price);
