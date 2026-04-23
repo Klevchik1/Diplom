@@ -704,6 +704,83 @@ class TicketGroup(models.Model):
             models.Index(fields=['screening']),
         ]
 
+    def request_refund(self):
+        """Запрос возврата всей группы билетов с автоматической обработкой"""
+        from django.utils import timezone
+
+        # Проверяем статус всех билетов в группе
+        tickets = self.tickets.all()
+        active_tickets = tickets.filter(status__code='active')
+
+        if not active_tickets.exists():
+            return False, 'В группе нет активных билетов для возврата'
+
+        # Проверяем временное ограничение для каждого активного билета
+        for ticket in active_tickets:
+            can_refund, message = ticket.can_be_refunded()
+            if not can_refund:
+                return False, f'Невозможно вернуть билет (место {ticket.seat.row}-{ticket.seat.number}): {message}'
+
+        try:
+            # Сохраняем информацию для логирования
+            movie_title = active_tickets[0].screening.movie.title
+            hall_name = active_tickets[0].screening.hall.name
+            user_email = self.user.email
+            total_refund_amount = sum(ticket.price for ticket in active_tickets)
+            tickets_count = active_tickets.count()
+            seats_info = [f"Ряд {t.seat.row}, Место {t.seat.number}" for t in active_tickets]
+
+            # Удаляем все активные билеты из группы
+            ticket_ids = list(active_tickets.values_list('id', flat=True))
+            active_tickets.delete()
+
+            # Логируем возврат группы
+            logger.info(f"Автоматический возврат группы билетов #{self.id} на фильм {movie_title}")
+
+            # Логируем операцию возврата
+            try:
+                from .logging_utils import OperationLogger
+                OperationLogger.log_system_operation(
+                    action_type='UPDATE',
+                    module_type='TICKETS',
+                    description=f'Возвращена группа билетов #{self.id} ({tickets_count} шт.) на фильм {movie_title}',
+                    additional_data={
+                        'group_id': str(self.group_uuid),
+                        'movie': movie_title,
+                        'hall': hall_name,
+                        'user': user_email,
+                        'tickets_count': tickets_count,
+                        'seats': ', '.join(seats_info),
+                        'total_refund_amount': str(total_refund_amount),
+                        'ticket_ids': ticket_ids,
+                        'reason': 'Автоматический возврат группы билетов по запросу пользователя'
+                    }
+                )
+            except Exception as e:
+                logger.error(f"Error logging group refund: {e}")
+
+            return True, f'✅ Группа из {tickets_count} билетов успешно возвращена! Места освобождены.'
+
+        except Exception as e:
+            logger.error(f"Ошибка при возврате группы билетов #{self.id}: {e}")
+            return False, f'Ошибка при обработке возврата: {str(e)}'
+
+    def can_be_refunded(self):
+        """Проверяет, можно ли вернуть всю группу билетов"""
+        tickets = self.tickets.all()
+        active_tickets = tickets.filter(status__code='active')
+
+        if not active_tickets.exists():
+            return False, 'В группе нет активных билетов'
+
+        # Проверяем каждый билет
+        for ticket in active_tickets:
+            can_refund, message = ticket.can_be_refunded()
+            if not can_refund:
+                return False, message
+
+        return True, f'Можно вернуть {active_tickets.count()} билетов'
+
 
 class TicketStatus(models.Model):
     """Модель для статусов билетов"""

@@ -236,23 +236,51 @@
                 <!-- Блок с действиями (возврат) -->
                 <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #444;">
                     {% if group.group_status == 'active' and group.is_future_screening %}
-                        <!-- Если билет активен и сеанс в будущем -->
-                        <form method="post" action="{% url 'request_ticket_refund' group.first_ticket_id %}"
-                              onsubmit="return confirm('Вы уверены, что хотите вернуть билет? Возврат возможен только за 30 минут до сеанса.')">
-                            {% csrf_token %}
-                            <button type="submit" class="btn-refund">
-                                🔄 Вернуть билет
-                            </button>
-                            <small style="color: #ccc; margin-left: 10px;">
-                                Можно вернуть до {{ group.start_time|date:"d.m.Y H:i" }}
-                            </small>
-                        </form>
+                        <!-- Если группа активна и сеанс в будущем -->
+                        {% if group.group_uuid %}
+                            <!-- Для группы билетов - возвращаем всю группу -->
+                            <form method="post" action="{% url 'request_group_refund' group.group_uuid %}"
+                                  onsubmit="return confirm('Вы уверены, что хотите вернуть ВСЕ билеты из этой группы ({{ group.ticket_count }} шт.)? Возврат возможен только за 30 минут до сеанса.')">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-refund">
+                                    🔄 Вернуть группу билетов ({{ group.ticket_count }} шт.)
+                                </button>
+                                <small style="color: #ccc; margin-left: 10px;">
+                                    Можно вернуть до {{ group.start_time|date:"d.m.Y H:i" }}
+                                </small>
+                            </form>
+                        {% else %}
+                            <!-- Для одиночного билета - старая логика -->
+                            <form method="post" action="{% url 'request_ticket_refund' group.first_ticket_id %}"
+                                  onsubmit="return confirm('Вы уверены, что хотите вернуть билет? Возврат возможен только за 30 минут до сеанса.')">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-refund">
+                                    🔄 Вернуть билет
+                                </button>
+                                <small style="color: #ccc; margin-left: 10px;">
+                                    Можно вернуть до {{ group.start_time|date:"d.m.Y H:i" }}
+                                </small>
+                            </form>
+                        {% endif %}
                     {% elif group.group_status == 'refunded' %}
-                        <!-- Если билет возвращён -->
+                        <!-- Если группа полностью возвращена -->
                         <div class="refund-processed">
                             <p style="color: #2196F3; margin: 0;">
-                                ✅ Билет возвращён
+                                ✅ Билеты возвращены
+                                {% if group.refund_processed_at %}
+                                    <br><small>{{ group.refund_processed_at|date:"d.m.Y H:i" }}</small>
+                                {% endif %}
                             </p>
+                        </div>
+                    {% elif group.group_status == 'partially_refunded' %}
+                        <!-- Если группа возвращена частично -->
+                        <div class="refund-partial">
+                            <p style="color: #FF9800; margin: 0;">
+                                ⚠️ Часть билетов возвращена
+                            </p>
+                            <small style="color: #aaa;">
+                                Активных билетов: {{ group.seats|length }}
+                            </small>
                         </div>
                     {% elif group.group_status == 'active' and not group.is_future_screening %}
                         <!-- Если билет активен, но сеанс прошёл -->

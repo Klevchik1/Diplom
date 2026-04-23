@@ -2173,3 +2173,52 @@ def manager_quick_add_actor(request):
             'success': False,
             'message': '❌ ' + '; '.join(errors) if errors else '❌ Ошибка в форме'
         })
+
+
+@login_required
+@require_POST
+def request_group_refund(request, group_uuid):
+    """Автоматический возврат всей группы билетов"""
+    try:
+        ticket_group = TicketGroup.objects.get(group_uuid=group_uuid, user=request.user)
+    except TicketGroup.DoesNotExist:
+        messages.error(request, 'Группа билетов не найдена.')
+        return redirect('profile')
+
+    # Логируем попытку возврата
+    OperationLogger.log_operation(
+        request=request,
+        action_type='UPDATE',
+        module_type='TICKETS',
+        description=f'Попытка возврата группы билетов {group_uuid}',
+        object_id=ticket_group.id,
+        object_repr=str(ticket_group),
+        additional_data={
+            'group_uuid': group_uuid,
+            'tickets_count': ticket_group.tickets_count,
+            'movie': ticket_group.screening.movie.title,
+            'screening_time': ticket_group.screening.start_time.isoformat(),
+        }
+    )
+
+    # Вызываем метод возврата группы
+    success, message = ticket_group.request_refund()
+
+    if success:
+        OperationLogger.log_operation(
+            request=request,
+            action_type='UPDATE',
+            module_type='TICKETS',
+            description=f'Успешный возврат группы билетов {group_uuid}',
+            object_id=ticket_group.id,
+            object_repr=str(ticket_group),
+            additional_data={
+                'group_uuid': group_uuid,
+                'refund_amount': float(ticket_group.total_amount),
+            }
+        )
+        messages.success(request, message)
+    else:
+        messages.error(request, f'❌ {message}')
+
+    return redirect('profile')

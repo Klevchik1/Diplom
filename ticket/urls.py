@@ -36,6 +36,7 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('download-ticket/<int:ticket_id>/', views.download_ticket_single, name='download_ticket_single'),
     path('download-ticket-group/<str:group_id>/', views.download_ticket_group, name='download_ticket_group'),
+    path('ticket-group/<str:group_uuid>/refund/', views.request_group_refund, name='request_group_refund'),
     path('ticket/<int:ticket_id>/refund/', views.request_ticket_refund, name='request_ticket_refund'),
     path('ticket/<int:ticket_id>/cancel-refund/', views.cancel_refund_request, name='cancel_refund_request'),
     # Почта
