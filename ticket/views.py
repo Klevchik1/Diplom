@@ -101,13 +101,12 @@ def register(request):
             # Отправляем email
             try:
                 if send_verification_email(pending_reg):
-                    messages.success(request, f'Код подтверждения отправлен на email {email}')
                     logger.info(f"Email sent successfully to {email}")
                 else:
-                    messages.warning(request, f'Письмо отправлено, но возникли проблемы с доставкой.')
+                    messages.warning(request, f'Не удалось отправить письмо. Ваш код подтверждения: {verification_code}')
             except Exception as e:
                 logger.error(f"Email sending error: {e}")
-                messages.warning(request, f'Код подтверждения: {verification_code}')
+                messages.warning(request, f'Ошибка отправки. Ваш код подтверждения: {verification_code}')
 
             return redirect('verify_email')
 
@@ -210,6 +209,13 @@ def verify_email(request):
             )
             messages.error(request, 'Неверный код подтверждения')
             logger.warning(f"Invalid verification code entered for {pending_reg.email}")
+
+    storage = messages.get_messages(request)
+    storage.used = True
+
+    email_sent_message = request.session.pop('email_sent_message', None)
+    if email_sent_message:
+        messages.success(request, email_sent_message)
 
     return render(request, 'ticket/verify_email.html', {
         'email': pending_reg.email

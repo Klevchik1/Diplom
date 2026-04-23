@@ -145,8 +145,17 @@ class User(AbstractUser):
 
     def save(self, *args, **kwargs):
         # Проверяем уникальность email при сохранении
-        if self.email and User.objects.filter(email=self.email).exclude(pk=self.pk).exists():
-            raise ValidationError('Пользователь с таким email уже существует')
+        if self.email:
+            # Проверяем, существует ли уже такой email
+            existing_users = User.objects.filter(email=self.email)
+
+            # Если у объекта уже есть pk, исключаем его из проверки
+            if self.pk:
+                existing_users = existing_users.exclude(pk=self.pk)
+
+            # Если есть другие пользователи с таким email - ошибка
+            if existing_users.exists():
+                raise ValidationError('Пользователь с таким email уже существует')
 
         # Логируем создание/обновление пользователя
         is_new = self._state.adding
@@ -158,6 +167,7 @@ class User(AbstractUser):
         # Всегда обновляем updated_at
         self.updated_at = timezone.now()
 
+        # Вызываем родительский save
         super().save(*args, **kwargs)
 
         # Логируем после сохранения (когда есть pk)
@@ -1372,14 +1382,28 @@ class PendingRegistration(models.Model):
 
     def create_user(self):
         """Создание пользователя после подтверждения"""
-        user = User.objects.create(
+        # Проверяем, существует ли уже пользователь
+        existing_user = User.objects.filter(email=self.email).first()
+
+        if existing_user:
+            # Если существует - обновляем его данные и подтверждаем email
+            existing_user.name = self.name
+            existing_user.surname = self.surname
+            existing_user.number = self.number
+            existing_user.is_email_verified = True
+            existing_user.save()
+            return existing_user
+
+        # Если не существует - создаем нового
+        user = User(
             email=self.email,
             name=self.name,
             surname=self.surname,
             number=self.number,
-            password=self.password,  # Пароль уже хэширован
+            password=self.password,
             is_email_verified=True
         )
+        user.save()
         return user
 
     class Meta:

@@ -11,6 +11,16 @@
     margin: 40px auto;
 }
 
+.info-message {
+    background: #ffcc00;
+    color: #333;
+    padding: 12px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 14px;
+}
+
 .auth-logo {
     color: #ffcc00;
     font-size: 36px;

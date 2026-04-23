@@ -1,13 +1,70 @@
 import logging
 from django.contrib.auth.models import AnonymousUser
 from django.utils import timezone
-from .models import OperationLog
+from .models import OperationLog, ActionType, ModuleType
 
 logger = logging.getLogger(__name__)
 
 
 class OperationLogger:
     """Утилита для логирования операций в системе"""
+
+    @staticmethod
+    def _get_or_create_action_type(code):
+        """Получить или создать тип действия"""
+        action_type, created = ActionType.objects.get_or_create(
+            code=code,
+            defaults={
+                'name': OperationLogger._get_action_name(code),
+                'description': f'Действие: {code}'
+            }
+        )
+        return action_type
+
+    @staticmethod
+    def _get_or_create_module_type(code):
+        """Получить или создать тип модуля"""
+        module_type, created = ModuleType.objects.get_or_create(
+            code=code,
+            defaults={
+                'name': OperationLogger._get_module_name(code),
+                'description': f'Модуль: {code}'
+            }
+        )
+        return module_type
+
+    @staticmethod
+    def _get_action_name(code):
+        """Получить читаемое название действия"""
+        names = {
+            'CREATE': 'Создание',
+            'UPDATE': 'Обновление',
+            'DELETE': 'Удаление',
+            'VIEW': 'Просмотр',
+            'EXPORT': 'Экспорт',
+            'LOGIN': 'Вход',
+            'LOGOUT': 'Выход',
+            'BACKUP': 'Бэкап',
+            'REPORT': 'Отчет',
+            'OTHER': 'Прочее',
+        }
+        return names.get(code, code)
+
+    @staticmethod
+    def _get_module_name(code):
+        """Получить читаемое название модуля"""
+        names = {
+            'USERS': 'Пользователи',
+            'MOVIES': 'Фильмы',
+            'HALLS': 'Залы',
+            'SCREENINGS': 'Сеансы',
+            'TICKETS': 'Билеты',
+            'REPORTS': 'Отчеты',
+            'BACKUPS': 'Бэкапы',
+            'SYSTEM': 'Система',
+            'AUTH': 'Аутентификация',
+        }
+        return names.get(code, code)
 
     @staticmethod
     def log_operation(request, action_type, module_type, description, object_id=None, object_repr=None,
@@ -17,14 +74,21 @@ class OperationLogger:
 
         Args:
             request: HttpRequest объект
-            action_type: тип действия (CREATE, UPDATE, DELETE, etc.)
-            module_type: модуль системы (USERS, MOVIES, etc.)
+            action_type: тип действия (строка 'CREATE' или объект ActionType)
+            module_type: модуль системы (строка 'USERS' или объект ModuleType)
             description: описание операции
             object_id: ID объекта (опционально)
             object_repr: строковое представление объекта (опционально)
             additional_data: дополнительные данные в виде словаря (опционально)
         """
         try:
+            # Преобразуем строки в объекты если нужно
+            if isinstance(action_type, str):
+                action_type = OperationLogger._get_or_create_action_type(action_type)
+
+            if isinstance(module_type, str):
+                module_type = OperationLogger._get_or_create_module_type(module_type)
+
             # Получаем информацию о пользователе
             user = None
             ip_address = None
@@ -60,7 +124,7 @@ class OperationLogger:
             log_entry.save()
 
             # Также пишем в системный лог
-            logger.info(f"Operation logged: {action_type} - {module_type} - {description}")
+            logger.info(f"Operation logged: {action_type.code} - {module_type.code} - {description}")
 
             return log_entry
 
@@ -82,7 +146,8 @@ class OperationLogger:
         """
         if description is None:
             model_name = instance._meta.verbose_name
-            description = f"{action_type} {model_name}"
+            action_name = OperationLogger._get_action_name(action_type) if isinstance(action_type, str) else action_type.name
+            description = f"{action_name} {model_name}"
 
         object_repr = str(instance)
 
@@ -156,6 +221,13 @@ class OperationLogger:
                              additional_data=None):
         """Логирование системных операций (без request)"""
         try:
+            # Преобразуем строки в объекты если нужно
+            if isinstance(action_type, str):
+                action_type = OperationLogger._get_or_create_action_type(action_type)
+
+            if isinstance(module_type, str):
+                module_type = OperationLogger._get_or_create_module_type(module_type)
+
             OperationLog.objects.create(
                 user=None,  # Системная операция
                 action_type=action_type,
@@ -166,6 +238,6 @@ class OperationLogger:
                 additional_data=additional_data,
                 timestamp=timezone.now()
             )
-            logger.info(f"System operation logged: {action_type} - {module_type} - {description}")
+            logger.info(f"System operation logged: {action_type.code} - {module_type.code} - {description}")
         except Exception as e:
             logger.error(f"Error logging system operation: {e}")
