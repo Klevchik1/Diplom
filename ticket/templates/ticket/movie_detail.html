@@ -12,99 +12,35 @@
 <a href="{% url 'home' %}" class="btn-back">← Назад к фильмам</a>
 <h1 class="page-title">{{ movie.title }}</h1>
 
-<!-- Шапка фильма -->
 <div class="movie-header">
     {% if movie.poster %}
         <div class="movie-poster-large">
             <img src="{{ movie.poster.url }}" alt="{{ movie.title }}">
         </div>
-    {% else %}
-        <div class="movie-poster-large" style="background: #333; display: flex; align-items: center; justify-content: center; color: #ffcc00;">
-            Нет постера
-        </div>
     {% endif %}
-
     <div class="movie-info-large">
-        <h1>{{ movie.title }}</h1>
         <div class="movie-meta-large">
             <span><strong>Жанр:</strong> {{ movie.genre }}</span>
+            <span><strong>Год:</strong> {{ movie.release_year }}</span>
             <span><strong>Возраст:</strong> {{ movie.age_rating.name }}</span>
             <span><strong>Длительность:</strong> {{ movie.duration }}</span>
         </div>
-        <div class="movie-description-large">
-            {{ movie.description }}
-        </div>
+        <div class="movie-description-large">{{ movie.description }}</div>
     </div>
 </div>
 
-<!-- Информация о режиссёрах и актёрах -->
-<div class="movie-crew-section" style="margin-top: 30px; padding: 20px; background: rgba(20, 20, 20, 0.6); border-radius: 10px;">
-    <h3 style="color: #ffcc00; margin-bottom: 20px; text-align: center;">Создатели фильма</h3>
-
-    <!-- Режиссёры -->
-    {% with directors=movie.directors.all %}
-        {% if directors %}
-        <div style="margin-bottom: 20px;">
-            <h4 style="color: #ffcc00; margin-bottom: 10px;">🎬 Режиссёры:</h4>
-            <div style="display: flex; flex-wrap: wrap; gap: 15px;">
-                {% for director in directors %}
-                <div style="background: rgba(255, 204, 0, 0.1); padding: 10px 15px; border-radius: 20px; border: 1px solid #ffcc00;">
-                    <span style="color: white; font-weight: bold;">{{ director.name }} {{ director.surname }}</span>
-                    {% if director.country %}
-                    <span style="color: #ffcc00; font-size: 0.9em;"> ({{ director.country.name }})</span>
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-    {% endwith %}
-
-    <!-- Актёры -->
-    {% with actors=movie.actors.all %}
-        {% if actors %}
-        <div>
-            <h4 style="color: #ffcc00; margin-bottom: 10px;">🎭 В ролях:</h4>
-            <div style="display: flex; flex-wrap: wrap; gap: 15px;">
-                {% for actor in actors %}
-                <div style="background: rgba(255, 255, 255, 0.1); padding: 10px 15px; border-radius: 20px; border: 1px solid #444;">
-                    <span style="color: white;">{{ actor.name }} {{ actor.surname }}</span>
-                    {% if actor.country %}
-                    <span style="color: #aaa; font-size: 0.9em;"> ({{ actor.country.name }})</span>
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-    {% endwith %}
-
-    <!-- Если нет информации -->
-    {% if not movie.directors.exists and not movie.actors.exists %}
-    <p style="color: #aaa; text-align: center; font-style: italic;">
-        Информация о создателях фильма отсутствует
-    </p>
-    {% endif %}
-</div>
-
-<!-- Табы с сеансами -->
 <div class="screenings-tabs">
     <div class="tabs-header">
-        <button class="tab-button active" onclick="showTab('upcoming')">
-            📅 Предстоящие сеансы
-        </button>
-        <button class="tab-button" onclick="showTab('past')">
-            ⏰ Прошедшие сеансы
-        </button>
+        <button class="tab-button active" onclick="window.showTab('upcoming')">📅 Предстоящие сеансы</button>
+        <button class="tab-button" onclick="window.showTab('past')">⏰ Прошедшие сеансы</button>
     </div>
 
-    <!-- Предстоящие сеансы -->
     <div id="upcoming-tab" class="tab-content">
         {% if upcoming_screenings %}
             <div class="screenings-container">
                 {% for screening in upcoming_screenings %}
                 <div class="screening-card {% if forloop.first %}active{% endif %}"
-                     onclick="selectScreening({{ screening.id }})"
+                     onclick="window.selectScreening({{ screening.id }})"
                      id="screening-{{ screening.id }}">
                     <div class="screening-time">{{ screening.start_time|date:"H:i" }}</div>
                     <div class="screening-date">{{ screening.start_time|date:"d F Y" }}</div>
@@ -114,18 +50,15 @@
                 {% endfor %}
             </div>
         {% else %}
-            <div class="no-screenings">
-                Нет предстоящих сеансов
-            </div>
+            <div class="no-screenings">Нет предстоящих сеансов</div>
         {% endif %}
     </div>
 
-    <!-- Прошедшие сеансы -->
     <div id="past-tab" class="tab-content" style="display: none;">
         {% if past_screenings %}
             <div class="screenings-container">
                 {% for screening in past_screenings %}
-                <div class="screening-card" style="opacity: 0.7; cursor: not-allowed;">
+                <div class="screening-card" style="opacity: 0.7;">
                     <div class="screening-time">{{ screening.start_time|date:"H:i" }}</div>
                     <div class="screening-date">{{ screening.start_time|date:"d F Y" }}</div>
                     <div class="screening-hall">{{ screening.hall.name }}</div>
@@ -134,25 +67,20 @@
                 {% endfor %}
             </div>
         {% else %}
-            <div class="no-screenings">
-                Нет прошедших сеансов
-            </div>
+            <div class="no-screenings">Нет прошедших сеансов</div>
         {% endif %}
     </div>
 </div>
 
-<!-- Выбранный сеанс -->
-{% if upcoming_screenings %}
-    <div class="selected-screening" id="selected-screening">
+<div class="selected-screening" id="selected-screening">
+    {% if upcoming_screenings %}
         {% with first_screening=upcoming_screenings.0 %}
-            {% include 'ticket/screening_partial.html' with screening=first_screening %}
+            {% include 'ticket/screening_partial.html' with screening=first_screening rows=first_screening_rows booked_seat_ids=first_screening_booked_seat_ids %}
         {% endwith %}
-    </div>
-{% else %}
-    <div class="no-screening-selected">
-        Выберите сеанс для бронирования мест
-    </div>
-{% endif %}
+    {% else %}
+        <div class="no-screening-selected">Выберите сеанс для бронирования мест</div>
+    {% endif %}
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -160,10 +88,20 @@
 <script>
 // Автоматически выбираем первый сеанс при загрузке
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('movie_detail.html loaded');
     const firstScreeningCard = document.querySelector('.screening-card.active');
     if (firstScreeningCard) {
         const screeningId = firstScreeningCard.id.replace('screening-', '');
-        selectScreening(screeningId);
+        console.log('First screening found:', screeningId);
+        // Не вызываем selectScreening, так как контент уже загружен
+        // Просто инициализируем менеджер для уже загруженного контента
+        setTimeout(function() {
+            const priceElement = document.querySelector('#selected-screening .screening-price');
+            const price = priceElement ? parseFloat(priceElement.textContent.replace(/[^\d.,]/g, '').replace(',', '.')) : 0;
+            if (typeof window.initSeatManager === 'function') {
+                window.initSeatManager(screeningId, price, []);
+            }
+        }, 100);
     }
 });
 </script>

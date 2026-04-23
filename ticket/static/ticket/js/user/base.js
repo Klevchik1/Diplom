@@ -94,6 +94,20 @@ const CinemaUtils = {
 // Глобальные переменные для управления сеансами
 window.seatManagers = {};
 
+// Функция для переопределения в screenings.js
+window.selectSeat = function(seatElement, screeningId) {
+    console.warn('selectSeat not yet implemented, called for screening', screeningId);
+};
+
+window.validateBookingForm = function(screeningId) {
+    console.warn('validateBookingForm not yet implemented, called for screening', screeningId);
+    return true;
+};
+
+window.initSeatManager = function(screeningId, price) {
+    console.warn('initSeatManager not yet implemented, called for screening', screeningId);
+};
+
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Base.js loaded - Cinema Utils initialized');

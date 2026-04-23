@@ -9,6 +9,8 @@
 {% endblock %}
 
 {% block content %}
+<input type="hidden" name="screening_id" value="{{ screening.id }}">
+
 <a href="{% url 'movie_detail' screening.movie.id %}" class="btn-back">← Вернуться ко всем сеансам</a>
 <h1 class="page-title">{{ screening.movie.title }}</h1>
 
@@ -20,152 +22,34 @@
 </div>
 {% endif %}
 
-<!-- Сообщение об успешной покупке -->
 {% if request.GET.purchase_success and user.is_authenticated %}
 <div class="purchase-success">
     <h3>✅ Билеты успешно куплены!</h3>
-    <p style="color: #fff; margin-bottom: 15px;">
-        Ваши билеты сохранены в личном кабинете.
-    </p>
-    <p style="color: #ffcc00; margin-bottom: 15px; font-size: 18px;">
-        <strong>🎫 Получите билеты:</strong>
-    </p>
-
+    <p>Ваши билеты сохранены в личном кабинете.</p>
     <div class="purchase-actions">
-        {% if user.is_telegram_verified %}
-        <a href="https://t.me/CinemaaPremierBot" target="_blank" class="btn-buy" style="background: linear-gradient(135deg, #0088cc 0%, #005599 100%);">
-            📲 Telegram бот
-        </a>
-        {% endif %}
-
-        <a href="{% url 'profile' %}" class="btn-buy" style="background: linear-gradient(135deg, #4a00e0 0%, #8e2de2 100%);">
-            👤 Личный кабинет
-        </a>
-    </div>
-
-    {% if user.is_telegram_verified %}
-    <p style="color: #aaa; font-size: 14px; margin-top: 10px;">
-        Используйте команду <code style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">/download</code> в боте для получения билетов
-    </p>
-    {% else %}
-    <p style="color: #ffcc00; font-size: 14px; margin-top: 10px;">
-        💡 <a href="{% url 'profile' %}" style="color: #ffcc00; text-decoration: underline;">Привяжите Telegram</a> для получения билетов в мессенджере
-    </p>
-    {% endif %}
-</div>
-{% endif %}
-
-{% if not user.is_authenticated %}
-<div class="guest-notification">
-    <h3>🔐 Требуется авторизация</h3>
-    <p>
-        Для покупки билетов необходимо войти в систему или зарегистрироваться
-    </p>
-    <div class="guest-buttons">
-        <a href="{% url 'login' %}?next={{ request.path }}" class="btn-buy" style="background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);">
-            Войти
-        </a>
-        <a href="{% url 'register' %}?next={{ request.path }}" class="btn-buy" style="background: linear-gradient(135deg, #4a00e0 0%, #8e2de2 100%);">
-            Регистрация
-        </a>
+        <a href="{% url 'profile' %}" class="btn-buy">👤 Личный кабинет</a>
     </div>
 </div>
 {% endif %}
 
 <div class="screening-info-section">
-    <h2 style="color: #ffcc00; margin-bottom: 20px; text-align: center;">
-        Детали сеанса
-    </h2>
-
     <div class="screening-movie-info">
-        <h3 style="color: #ffcc00; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 15px;">
-            {{ screening.movie.title }}
-            <span class="age-rating-badge">{{ screening.movie.age_rating.name }}</span>
-        </h3>
-
+        <h3>{{ screening.movie.title }}</h3>
         <div class="info-grid">
-            <div class="info-item">
-                <strong style="color: #aaa;">Жанр:</strong><br>
-                <span style="color: white;">{{ screening.movie.genre }}</span>
-            </div>
-            <div class="info-item">
-                <strong style="color: #aaa;">Возрастное ограничение:</strong><br>
-                <span style="color: white;">{{ screening.movie.age_rating.name }} - {{ screening.movie.age_rating.description|truncatechars:60 }}</span>
-            </div>
-            <div class="info-item">
-                <strong style="color: #aaa;">Длительность:</strong><br>
-                <span style="color: white;">{{ screening.movie.duration }}</span>
-            </div>
-            <div class="info-item">
-                <strong style="color: #aaa;">Начало сеанса:</strong><br>
-                <span style="color: white;">{{ screening.start_time|date:"d F Y H:i" }}</span>
-            </div>
+            <div class="info-item"><strong>Жанр:</strong> {{ screening.movie.genre }}</div>
+            <div class="info-item"><strong>Год:</strong> {{ screening.movie.release_year }}</div>
+            <div class="info-item"><strong>Возраст:</strong> {{ screening.movie.age_rating.name }}</div>
+            <div class="info-item"><strong>Длительность:</strong> {{ screening.movie.duration }}</div>
+            <div class="info-item"><strong>Начало:</strong> {{ screening.start_time|date:"d F Y H:i" }}</div>
+            <div class="info-item"><strong>Зал:</strong> {{ screening.hall.name }}</div>
+            <div class="info-item"><strong>Цена:</strong> <span class="screening-price">{{ screening.ticket_price }}</span> ₽</div>
         </div>
-
-        {% if screening.movie.short_description %}
-        <div style="margin-top: 15px; padding: 15px; background: rgba(20, 20, 20, 0.6); border-radius: 6px;">
-            <strong style="color: #aaa;">Краткое описание:</strong><br>
-            <span style="color: #ccc;">{{ screening.movie.short_description }}</span>
-        </div>
-        {% endif %}
-    </div>
-    <!-- Информация о режиссёрах и актёрах -->
-    <div class="movie-crew-section" style="margin-top: 30px; padding: 20px; background: rgba(20, 20, 20, 0.6); border-radius: 10px;">
-        <h3 style="color: #ffcc00; margin-bottom: 20px; text-align: center;">Создатели фильма</h3>
-
-        {% with directors=movie.directors.all %}
-            {% if directors %}
-            <div style="margin-bottom: 20px;">
-                <h4 style="color: #ffcc00; margin-bottom: 10px;">🎬 Режиссёры:</h4>
-                <div style="display: flex; flex-wrap: wrap; gap: 15px;">
-                    {% for director in directors %}
-                    <div style="background: rgba(255, 204, 0, 0.1); padding: 10px 15px; border-radius: 20px; border: 1px solid #ffcc00;">
-                        <span style="color: white; font-weight: bold;">{{ director.name }} {{ director.surname }}</span>
-                        {% if director.country %}
-                        <span style="color: #ffcc00; font-size: 0.9em;"> ({{ director.country.name }})</span>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-        {% endwith %}
-
-        {% with actors=movie.actors.all %}
-            {% if actors %}
-            <div>
-                <h4 style="color: #ffcc00; margin-bottom: 10px;">🎭 В ролях:</h4>
-                <div style="display: flex; flex-wrap: wrap; gap: 15px;">
-                    {% for actor in actors %}
-                    <div style="background: rgba(255, 255, 255, 0.1); padding: 10px 15px; border-radius: 20px; border: 1px solid #444;">
-                        <span style="color: white;">{{ actor.name }} {{ actor.surname }}</span>
-                        {% if actor.country %}
-                        <span style="color: #aaa; font-size: 0.9em;"> ({{ actor.country.name }})</span>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-        {% endwith %}
-
-        {% if not movie.directors.exists and not movie.actors.exists %}
-        <p style="color: #aaa; text-align: center; font-style: italic;">
-            Информация о создателях фильма отсутствует
-        </p>
-        {% endif %}
     </div>
 </div>
-<div class="price-info" style="margin-top: 10px; text-align: center;">
-    <small style="color: #aaa;">
-        💡 Цена рассчитана с учётом типа зала ({{ screening.hall.hall_type.name }})
-        и времени сеанса ({{ screening.get_time_description }})
-    </small>
+
+<div class="selected-screening" id="selected-screening">
+    {% include 'ticket/screening_partial.html' with screening=screening %}
 </div>
-
-<!-- Включаем частичное представление сеанса -->
-{% include 'ticket/screening_partial.html' with screening=screening %}
-
 {% endblock %}
 
 {% block extra_js %}

@@ -19,7 +19,7 @@
         </div>
         <div class="info-item" style="background: rgba(20, 20, 20, 0.7); padding: 15px; border-radius: 8px;">
             <strong>Цена за место:</strong><br>
-            <span class="screening-price">{{ screening.ticket_price }}</span> ₽
+            <span class="screening-price" id="screening-price-{{ screening.id }}">{{ screening.ticket_price }}</span> ₽
         </div>
     </div>
 
@@ -43,21 +43,23 @@
                  data-seat-id="{{ seat.id }}"
                  data-row="{{ seat.row }}"
                  data-number="{{ seat.number }}"
-                 onclick="selectSeat(this, {{ screening.id }})"
+                 data-screening-id="{{ screening.id }}"
                  style="width: 45px; height: 45px; margin: 0 5px 5px 0; display: flex; justify-content: center; align-items: center; background-color: {% if seat.id in booked_seat_ids %}#f44336{% else %}#4CAF50{% endif %}; color: white; cursor: {% if seat.id in booked_seat_ids %}not-allowed{% else %}pointer{% endif %}; border-radius: 5px; position: relative; transition: all 0.2s; font-weight: bold; user-select: none; opacity: {% if seat.id in booked_seat_ids %}0.7{% else %}1{% endif %};">
                 {{ seat.row }}-{{ seat.number }}
-                <span class="seat-number" style="font-size: 10px; position: absolute; bottom: 2px; right: 2px;">
-                    {{ seat.number }}
-                </span>
             </div>
             {% endfor %}
+        </div>
+        {% empty %}
+        <div style="text-align: center; padding: 40px; color: red; background: rgba(255,0,0,0.1); border-radius: 10px;">
+            ⚠️ ВНИМАНИЕ: Места не загружены! Проверьте базу данных.
+            <br>Зал: {{ screening.hall.name }}, ID зала: {{ screening.hall.id }}
         </div>
         {% endfor %}
     </div>
 
     <!-- Форма бронирования -->
     <div class="action-buttons" style="margin-top: 30px; text-align: center;">
-        <form method="post" action="{% url 'book_tickets' %}" id="booking-form-{{ screening.id }}" onsubmit="return validateBookingForm({{ screening.id }})">
+        <form method="post" action="{% url 'book_tickets' %}" id="booking-form-{{ screening.id }}" onsubmit="return window.validateBookingForm({{ screening.id }})">
             {% csrf_token %}
             <input type="hidden" name="screening_id" value="{{ screening.id }}">
             <input type="hidden" name="selected_seats" id="selected-seats-input-{{ screening.id }}" value="">
@@ -107,23 +109,3 @@
     </div>
     {% endif %}
 </div>
-
-<script>
-// Функции для работы с местами (используются из screenings.js)
-function selectSeat(seatElement, screeningId) {
-    if (typeof window.selectSeat === 'function') {
-        window.selectSeat(seatElement, screeningId);
-    } else {
-        console.error('selectSeat function not found. Make sure screenings.js is loaded.');
-    }
-}
-
-function validateBookingForm(screeningId) {
-    if (typeof window.validateBookingForm === 'function') {
-        return window.validateBookingForm(screeningId);
-    } else {
-        console.error('validateBookingForm function not found.');
-        return false;
-    }
-}
-</script>

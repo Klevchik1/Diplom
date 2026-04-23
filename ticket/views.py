@@ -484,10 +484,29 @@ def movie_detail(request, movie_id):
         start_time__lte=local_now
     ).select_related('hall').order_by('-start_time')[:2]
 
+    # Для первого сеанса нужно подготовить данные о местах
+    first_screening = upcoming_screenings.first()
+    first_screening_rows = {}
+    first_screening_booked_seat_ids = []
+
+    if first_screening:
+        # Получаем места для первого сеанса
+        seats = Seat.objects.filter(hall=first_screening.hall).order_by('row', 'number')
+        booked_tickets = Ticket.objects.filter(screening=first_screening)
+        first_screening_booked_seat_ids = [ticket.seat.id for ticket in booked_tickets]
+
+        # Группируем места по рядам
+        for seat in seats:
+            if seat.row not in first_screening_rows:
+                first_screening_rows[seat.row] = []
+            first_screening_rows[seat.row].append(seat)
+
     return render(request, 'ticket/movie_detail.html', {
         'movie': movie,
         'upcoming_screenings': upcoming_screenings,
         'past_screenings': past_screenings,
+        'first_screening_rows': first_screening_rows,
+        'first_screening_booked_seat_ids': first_screening_booked_seat_ids,
     })
 
 
@@ -1323,6 +1342,11 @@ def screening_partial(request, screening_id):
         if seat.row not in rows:
             rows[seat.row] = []
         rows[seat.row].append(seat)
+
+    # Добавляем отладочную информацию
+    print(f"DEBUG: screening_id={screening_id}, rows count={len(rows)}, total seats={seats.count()}")
+    for row_num, row_seats in rows.items():
+        print(f"  Row {row_num}: {len(row_seats)} seats")
 
     return render(request, 'ticket/screening_partial.html', {
         'screening': screening,
