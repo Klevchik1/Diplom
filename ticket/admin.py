@@ -189,15 +189,14 @@ class MovieActorInline(admin.TabularInline):
 
 @admin.register(User)
 class CustomUserAdmin(LoggingModelAdmin, UserAdmin):
-    list_display = ('email', 'name', 'surname', 'number', 'is_staff', 'is_email_verified', 'is_telegram_verified')
-    list_filter = ('is_staff', 'is_superuser', 'is_active', 'is_email_verified', 'is_telegram_verified', 'created_at')
+    list_display = ('email', 'name', 'surname', 'number', 'is_staff', 'is_email_verified')
+    list_filter = ('is_staff', 'is_superuser', 'is_active', 'is_email_verified', 'created_at')
     search_fields = ('email', 'name', 'surname', 'number')
 
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Personal Info', {'fields': ('name', 'surname', 'number', 'created_at', 'updated_at')}),
         ('Email Verification', {'fields': ('is_email_verified', 'email_verification_code', 'email_verification_code_sent_at')}),
-        ('Telegram', {'fields': ('telegram_chat_id', 'telegram_username', 'is_telegram_verified', 'telegram_verification_code')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )

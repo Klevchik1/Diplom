@@ -48,12 +48,6 @@ class User(AbstractUser):
     surname = models.CharField(max_length=20, verbose_name='Фамилия')
     number = models.CharField(max_length=20, verbose_name='Номер телефона')
 
-    # Telegram fields
-    telegram_chat_id = models.CharField(max_length=15, blank=True, null=True, verbose_name='ID чата в Telegram')
-    telegram_username = models.CharField(max_length=32, blank=True, null=True, verbose_name='Имя пользователя в Telegram')
-    is_telegram_verified = models.BooleanField(default=False, verbose_name='Статус привязки Telegram')
-    telegram_verification_code = models.CharField(max_length=10, blank=True, null=True, verbose_name='Код для привязки Telegram')
-
     # Email verification fields
     is_email_verified = models.BooleanField(default=False, verbose_name='Статус верификации email')
     email_verification_code = models.CharField(max_length=6, blank=True, null=True, verbose_name='Код подтверждения email')
@@ -70,40 +64,6 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.email} ({self.name} {self.surname})"
-
-    def unlink_telegram(self):
-        """Отвязать Telegram аккаунт"""
-        self.telegram_chat_id = None
-        self.telegram_username = None
-        self.is_telegram_verified = False
-        self.telegram_verification_code = None
-        self.save(update_fields=['telegram_chat_id', 'telegram_username', 'is_telegram_verified', 'telegram_verification_code', 'updated_at'])
-
-        logger.info(f"Telegram unlinked for user {self.email}")
-
-        # Логируем операцию если есть request
-        try:
-            from .logging_utils import OperationLogger
-            OperationLogger.log_system_operation(
-                action_type='UPDATE',
-                module_type='USERS',
-                description=f'Отвязка Telegram для пользователя {self.email}',
-                object_id=self.id,
-                object_repr=str(self)
-            )
-        except Exception as e:
-            logger.error(f"Error logging telegram unlink: {e}")
-
-    def generate_verification_code(self):
-        """Генерация кода подтверждения"""
-        import random
-        import string
-        code = ''.join(random.choices(string.digits, k=6))
-        self.telegram_verification_code = code
-        self.is_telegram_verified = False
-        self.save(update_fields=['telegram_verification_code', 'is_telegram_verified', 'updated_at'])
-        logger.info(f"Generated verification code {code} for user {self.email}")
-        return code
 
     # МЕТОДЫ ДЛЯ EMAIL
     def generate_email_verification_code(self):

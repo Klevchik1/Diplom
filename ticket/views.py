@@ -626,21 +626,6 @@ def book_tickets(request):
         }
     )
 
-    # Отправляем уведомление в Telegram
-    if tickets and request.user.is_telegram_verified:
-        try:
-            from ticket.telegram_bot.bot import get_bot
-            import asyncio
-
-            async def send_notification():
-                bot = get_bot()
-                if bot:
-                    await bot.send_ticket_notification(request.user, tickets)
-
-            asyncio.run(send_notification())
-        except Exception as e:
-            logger.error(f"Failed to send Telegram notification: {e}")
-
     return redirect(f'{reverse("screening_detail", args=[screening_id])}?purchase_success=true&group_id={ticket_group.group_uuid}')
 
 
@@ -924,22 +909,6 @@ def profile(request):
                     for error in errors:
                         messages.error(request, f'{field}: {error}')
 
-        elif form_type == 'telegram_unlink':
-            request.user.unlink_telegram()
-
-            OperationLogger.log_operation(
-                request=request,
-                action_type='UPDATE',
-                module_type='USERS',
-                description=f'Отвязка Telegram для пользователя {request.user.email} через сайт',
-                object_id=request.user.id,
-                object_repr=str(request.user),
-                additional_data={'source': 'website'}
-            )
-
-            messages.success(request, 'Telegram аккаунт успешно отвязан!')
-            return redirect('profile')
-
         elif form_type == 'email_change':
             email_form = EmailChangeForm(request.POST, user=request.user)
             if email_form.is_valid():
@@ -1025,31 +994,6 @@ def profile(request):
                         email_form[field].field.widget.attrs['class'] = 'form-control error-field'
                 messages.error(request, 'Пожалуйста, исправьте ошибки в форме смены email.')
 
-        elif form_type == 'telegram_connect':
-            verification_code = request.user.generate_verification_code()
-
-            OperationLogger.log_operation(
-                request=request,
-                action_type='OTHER',
-                module_type='USERS',
-                description=f'Генерация кода привязки Telegram для пользователя {request.user.email}',
-                object_id=request.user.id,
-                object_repr=str(request.user),
-                additional_data={
-                    'verification_code': verification_code,
-                    'source': 'website'
-                }
-            )
-
-            messages.success(
-                request,
-                f'Код для привязки Telegram: {verification_code}. Отправьте его боту @CinemaaPremierBot'
-            )
-            return redirect('profile')
-
-    telegram_connected = request.user.is_telegram_verified
-    telegram_username = request.user.telegram_username
-
     active_email_change = EmailChangeRequest.objects.filter(
         user=request.user,
         is_used=False
@@ -1059,8 +1003,6 @@ def profile(request):
         'form': profile_form,
         'email_form': email_form,
         'ticket_groups': ticket_groups,
-        'telegram_connected': telegram_connected,
-        'telegram_username': telegram_username,
         'active_email_change': active_email_change,
     })
 
