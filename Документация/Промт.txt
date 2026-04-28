@@ -2,109 +2,130 @@
 
 📁 ПОЛНАЯ СТРУКТУРА ПРОЕКТА (АКТУАЛЬНАЯ):
 
-cinema-management-system/               # Корень проекта (Git-репозиторий)
-├── .venv/                               # Виртуальное окружение
+cinema-management-system/                    # Корень проекта (Git-репозиторий)
 │
-├── cinematic/                            # Django project settings
+├── .venv/                                    # Виртуальное окружение Python
+│
+├── cinematic/                                # Django project settings
 │   ├── __init__.py
 │   ├── asgi.py
-│   ├── settings.py                      # Настройки (БД, email, Telegram, API)
-│   ├── urls.py                          # Корневые URL
+│   ├── settings.py                           # Настройки БД, email, YooKassa, API
+│   ├── urls.py                               # Корневые URL
 │   └── wsgi.py
 │
-├── media/                                # Медиафайлы
-│   └── movie_posters/                    # Постеры фильмов
+├── media/                                    # Медиафайлы
+│   └── movie_posters/                        # Постеры фильмов
 │
-├── ticket/                               # ОСНОВНОЕ ПРИЛОЖЕНИЕ
-│   ├── fonts/                            # Шрифты DejaVu для PDF
+├── backups/                                  # Файлы бэкапов БД (создаются автоматически)
+│
+├── ticket/                                   # ОСНОВНОЕ ПРИЛОЖЕНИЕ
+│   │
+│   ├── __init__.py
+│   ├── admin.py                              # Регистрация моделей в админке + LoggingModelAdmin
+│   ├── apps.py                               # Конфигурация приложения TicketConfig
+│   ├── backup_utils.py                       # DatabaseRestorer (восстановление БД)
+│   ├── email_utils.py                        # Отправка email (send_verification_email, и др.)
+│   ├── export_utils.py                       # LogExporter (CSV/JSON/PDF)
+│   ├── forms.py                              # Все формы: регистрация, фильмы, залы, сеансы
+│   ├── logging_utils.py                      # OperationLogger (логирование операций)
+│   ├── middleware.py                         # ManagerAccessMiddleware
+│   ├── models.py                             # Все 19+ моделей (User, Movie, Ticket, и др.)
+│   ├── payment_service.py                   # YooKassaService (платежи, возвраты, webhook)
+│   ├── pdf_utils.py                          # Генерация PDF-отчётов
+│   ├── report_utils.py                       # ReportGenerator (статистика)
+│   ├── tests.py
+│   ├── tmdb_client.py                       # KinopoiskDevClient (API Poiskkino.dev)
+│   ├── urls.py                               # Маршруты приложения
+│   ├── utils.py                              # Генерация PDF билетов с QR-кодом
+│   ├── views.py                              # Все контроллеры (включая manager_*, payment)
+│   ├── widgets.py                            # TimePickerWidget
+│   │
+│   ├── fonts/                                # Шрифты DejaVu для PDF
 │   │   ├── DejaVuSans.ttf
 │   │   ├── DejaVuSans-Bold.ttf
 │   │   ├── DejaVuSans-BoldOblique.ttf
 │   │   ├── DejaVuSans-ExtraLight.ttf
 │   │   └── DejaVuSans-Oblique.ttf
 │   │
-│   ├── management/commands/             # Кастомные команды
-│   │   ├── posters/                     # Постеры для big_populate_db
-│   │   ├── backup_db.py                 # Создание бэкапов БД
-│   │   ├── big_populate_db.py           # Заполнение тестовыми данными
-│   │   ├── cleanup_expired_registrations.py
-│   │   ├── create_manager.py            # Создание пользователя-менеджера
-│   │   ├── createsuperuser_custom.py    # Кастомное создание суперпользователя
-│   │   ├── import_kinopoisk_movies.py   # Импорт фильмов из API
-│   │   ├── restore_db.py               # Восстановление БД из бэкапа
-│   │   └── setup_manager_permissions.py # Настройка прав менеджера
+│   ├── management/
+│   │   ├── __init__.py
+│   │   └── commands/
+│   │       ├── __init__.py
+│   │       ├── backup_db.py                  # Создание полного/дневного бэкапа БД
+│   │       ├── big_populate_db.py            # Заполнение БД тестовыми данными
+│   │       ├── cleanup_expired_registrations.py  # Очистка устаревших регистраций
+│   │       ├── create_manager.py             # Создание пользователя-менеджера
+│   │       ├── createsuperuser_custom.py     # Кастомное создание суперпользователя
+│   │       ├── import_kinopoisk_movies.py    # Импорт фильмов из API Poiskkino.dev
+│   │       ├── restore_db.py                # Восстановление БД из бэкапа
+│   │       ├── setup_manager_permissions.py  # Настройка прав группы Manager
+│   │       └── posters/                      # Тестовые постеры для big_populate_db
 │   │
-│   ├── migrations/                      # Миграции БД
+│   ├── migrations/
+│   │   ├── __init__.py
 │   │   ├── 0001_initial.py
-│   │   ├── 0002_remove_user_is_telegram_verified_and_more.py
-│   │   └── __init__.py
+│   │   └── 0002_remove_user_is_telegram_verified_and_more.py
 │   │
-│   ├── static/ticket/                   # Статические файлы
-│   │   ├── css/
-│   │   │   ├── admin/                   # Стили админ-панели
-│   │   │   │   ├── admin-base.css
-│   │   │   │   ├── admin-login.css
-│   │   │   │   ├── backup-management.css
-│   │   │   │   ├── dashboard.css
-│   │   │   │   └── reports.css
-│   │   │   ├── manager/                 # Стили панели менеджера ✨
-│   │   │   │   ├── manager-base.css
-│   │   │   │   ├── manager-forms.css
-│   │   │   │   └── manager-statistics.css
-│   │   │   └── user/                    # Пользовательские стили
-│   │   │       ├── about.css
-│   │   │       ├── auth.css
-│   │   │       ├── base.css
-│   │   │       ├── home.css
-│   │   │       ├── movies.css
-│   │   │       ├── profile.css
-│   │   │       └── screenings.css
-│   │   └── js/
-│   │   │   ├── admin/
-│   │   │   │   ├── admin-base.js
-│   │   │   │   └── backup-management.js
-│   │   │   ├── manager/                 # JS панели менеджера ✨
-│   │   │   │   ├── manager-base.js
-│   │   │   │   ├── manager-forms.js
-│   │   │   │   └── manager-statistics.js
-│   │   │   └── user/
-│   │   │       ├── auth.js
-│   │   │       ├── base.js
-│   │   │       ├── home.js
-│   │   │       ├── profile.js
-│   │   │       └── screenings.js
+│   ├── static/
+│   │   └── ticket/
+│   │       ├── css/
+│   │       │   ├── admin/
+│   │       │   │   ├── admin-base.css
+│   │       │   │   ├── admin-login.css
+│   │       │   │   ├── backup-management.css
+│   │       │   │   ├── dashboard.css
+│   │       │   │   └── reports.css
+│   │       │   ├── manager/
+│   │       │   │   ├── manager-base.css
+│   │       │   │   ├── manager-forms.css
+│   │       │   │   ├── manager-statistics.css
+│   │       │   │   ├── modal.css
+│   │       │   │   └── movie-form.css
+│   │       │   └── user/
+│   │       │       ├── about.css
+│   │       │       ├── auth.css
+│   │       │       ├── base.css
+│   │       │       ├── home.css
+│   │       │       ├── movies.css
+│   │       │       ├── payment.css
+│   │       │       ├── payment_result.css
+│   │       │       ├── profile.css
+│   │       │       └── screenings.css
+│   │       └── js/
+│   │           ├── admin/
+│   │           │   ├── admin-base.js
+│   │           │   └── backup-management.js
+│   │           ├── manager/
+│   │           │   ├── manager-base.js
+│   │           │   ├── manager-forms.js
+│   │           │   ├── manager-statistics.js
+│   │           │   └── movie-form.js
+│   │           └── user/
+│   │               ├── auth.js
+│   │               ├── base.js
+│   │               ├── home.js
+│   │               ├── payment.js
+│   │               ├── profile.js
+│   │               └── screenings.js
 │   │
-│   ├── templates/                        # HTML шаблоны
-│   │   ├── admin/                        # Кастомные шаблоны админки Django
-│   │   │   ├── ticket/                   # Переопределение стандартных шаблонов
-│   │   │   │   ├── backupmanager/change_list.html
-│   │   │   │   ├── operationlog/change_list.html
-│   │   │   │   ├── report/change_form.html
-│   │   │   │   └── screening/change_form.html
-│   │   │   ├── backup_management.html    # Страница управления бэкапами
-│   │   │   ├── base_site.html           # Базовый шаблон админки
-│   │   │   ├── import_form.html         # Форма импорта из API ✨
-│   │   │   ├── import_result.html       # Результаты импорта ✨
-│   │   │   └── login.html              # Кастомный логин админки
-│   │   │
-│   │   └── ticket/                       # Шаблоны приложения
-│   │       ├── admin/reports/            # Отчёты
-│   │       │   ├── halls_report.html
-│   │       │   ├── movies_report.html
-│   │       │   ├── revenue_report.html
-│   │       │   ├── sales_report.html
-│   │       │   ├── export_logs.html      # Экспорт логов ✨
-│   │       │   └── reports.html
-│   │       ├── manager/                  # Панель менеджера ✨
-│   │       │   ├── base_manager.html
-│   │       │   ├── dashboard.html
-│   │       │   ├── movie_confirm_delete.html
-│   │       │   ├── movie_form.html
-│   │       │   ├── movies.html
-│   │       │   ├── screening_confirm_delete.html
-│   │       │   ├── screening_form.html
-│   │       │   ├── screenings.html
-│   │       │   └── statistics.html
+│   ├── templates/
+│   │   ├── __init__.py
+│   │   ├── admin/
+│   │   │   ├── backup_management.html
+│   │   │   ├── base_site.html
+│   │   │   ├── import_form.html
+│   │   │   ├── import_result.html
+│   │   │   ├── login.html
+│   │   │   └── ticket/
+│   │   │       ├── backupmanager/
+│   │   │       │   └── change_list.html
+│   │   │       ├── operationlog/
+│   │   │       │   └── change_list.html
+│   │   │       ├── report/
+│   │   │       │   └── change_form.html
+│   │   │       └── screening/
+│   │   │           └── change_form.html
+│   │   └── ticket/
 │   │       ├── about.html
 │   │       ├── admin_dashboard.html
 │   │       ├── base.html
@@ -119,50 +140,60 @@ cinema-management-system/               # Корень проекта (Git-ре�
 │   │       ├── password_reset_confirm.html
 │   │       ├── password_reset_email.html
 │   │       ├── password_reset_request.html
+│   │       ├── payment_result.html
+│   │       ├── payment_success.html
 │   │       ├── profile.html
 │   │       ├── register.html
 │   │       ├── screening_detail.html
 │   │       ├── screening_form.html
 │   │       ├── screening_partial.html
 │   │       ├── verify_email.html
-│   │       └── welcome_email.html
+│   │       ├── welcome_email.html
+│   │       ├── admin/
+│   │       │   ├── movie_confirm_delete.html
+│   │       │   ├── movie_form.html
+│   │       │   ├── movie_manage.html
+│   │       │   ├── hall_confirm_delete.html
+│   │       │   ├── hall_form.html
+│   │       │   ├── hall_manage.html
+│   │       │   ├── screening_confirm_delete.html
+│   │       │   ├── screening_form.html
+│   │       │   ├── screening_manage.html
+│   │       │   └── reports/
+│   │       │       ├── export_logs.html
+│   │       │       ├── halls_report.html
+│   │       │       ├── movies_report.html
+│   │       │       ├── reports.html
+│   │       │       ├── revenue_report.html
+│   │       │       └── sales_report.html
+│   │       └── manager/
+│   │           ├── base_manager.html
+│   │           ├── dashboard.html
+│   │           ├── movie_confirm_delete.html
+│   │           ├── movie_form.html
+│   │           ├── movies.html
+│   │           ├── screening_confirm_delete.html
+│   │           ├── screening_form.html
+│   │           ├── screenings.html
+│   │           └── statistics.html
 │   │
-│   ├── templatetags/                     # Кастомные теги шаблонов
+│   ├── templatetags/
 │   │   ├── __init__.py
-│   │   ├── custom_filters.py            # multiply, div, mul ✨
+│   │   ├── custom_filters.py                 # multiply, div, mul
 │   │   ├── report_filters.py
 │   │   ├── ru_date.py
 │   │   └── ru_filters.py
 │   │
-│   ├── tests/                            # Тесты
-│   │   └── __init__.py
-│   │   ├── test_authentication.py
-│   │   ├── test_model_validation.py
-│   │   ├── test_pdf_generation.py
-│   │   ├── test_report_generation.py
-│   │   ├── test_ticket_booking.py
-│   │   └── test_ticket_refund.py
-│   │
-│   ├── __init__.py
-│   ├── admin.py                          # Регистрация моделей в админке
-│   ├── apps.py                           # Конфигурация приложения
-│   ├── backup_utils.py                   # Логика бэкапов (DatabaseRestorer)
-│   ├── email_utils.py                    # Отправка email
-│   ├── export_utils.py                   # Экспорт логов (CSV/JSON/PDF)
-│   ├── forms.py                          # Все формы (Registration, Movie, Screening, etc.)
-│   ├── logging_utils.py                  # OperationLogger (логирование)
-│   ├── middleware.py                     # ManagerAccessMiddleware ✨
-│   ├── models.py                         # Все модели (19+ моделей)
-│   ├── pdf_utils.py                      # Генерация PDF (билеты, отчёты)
-│   ├── report_utils.py                   # ReportGenerator (сбор данных отчётов)
-│   ├── tests.py
-│   ├── tmdb_client.py                    # KinopoiskDevClient для API ✨
-│   ├── urls.py                           # Маршруты приложения
-│   ├── utils.py                          # Генерация PDF билетов
-│   ├── views.py                          # Контроллеры (включая manager_* views)
-│   └── widgets.py                        # TimePickerWidget
+│   └── tests/
+│       ├── __init__.py
+│       ├── test_authentication.py
+│       ├── test_model_validation.py
+│       ├── test_pdf_generation.py
+│       ├── test_report_generation.py
+│       ├── test_ticket_booking.py
+│       └── test_ticket_refund.py
 │
-├── .env                                  # Переменные окружения ✨
+├── .env                                       # Переменные окружения
 ├── .gitignore
 ├── manage.py
 ├── README.md
@@ -170,7 +201,7 @@ cinema-management-system/               # Корень проекта (Git-ре�
 
 📊 МОДЕЛИ ДАННЫХ (19+ МОДЕЛЕЙ)
 
-👤 ПОЛЬЗОВАТЕЛИ И АУТЕНТИФИКАЦИЯ:
+👤 ПОЛЬЗОВАТЕЛИ И АУТЕНТИФИКАЦИЯ
 
 User (AbstractUser, кастомный менеджер CustomUserManager)
 
@@ -182,29 +213,26 @@ created_at, updated_at
 
 PendingRegistration — временные данные регистрации
 
-Поля: email, name, surname, number, password (хэш), verification_code, created_at
-Методы: is_expired() (30 минут), create_user()
+email, name, surname, number, password (хэш), verification_code, created_at
+is_expired() (30 минут), create_user()
 
 PasswordResetRequest — запросы сброса пароля
 
-Поля: user (FK), reset_code, created_at, expires_at (30 мин), is_used
-Методы: is_expired(), mark_as_used()
+user (FK), reset_code, created_at, expires_at (30 мин), is_used
 
 EmailChangeRequest — запросы смены email
 
-Поля: user (FK), new_email, verification_code, created_at, expires_at, is_used
-Аналогично PasswordResetRequest
+user (FK), new_email, verification_code, created_at, expires_at, is_used
 
-🎬 КИНОТЕАТРАЛЬНАЯ ЛОГИКА:
+🎬 КИНОТЕАТРАЛЬНАЯ ЛОГИКА
+
 Country — Страны (name, code — уникальный 2-символьный)
 
 HallType — Типы залов (name, description, price_coefficient, base_price)
 
-Hall — Кинозал
+Hall — Кинозал (name, rows, seats_per_row, description, hall_type (FK))
 
-Поля: name, rows, seats_per_row, description, hall_type (FK), created_at, updated_at
-Методы: create_seats(), каскадное delete() (удаляет сеансы → билеты)
-Автосоздание мест при save() нового зала + сигнал post_save
+create_seats(), каскадное delete() + сигнал post_save
 
 Genre — Жанры (name уникальный с автоформатированием Title Case)
 
@@ -216,10 +244,10 @@ Actor — Актёры (аналогично Director)
 
 Movie — Фильм
 
-Поля: title, short_description, description, duration (IntegerField минут), poster, release_year, genre (FK), age_rating (FK)
-directors → ManyToMany через MovieDirector ✨
-actors → ManyToMany через MovieActor ✨
-Методы: get_duration_display() (ЧЧ:ММ), автосоздание short_description из description
+title, short_description, description, duration (IntegerField минут), poster, release_year, genre (FK), age_rating (FK)
+directors → ManyToMany через MovieDirector
+actors → ManyToMany через MovieActor
+get_duration_display() (ЧЧ:ММ)
 
 MovieDirector — Связка фильм-режиссёр (unique_together)
 
@@ -227,80 +255,77 @@ MovieActor — Связка фильм-актёр (unique_together)
 
 Screening — Сеанс
 
-Поля: movie (FK), hall (FK), start_time, end_time (авторасчёт), ticket_price
-Методы: calculate_ticket_price() (учёт HallType + времени суток), get_time_multiplier() (0.7/0.9/1.2/1.4), get_price_calculation_explanation(), get_time_description()
+movie (FK), hall (FK), start_time, end_time (авторасчёт), ticket_price
+calculate_ticket_price() (учёт HallType + времени суток), get_time_multiplier() (0.7/0.9/1.2/1.4)
 clean(): проверка пересечений, времени работы (8:00-23:00, окончание до 00:30)
-Автопересчёт цены при изменении зала/времени
 
-Seat — Место (hall FK, row, number; unique_together: hall, row, number)
+Seat — Место (hall FK, row, number; unique_together)
 
 TicketStatus — Статусы билетов (code, name, is_active, can_be_refunded)
 
-TicketGroup — Группа билетов ✨
+TicketGroup — Группа билетов
 
-Поля: group_uuid (UUID), user, screening, purchase_date, total_amount, tickets_count
-Методы: request_refund() (возврат всей группы с логированием), can_be_refunded()
+group_uuid (UUID), user, screening, purchase_date, total_amount, tickets_count
+payment_status (pending_payment/paid/canceled), expires_at
+request_refund() (возврат всей группы с YooKassa + логирование), can_be_refunded()
+
+Payment — Платежи YooKassa
+
+ticket_group (OneToOne), payment_id, idempotence_key, status, amount, currency
+payment_method, card_last4, card_type, confirmation_url
+refund_id, refund_status
+is_expired()
 
 Ticket — Билет
 
-Поля: user, screening, seat, qr_code, price, status (FK), ticket_group (FK)
+user, screening, seat, qr_code, price, status (FK), ticket_group (FK)
 refund_requested_at, refund_processed_at
 unique_together: ('screening', 'seat')
-Методы: can_be_refunded() (проверка 30 мин до сеанса), request_refund() (автовозврат), process_refund() (админ), cancel_refund_request(), get_pdf_url(), get_group_tickets()
+can_be_refunded() (проверка 30 мин до сеанса), request_refund(), process_refund(), cancel_refund_request()
 
-🛠️ СИСТЕМНЫЕ МОДЕЛИ:
+🛠️ СИСТЕМНЫЕ МОДЕЛИ
 
 ActionType — Типы действий (CREATE, UPDATE, DELETE, VIEW, EXPORT, LOGIN, LOGOUT, BACKUP, REPORT, OTHER)
 
 ModuleType — Модули (USERS, MOVIES, HALLS, SCREENINGS, TICKETS, REPORTS, BACKUPS, SYSTEM, AUTH)
 
-OperationLog — Логирование
+OperationLog — Логирование (user, action_type, module_type, description, ip_address, user_agent, object_id, object_repr, additional_data (JSONField), timestamp)
 
-Поля: user, action_type (FK), module_type (FK), description, ip_address, user_agent, object_id, object_repr, additional_data (JSONField), timestamp
-
-BackupManager — Управление бэкапами
-
-Поля: name, backup_file, backup_type (full/daily), backup_date, restored_at, restoration_status (pending/in_progress/completed/failed), restoration_log, user
-Методы: get_file_path(), file_exists(), file_size(), can_be_restored(), restore_database(), get_restoration_color()
+BackupManager — Управление бэкапами (name, backup_file, backup_type, restoration_status, restore_database())
 
 Report — Модель-заглушка для отчётов в админке
 
 🔧 КЛЮЧЕВЫЕ ФУНКЦИОНАЛЬНОСТИ
-ЯДРО СИСТЕМЫ:
+ЯДРО СИСТЕМЫ
 
 Бронирование билетов с выбором мест через JSON, групповые покупки (TicketGroup с UUID)
 Генерация PDF билетов с QR-кодом (шрифты DejaVu)
 Расчет цен: base_price × price_coefficient × time_multiplier → округление до целого
 Автоматический возврат билетов/групп с проверкой 30-минутного ограничения
-Кастомная админ-панель + панель менеджера с ролевым доступом ✨
+Интеграция с YooKassa (платежи, чеки по 54-ФЗ, возвраты)
+Кастомная админ-панель + панель менеджера с ролевым доступом
 
-БЕЗОПАСНОСТЬ:
+БЕЗОПАСНОСТЬ
 
 Аутентификация через email (без username)
-Двухэтапная верификация (email + Telegram)
+Двухэтапная верификация email
 Восстановление пароля с 6-значными кодами (30 мин)
 Смена email с подтверждением
-ManagerAccessMiddleware — проверка доступа к /manager/* (is_staff или группа Manager) ✨
+ManagerAccessMiddleware — проверка доступа к /manager/* (is_staff или группа Manager)
 
-ИНТЕГРАЦИИ:
+ИНТЕГРАЦИИ
 
 Email: верификация, приветствие, сброс пароля, смена email (SMTP Яндекс)
-Poiskkino.dev API: импорт фильмов, постеров, режиссёров, актёров ✨
+Poiskkino.dev API: импорт фильмов, постеров, режиссёров, актёров
+YooKassa API: создание платежей, проверка статуса, возвраты, webhook
 
-АДМИНИСТРИРОВАНИЕ:
+АДМИНИСТРИРОВАНИЕ
 
 LoggingModelAdmin — автоматическое логирование всех CRUD-операций
 Отчёты: финансы (revenue), популярность фильмов, загруженность залов, продажи
 Бэкапы: полные/ежедневные, восстановление с отслеживанием статуса, многопоточное восстановление
 Логи: фильтрация, экспорт в CSV/JSON/PDF
-Импорт фильмов из API с формой в админке ✨
-
-ДОПОЛНИТЕЛЬНО:
-
-AJAX-расчет цены сеанса
-Генерация PDF (билеты, отчёты, логи) через pdf_utils.py
-Локализация через templatetags/ru_filters.py, ru_date.py, custom_filters.py
-Management commands для администрирования
+Импорт фильмов из API с формой в админке
 
 🎯 ПРИНЦИПЫ РАБОТЫ РАЗРАБОТЧИКА
 
@@ -314,8 +339,18 @@ Management commands для администрирования
 
 Модели/логика: models.py, admin.py, forms.py, views.py, urls.py
 Отчёты: report_utils.py, pdf_utils.py, export_utils.py
-Интеграции: telegram_bot/, email_utils.py, tmdb_client.py
+Интеграции: email_utils.py, tmdb_client.py
 Утилиты: utils.py, logging_utils.py, backup_utils.py
 Middleware: middleware.py
 Шаблоны: templates/ticket/, templates/admin/
 Статика: static/ticket/css/, static/ticket/js/
+
+📄 ФАЙЛЫ ДЛЯ ОПИСАНИЯ СИСТЕМЫ
+
+Все ключевые файлы загружены и доступны:
+models.py, views.py, urls.py, forms.py, admin.py
+middleware.py, payment_service.py, tmdb_client.py
+email_utils.py, report_utils.py, pdf_utils.py
+export_utils.py, backup_utils.py, logging_utils.py
+utils.py, widgets.py, apps.py, custom_filters.py
+settings.py (cinematic), urls.py (cinematic)
