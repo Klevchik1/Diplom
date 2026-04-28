@@ -1,0 +1,86 @@
+{% extends "ticket/base.html" %}
+{% load static %}
+
+{% block title %}Оплата успешна - Кинотеатр Премьера{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ticket/css/user/payment_result.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="payment-result-container">
+    <div class="success-card">
+        <div class="icon">✅</div>
+        <h1 class="title">Оплата прошла успешно!</h1>
+        <p class="subtitle">Ваши билеты готовы. Чек отправлен на email.</p>
+
+        <div class="movie-info">
+            <div class="movie-title">🎬 {{ ticket_group.screening.movie.title }}</div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">📅 Дата сеанса</span>
+                    <span class="info-value">{{ ticket_group.screening.start_time|date:"d.m.Y" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">⏰ Время</span>
+                    <span class="info-value">{{ ticket_group.screening.start_time|date:"H:i" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">🏛️ Зал</span>
+                    <span class="info-value">{{ ticket_group.screening.hall.name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">💰 Сумма</span>
+                    <span class="info-value">{{ payment.amount }} ₽</span>
+                </div>
+                {% if payment.card_last4 %}
+                <div class="info-item">
+                    <span class="info-label">💳 Карта</span>
+                    <span class="info-value">
+                        <span class="card-badge">
+                            {{ payment.card_type }} •••• {{ payment.card_last4 }}
+                        </span>
+                    </span>
+                </div>
+                {% endif %}
+                <div class="info-item">
+                    <span class="info-label">🔢 Платёж</span>
+                    <span class="info-value" style="font-size: 12px;">{{ payment.payment_id|slice:":16" }}...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="tickets-section">
+            <h3 class="section-title">🎫 Ваши места</h3>
+            <div class="tickets-grid">
+                {% for ticket in tickets %}
+                <div class="ticket-mini-card">
+                    <div class="ticket-icon">🎫</div>
+                    <div class="seat-info">Место {{ ticket.seat.number }}</div>
+                    <div class="row-info">Ряд {{ ticket.seat.row }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="actions">
+            <a href="{% url 'download_ticket_group' ticket_group.group_uuid %}" class="btn-download">
+                📥 Скачать билеты (PDF)
+            </a>
+            <a href="{% url 'profile' %}" class="btn-outline">
+                👤 Личный кабинет
+            </a>
+            <a href="{% url 'home' %}" class="btn-outline">
+                🏠 На главную
+            </a>
+        </div>
+
+        <div class="receipt-note">
+            <p>📧 Электронный чек отправлен на {{ ticket_group.user.email }}</p>
+            <p>💡 Билеты также доступны в личном кабинете в разделе "История покупок"</p>
+            <p>📋 Политика возврата: возврат возможен за 30 минут до начала сеанса</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

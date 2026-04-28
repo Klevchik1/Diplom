@@ -61,6 +61,9 @@ urlpatterns = [
     path('manager/api/countries/', views.manager_api_countries, name='manager_api_countries'),
     path('manager/api/quick-add-director/', views.manager_quick_add_director, name='manager_quick_add_director'),
     path('manager/api/quick-add-actor/', views.manager_quick_add_actor, name='manager_quick_add_actor'),
+
+    path('payment/result/<uuid:group_uuid>/', views.payment_result, name='payment_result'),
+    path('webhook/yookassa/', views.yookassa_webhook, name='yookassa_webhook'),
 ]
 
 if settings.DEBUG:

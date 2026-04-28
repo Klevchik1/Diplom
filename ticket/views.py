@@ -20,6 +20,9 @@ from .forms import DirectorForm, ActorForm
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from .forms import DirectorForm, ActorForm
+from django.views.decorators.csrf import csrf_exempt
+from .payment_service import YooKassaService
+from .models import Payment
 
 from .email_utils import send_verification_email, send_welcome_email, send_password_reset_email, send_email_change_verification
 from .forms import (
@@ -556,7 +559,7 @@ def screening_detail(request, screening_id):
 @login_required
 @require_POST
 def book_tickets(request):
-    """Покупка билетов"""
+    """Создание бронирования и переход к оплате"""
     screening_id = request.POST.get('screening_id')
     selected_seats = request.POST.get('selected_seats')
 
@@ -566,8 +569,8 @@ def book_tickets(request):
 
     try:
         seat_ids = json.loads(selected_seats)
-    except json.JSONDecodeError as e:
-        messages.error(request, "Ошибка при обработке выбранных мест. Попробуйте снова.")
+    except json.JSONDecodeError:
+        messages.error(request, "Ошибка при обработке выбранных мест.")
         return redirect('screening_detail', screening_id=screening_id)
 
     if not seat_ids:
@@ -592,14 +595,14 @@ def book_tickets(request):
         screening=screening,
         purchase_date=timezone.now(),
         total_amount=screening.ticket_price * len(seat_ids),
-        tickets_count=len(seat_ids)
+        tickets_count=len(seat_ids),
+        payment_status='pending_payment'
     )
 
     # Создаем билеты
-    tickets = []
     for seat_id in seat_ids:
         seat = get_object_or_404(Seat, pk=seat_id)
-        ticket = Ticket.objects.create(
+        Ticket.objects.create(
             user=request.user,
             screening=screening,
             seat=seat,
@@ -607,26 +610,145 @@ def book_tickets(request):
             status=active_status,
             ticket_group=ticket_group
         )
-        tickets.append(ticket)
 
-    # ЛОГИРОВАНИЕ ПОКУПКИ БИЛЕТОВ
+    # Логируем создание бронирования
     OperationLogger.log_operation(
         request=request,
         action_type='CREATE',
         module_type='TICKETS',
-        description=f'Покупка {len(tickets)} билетов на фильм {screening.movie.title}',
-        object_id=tickets[0].id if tickets else None,
-        object_repr=f"Группа билетов #{ticket_group.id}",
+        description=f'Создано бронирование на {len(seat_ids)} билетов',
+        object_id=ticket_group.id,
+        object_repr=str(ticket_group),
         additional_data={
             'screening_id': screening_id,
-            'movie_title': screening.movie.title,
-            'seat_count': len(tickets),
-            'total_price': float(ticket_group.total_amount),
-            'group_id': str(ticket_group.group_uuid)
+            'movie': screening.movie.title,
+            'seats_count': len(seat_ids),
+            'total_amount': float(ticket_group.total_amount),
+            'group_uuid': str(ticket_group.group_uuid)
         }
     )
 
-    return redirect(f'{reverse("screening_detail", args=[screening_id])}?purchase_success=true&group_id={ticket_group.group_uuid}')
+    # Формируем URL для возврата после оплаты
+    return_url = request.build_absolute_uri(
+        reverse('payment_result', args=[ticket_group.group_uuid])
+    )
+
+    # Создаём платёж в YooKassa
+    try:
+        payment_result = YooKassaService.create_payment(ticket_group, return_url)
+
+        # Логируем успешное создание
+        logger.info(f"Платёж создан: {payment_result['payment_id']}")
+
+        # Редирект на страницу оплаты YooKassa
+        return redirect(payment_result['confirmation_url'])
+
+    except Exception as e:
+        logger.error(f"Ошибка создания платежа: {e}")
+        messages.error(request, "Произошла ошибка при создании платежа. Попробуйте позже.")
+        return redirect('screening_detail', screening_id=screening_id)
+
+
+def payment_result(request, group_uuid):
+    """Страница результата оплаты (после возврата из YooKassa)"""
+    ticket_group = get_object_or_404(
+        TicketGroup.objects.select_related('screening__movie', 'screening__hall'),
+        group_uuid=group_uuid,
+        user=request.user
+    )
+
+    try:
+        payment = Payment.objects.get(ticket_group=ticket_group)
+
+        # Проверяем статус платежа в YooKassa
+        result = YooKassaService.check_payment(payment.payment_id)
+
+        if result['status'] == 'succeeded':
+            # Успешная оплата
+            context = {
+                'ticket_group': ticket_group,
+                'payment': payment,
+                'success': True
+            }
+
+            # Логируем
+            OperationLogger.log_operation(
+                request=request,
+                action_type='VIEW',
+                module_type='TICKETS',
+                description=f'Успешная оплата через YooKassa',
+                object_id=payment.id,
+                object_repr=str(payment),
+                additional_data={
+                    'payment_id': payment.payment_id,
+                    'amount': float(payment.amount),
+                    'group_uuid': str(group_uuid)
+                }
+            )
+
+            return render(request, 'ticket/payment_success.html', context)
+        else:
+            # Платёж не завершён или отменён
+            context = {
+                'ticket_group': ticket_group,
+                'payment': payment,
+                'success': False,
+                'status': result['status']
+            }
+            return render(request, 'ticket/payment_result.html', context)
+
+    except Payment.DoesNotExist:
+        messages.error(request, 'Платёж не найден')
+        return redirect('home')
+
+
+@csrf_exempt
+def yookassa_webhook(request):
+    """
+    Webhook для получения уведомлений от YooKassa
+    Не требует CSRF-токена
+    """
+    if request.method != 'POST':
+        return HttpResponse(status=405)
+
+    try:
+        # Получаем данные уведомления
+        notification = json.loads(request.body)
+        logger.info(f"📨 Получен webhook от YooKassa: {notification.get('event')}")
+
+        event = notification.get('event')
+        payment_data = notification.get('object', {})
+        payment_id = payment_data.get('id')
+
+        if event == 'payment.succeeded':
+            logger.info(f"✅ Webhook: платёж {payment_id} успешен")
+
+            # Обновляем статус через сервис
+            YooKassaService.check_payment(payment_id)
+
+        elif event == 'payment.canceled':
+            logger.info(f"❌ Webhook: платёж {payment_id} отменён")
+
+            # Обновляем статус
+            from .models import Payment
+            try:
+                payment = Payment.objects.get(payment_id=payment_id)
+                payment.status = 'canceled'
+                payment.payment_data = payment_data
+                payment.save()
+
+                # Отменяем группу билетов
+                ticket_group = payment.ticket_group
+                ticket_group.payment_status = 'canceled'
+                ticket_group.save()
+            except Payment.DoesNotExist:
+                pass
+
+        return HttpResponse(status=200)
+
+    except Exception as e:
+        logger.error(f"❌ Ошибка обработки webhook: {e}")
+        return HttpResponse(status=500)
 
 
 @login_required

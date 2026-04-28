@@ -1,0 +1,48 @@
+{% extends "ticket/base.html" %}
+{% load static %}
+
+{% block title %}Статус оплаты - Кинотеатр Премьера{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ticket/css/user/payment_result.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="payment-result-container">
+    {% if success %}
+    <div class="success-card">
+        <div class="icon">✅</div>
+        <h1 class="title">Оплата успешна!</h1>
+        <p class="subtitle">Спасибо за покупку! Ваши билеты готовы.</p>
+
+        <div class="actions">
+            <a href="{% url 'download_ticket_group' ticket_group.group_uuid %}" class="btn-download">
+                📥 Скачать билеты
+            </a>
+            <a href="{% url 'profile' %}" class="btn-outline">
+                👤 В личный кабинет
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="pending-card">
+        <div class="icon">⏳</div>
+        <h1 class="title">Платёж обрабатывается</h1>
+        <p class="subtitle">Статус: {{ status }}</p>
+        <p class="status-text">Если деньги списаны, но билеты не отображаются, обратитесь в поддержку.</p>
+
+        <div class="actions">
+            <a href="{% url 'profile' %}" class="btn-download">
+                👤 Проверить билеты
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="{% url 'home' %}" class="btn-outline">
+            🏠 На главную
+        </a>
+    </div>
+</div>
+{% endblock %}

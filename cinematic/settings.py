@@ -167,13 +167,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_AGE = 86400  # 1 день в секундах
 
-# Telegram Bot Settings
-TELEGRAM_BOT_TOKEN = '8221712478:AAE91NhmOSibbiv4LApz3JUqHOxiVXj1-Sg'
-TELEGRAM_WEBHOOK_URL = ''  # Для продакшена
-
-# Для тестирования можно использовать polling вместо webhook
-USE_TELEGRAM_POLLING = True
-
 # Email Settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.yandex.ru'
@@ -192,3 +185,7 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_SAVE_EVERY_REQUEST = True  # Важно: сохранять сессию при каждом запросе
 
 KINOPOISK_API_KEY = os.getenv('KINOPOISK_API_KEY')
+
+# YooKassa Settings
+YOOKASSA_SHOP_ID = os.getenv('YOOKASSA_SHOP_ID')
+YOOKASSA_SECRET_KEY = os.getenv('YOOKASSA_SECRET_KEY')

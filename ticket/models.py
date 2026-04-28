@@ -655,6 +655,21 @@ class TicketGroup(models.Model):
     purchase_date = models.DateTimeField(verbose_name='Дата и время покупки')
     total_amount = models.DecimalField(max_digits=8, decimal_places=2, verbose_name='Общая сумма покупки')
     tickets_count = models.IntegerField(verbose_name='Количество билетов в группе')
+    payment_status = models.CharField(
+        max_length=20,
+        choices=[
+            ('pending_payment', 'Ожидает оплаты'),
+            ('paid', 'Оплачено'),
+            ('canceled', 'Отменено'),
+        ],
+        default='paid',  # По умолчанию paid для обратной совместимости
+        verbose_name='Статус оплаты'
+    )
+    expires_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Бронь истекает'
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата и время создания')
 
     def __str__(self):
@@ -675,10 +690,9 @@ class TicketGroup(models.Model):
         ]
 
     def request_refund(self):
-        """Запрос возврата всей группы билетов с автоматической обработкой"""
+        """Запрос возврата всей группы билетов с возвратом платежа"""
         from django.utils import timezone
 
-        # Проверяем статус всех билетов в группе
         tickets = self.tickets.all()
         active_tickets = tickets.filter(status__code='active')
 
@@ -700,9 +714,26 @@ class TicketGroup(models.Model):
             tickets_count = active_tickets.count()
             seats_info = [f"Ряд {t.seat.row}, Место {t.seat.number}" for t in active_tickets]
 
+            # Создаём возврат в YooKassa если платёж был через YooKassa
+            if hasattr(self, 'payment') and self.payment:
+                try:
+                    from .payment_service import YooKassaService  # ← ИМПОРТ ВНУТРИ ФУНКЦИИ
+                    refund_result = YooKassaService.create_refund(self.payment.payment_id)
+                    if refund_result.get('success'):
+                        logger.info(f"Возврат через YooKassa выполнен: {refund_result.get('refund_id')}")
+                    else:
+                        logger.warning(f"Проблема с возвратом в YooKassa: {refund_result.get('error')}")
+                except Exception as e:
+                    logger.error(f"Ошибка создания возврата в YooKassa: {e}")
+                    # Продолжаем возврат билетов даже если ошибка с YooKassa
+
             # Удаляем все активные билеты из группы
             ticket_ids = list(active_tickets.values_list('id', flat=True))
             active_tickets.delete()
+
+            # Обновляем статус группы
+            self.payment_status = 'canceled'
+            self.save(update_fields=['payment_status'])
 
             # Логируем возврат группы
             logger.info(f"Автоматический возврат группы билетов #{self.id} на фильм {movie_title}")
@@ -723,7 +754,8 @@ class TicketGroup(models.Model):
                         'seats': ', '.join(seats_info),
                         'total_refund_amount': str(total_refund_amount),
                         'ticket_ids': ticket_ids,
-                        'reason': 'Автоматический возврат группы билетов по запросу пользователя'
+                        'reason': 'Автоматический возврат группы билетов по запросу пользователя',
+                        'yookassa_refund': hasattr(self, 'payment') and self.payment is not None
                     }
                 )
             except Exception as e:
@@ -750,6 +782,124 @@ class TicketGroup(models.Model):
                 return False, message
 
         return True, f'Можно вернуть {active_tickets.count()} билетов'
+
+
+class Payment(models.Model):
+    """Модель для платежей YooKassa"""
+
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'Ожидает оплаты'),
+        ('waiting_for_capture', 'Ожидает подтверждения'),
+        ('succeeded', 'Успешно оплачен'),
+        ('canceled', 'Отменён'),
+    ]
+
+    ticket_group = models.OneToOneField(
+        'TicketGroup',
+        on_delete=models.CASCADE,
+        verbose_name='Группа билетов',
+        related_name='payment'
+    )
+    payment_id = models.CharField(
+        max_length=50,
+        unique=True,
+        verbose_name='ID платежа в YooKassa'
+    )
+    idempotence_key = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name='Ключ идемпотентности'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=PAYMENT_STATUS_CHOICES,
+        default='pending',
+        verbose_name='Статус платежа'
+    )
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name='Сумма'
+    )
+    currency = models.CharField(
+        max_length=3,
+        default='RUB',
+        verbose_name='Валюта'
+    )
+    payment_method = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name='Способ оплаты'
+    )
+    card_last4 = models.CharField(
+        max_length=4,
+        blank=True,
+        verbose_name='Последние 4 цифры карты'
+    )
+    card_type = models.CharField(
+        max_length=30,
+        blank=True,
+        verbose_name='Тип карты'
+    )
+    description = models.TextField(
+        blank=True,
+        verbose_name='Описание платежа'
+    )
+    confirmation_url = models.URLField(
+        max_length=500,
+        blank=True,
+        verbose_name='URL для оплаты'
+    )
+    receipt_url = models.URLField(
+        max_length=500,
+        blank=True,
+        verbose_name='URL чека'
+    )
+    payment_data = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name='Данные платежа'
+    )
+    refund_id = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name='ID возврата'
+    )
+    refund_status = models.CharField(
+        max_length=20,
+        blank=True,
+        choices=[
+            ('pending', 'Ожидает'),
+            ('succeeded', 'Выполнен'),
+        ],
+        verbose_name='Статус возврата'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата создания'
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Дата обновления'
+    )
+    expires_at = models.DateTimeField(
+        verbose_name='Дата истечения'
+    )
+
+    def __str__(self):
+        return f"Платёж #{self.payment_id} - {self.amount} ₽ ({self.get_status_display()})"
+
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+
+    class Meta:
+        verbose_name = 'Платёж YooKassa'
+        verbose_name_plural = 'Платежи YooKassa'
+        indexes = [
+            models.Index(fields=['payment_id']),
+            models.Index(fields=['status']),
+            models.Index(fields=['-created_at']),
+        ]
 
 
 class TicketStatus(models.Model):
