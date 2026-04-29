@@ -85,9 +85,9 @@ BACKUP_DIR = os.path.join(BASE_DIR, 'backups')
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'cinema',
-#         'USER': 'postgres',
-#         'PASSWORD': '123',
+#         'NAME': 'cinema_db',
+#         'USER': 'cinema_user',
+#         'PASSWORD': 'StrongPassword123!',
 #         'HOST': 'localhost',
 #         'PORT': '5432',
 #     }
@@ -96,10 +96,10 @@ BACKUP_DIR = os.path.join(BASE_DIR, 'backups')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'cinema',
-        'USER': 'postgres',
-        'PASSWORD': '123',
-        'HOST': '192.168.25.58',
+        'NAME': 'cinema_db',
+        'USER': 'cinema_user',
+        'PASSWORD': 'StrongPassword123!',
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 }
