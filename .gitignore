@@ -4,6 +4,8 @@
 .venv/
 venv/
 .env
+.env.development
+.env.production
 staticfiles/
 backups/
 django.log
