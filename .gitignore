@@ -1,3 +1,11 @@
 /media/movie_posters/
 /ticket/migrations/
 /.env
+.venv/
+venv/
+.env
+staticfiles/
+backups/
+django.log
+*.pyc
+__pycache__/
