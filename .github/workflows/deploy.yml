@@ -1,0 +1,26 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy to VPS
+      uses: appleboy/ssh-action@master
+      with:
+        host: 168.222.140.166
+        username: root
+        password: ${{ secrets.SERVER_PASSWORD }}
+        script: |
+          cd /var/www/cinema
+          source venv/bin/activate
+          git pull origin main
+          find . -name "*.pyc" -delete
+          python manage.py migrate --noinput
+          python manage.py collectstatic --noinput
+          supervisorctl restart cinema
+          systemctl reload nginx
+          echo "✅ Деплой завершен: $(date)"
