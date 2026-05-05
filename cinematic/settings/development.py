@@ -1,18 +1,19 @@
 from .base import *
 
 DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*']  # Удобно для разработки
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'cinema_local',
+        'NAME': 'cinema',
         'USER': 'postgres',
         'PASSWORD': '123',
-        'HOST': 'localhost',
+        'HOST': '192.168.25.58',
         'PORT': '5432',
     }
 }
 
+# Для разработки без HTTPS
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SECURE = False

@@ -4,7 +4,6 @@ from django.urls import path, include
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
-from django.contrib import admin
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -17,7 +16,6 @@ urlpatterns = [
     path('book/', views.book_tickets, name='book_tickets'),
     path('download-ticket/', views.download_ticket, name='download_ticket'),
     # Админка
-    path('admin/', admin.site.urls),
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('admin/movies/', views.movie_manage, name='movie_manage'),
     path('admin/movies/add/', views.movie_add, name='movie_add'),
@@ -61,7 +59,7 @@ urlpatterns = [
     path('manager/api/countries/', views.manager_api_countries, name='manager_api_countries'),
     path('manager/api/quick-add-director/', views.manager_quick_add_director, name='manager_quick_add_director'),
     path('manager/api/quick-add-actor/', views.manager_quick_add_actor, name='manager_quick_add_actor'),
-
+    # YooKassa
     path('payment/result/<uuid:group_uuid>/', views.payment_result, name='payment_result'),
     path('webhook/yookassa/', views.yookassa_webhook, name='yookassa_webhook'),
 ]
