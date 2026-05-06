@@ -11,7 +11,8 @@ from .models import (
     BackupManager, PasswordResetRequest, PendingRegistration,
     Report, OperationLog, AgeRating, TicketStatus, Country,
     HallType, Director, Actor, MovieDirector, MovieActor,
-    TicketGroup, ActionType, ModuleType, EmailChangeRequest
+    TicketGroup, ActionType, ModuleType, EmailChangeRequest,
+    MovieGenre
 )
 from .models import Hall, Movie, Screening, Seat, Ticket, User, Genre
 from .report_utils import ReportGenerator
@@ -187,6 +188,35 @@ class MovieActorInline(admin.TabularInline):
     autocomplete_fields = ['actor']
 
 
+class MovieGenreInline(admin.TabularInline):
+    """Инлайн для отображения жанров фильма"""
+    model = MovieGenre
+    extra = 1
+    verbose_name = 'Жанр'
+    verbose_name_plural = 'Жанры'
+    autocomplete_fields = ['genre']
+
+
+@admin.register(MovieGenre)
+class MovieGenreAdmin(LoggingModelAdmin):
+    """Админ-класс для связей фильмов и жанров"""
+    list_display = ('id', 'movie_title', 'genre_name', 'created_at')
+    list_filter = ('genre', 'created_at')
+    search_fields = ('movie__title', 'genre__name')
+    readonly_fields = ('created_at',)
+    autocomplete_fields = ['movie', 'genre']
+
+    def movie_title(self, obj):
+        return obj.movie.title
+
+    movie_title.short_description = 'Фильм'
+
+    def genre_name(self, obj):
+        return obj.genre.name
+
+    genre_name.short_description = 'Жанр'
+
+
 @admin.register(User)
 class CustomUserAdmin(LoggingModelAdmin, UserAdmin):
     list_display = ('email', 'name', 'surname', 'number', 'is_staff', 'is_email_verified')
@@ -298,14 +328,16 @@ class GenreAdmin(LoggingModelAdmin):
         main_genre = queryset.first()
         other_genres = queryset.exclude(pk=main_genre.pk)
 
-        # Обновляем все фильмы с другими жанрами на основной жанр
+        # Обновляем все связи фильмов с другими жанрами на основной жанр
         updated_count = 0
         for genre in other_genres:
-            movies = genre.movie_set.all()
-            for movie in movies:
-                movie.genre = main_genre
-                movie.save()
-                updated_count += 1
+            movie_genres = MovieGenre.objects.filter(genre=genre)
+            for mg in movie_genres:
+                # Проверяем, нет ли уже связи с основным жанром
+                if not MovieGenre.objects.filter(movie=mg.movie, genre=main_genre).exists():
+                    MovieGenre.objects.create(movie=mg.movie, genre=main_genre)
+                    updated_count += 1
+                mg.delete()
 
         # Удаляем объединенные жанры
         deleted_count = other_genres.count()
@@ -347,12 +379,13 @@ class AgeRatingAdmin(LoggingModelAdmin):
 
 @admin.register(Movie)
 class MovieAdmin(LoggingModelAdmin):
-    list_display = ('title', 'release_year', 'genre', 'age_rating', 'duration_display', 'has_poster', 'screening_count')
-    search_fields = ('title', 'genre__name', 'short_description', 'description')
-    list_filter = ('genre', 'age_rating', 'release_year')
+    list_display = ('title', 'release_year', 'display_genres', 'age_rating', 'duration_display', 'has_poster', 'screening_count')
+    search_fields = ('title', 'moviegenre__genre__name', 'short_description', 'description')
+    list_filter = ('moviegenre__genre', 'age_rating', 'release_year')
     list_per_page = 20
     form = MovieForm
     readonly_fields = ('created_at', 'display_directors', 'display_actors')
+    inlines = [MovieGenreInline]
 
     fieldsets = (
         (None, {
@@ -362,7 +395,7 @@ class MovieAdmin(LoggingModelAdmin):
             'fields': ('short_description', 'description')
         }),
         ('Классификация', {
-            'fields': ('genre', 'age_rating')
+            'fields': ('age_rating',)
         }),
         ('Медиа', {
             'fields': ('poster',)
@@ -377,9 +410,6 @@ class MovieAdmin(LoggingModelAdmin):
         }),
     )
 
-    # Убираем filter_horizontal, так как используем кастомные промежуточные модели
-    # filter_horizontal = ('directors', 'actors')
-
     def duration_display(self, obj):
         hours = obj.duration // 60
         minutes = obj.duration % 60
@@ -388,6 +418,15 @@ class MovieAdmin(LoggingModelAdmin):
         return f"{minutes} мин"
 
     duration_display.short_description = 'Длительность'
+
+    def display_genres(self, obj):
+        """Отображение жанров в списке фильмов"""
+        genres = obj.genres.all()
+        if genres:
+            return ", ".join(g.name for g in genres)
+        return "-"
+
+    display_genres.short_description = 'Жанры'
 
     def has_poster(self, obj):
         return bool(obj.poster)

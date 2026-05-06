@@ -12,7 +12,7 @@ from .models import (
     Genre, AgeRating, Director, Actor, Country, HallType,
     ActionType, ModuleType, TicketStatus, TicketGroup,
     EmailChangeRequest, PendingRegistration, PasswordResetRequest,
-    MovieDirector, MovieActor
+    MovieDirector, MovieActor, MovieGenre
 )
 from django import forms
 from django.utils.html import format_html
@@ -284,6 +284,13 @@ class MovieForm(forms.ModelForm):
     )
 
     # Используем обычные ModelMultipleChoiceField без кастомных промежуточных моделей
+    genres = forms.ModelMultipleChoiceField(
+        queryset=Genre.objects.all().order_by('name'),
+        required=True,
+        label='Жанры',
+        widget=forms.SelectMultiple(attrs={'class': 'form-control', 'size': 5})
+    )
+
     directors = forms.ModelMultipleChoiceField(
         queryset=Director.objects.all().order_by('surname', 'name'),
         required=False,
@@ -301,7 +308,7 @@ class MovieForm(forms.ModelForm):
     class Meta:
         model = Movie
         fields = ['title', 'release_year', 'short_description', 'description',
-                  'duration', 'genre', 'age_rating', 'poster', 'directors', 'actors']
+                  'duration', 'genres', 'age_rating', 'poster', 'directors', 'actors']
         widgets = {
             'short_description': forms.Textarea(attrs={
                 'rows': 3,
@@ -315,7 +322,6 @@ class MovieForm(forms.ModelForm):
             }),
             'poster': forms.FileInput(attrs={'accept': 'image/*', 'class': 'form-control'}),
             'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'genre': forms.Select(attrs={'class': 'form-control'}),
             'age_rating': forms.Select(attrs={'class': 'form-control'}),
         }
 
@@ -323,7 +329,8 @@ class MovieForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         if self.instance and self.instance.pk:
-            # Для существующего фильма загружаем текущих режиссёров и актёров
+            # Для существующего фильма загружаем текущие жанры, режиссёров и актёров
+            self.fields['genres'].initial = self.instance.genres.all()
             self.fields['directors'].initial = self.instance.directors.all()
             self.fields['actors'].initial = self.instance.actors.all()
 
@@ -332,17 +339,22 @@ class MovieForm(forms.ModelForm):
         if commit:
             movie.save()
             # Сохраняем связи через кастомные промежуточные модели
+
+            # Жанры
+            if self.cleaned_data.get('genres') is not None:
+                MovieGenre.objects.filter(movie=movie).delete()
+                for genre in self.cleaned_data['genres']:
+                    MovieGenre.objects.create(movie=movie, genre=genre)
+
+            # Режиссёры
             if self.cleaned_data.get('directors') is not None:
-                # Очищаем старые связи
                 MovieDirector.objects.filter(movie=movie).delete()
-                # Создаем новые
                 for director in self.cleaned_data['directors']:
                     MovieDirector.objects.create(movie=movie, director=director)
 
+            # Актёры
             if self.cleaned_data.get('actors') is not None:
-                # Очищаем старые связи
                 MovieActor.objects.filter(movie=movie).delete()
-                # Создаем новые
                 for actor in self.cleaned_data['actors']:
                     MovieActor.objects.create(movie=movie, actor=actor)
         return movie

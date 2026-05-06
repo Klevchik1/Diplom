@@ -33,7 +33,7 @@
                     {% endif %}
                 </td>
                 <td>{{ movie.title }}</td>
-                <td>{{ movie.genre.name }}</td>
+                <td>{% for genre in movie.genres.all %}{{ genre.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
                 <td>{{ movie.release_year }}</td>
                 <td>{{ movie.age_rating.name }}</td>
                 <td>{{ movie.get_duration_display }}</td>

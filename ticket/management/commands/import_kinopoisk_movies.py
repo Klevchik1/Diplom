@@ -16,7 +16,7 @@ from urllib3.util.retry import Retry
 
 from ticket.models import (
     Movie, Genre, AgeRating, Director, Actor, Country,
-    MovieDirector, MovieActor, Hall, Screening
+    MovieDirector, MovieActor, MovieGenre, Hall, Screening
 )
 
 logger = logging.getLogger(__name__)
@@ -487,31 +487,52 @@ class Command(BaseCommand):
                 logger.error(f"Ошибка обработки персоны {person.get('name')}: {e}")
                 continue
 
-    def get_best_genre(self, api_genres, existing_genres):
+    def get_genres(self, api_genres, existing_genres):
+        """Получить список жанров из API"""
         if not api_genres:
-            return existing_genres.get('неизвестно')
+            unknown = existing_genres.get('неизвестно')
+            return [unknown] if unknown else []
+
+        result = []
         genre_names = [g.get('name', '').lower() for g in api_genres if g.get('name')]
-        if not genre_names:
-            return existing_genres.get('неизвестно')
-        for priority_genre in self.genre_priority:
-            for genre_name in genre_names:
+
+        for genre_name in genre_names:
+            # Ищем существующий жанр по приоритету
+            found = None
+            for priority_genre in self.genre_priority:
                 if priority_genre in genre_name:
                     for db_name, db_genre in existing_genres.items():
                         if priority_genre in db_name:
-                            return db_genre
-        for genre_name in genre_names:
-            if genre_name in existing_genres:
-                return existing_genres[genre_name]
-        for genre_name in genre_names:
-            try:
-                genre, created = Genre.objects.get_or_create(
-                    name=genre_name.capitalize(), defaults={'description': f'Импортировано из API'}
-                )
-                existing_genres[genre_name] = genre
-                return genre
-            except Exception:
-                continue
-        return existing_genres.get('неизвестно')
+                            found = db_genre
+                            break
+                    if found:
+                        break
+
+            # Если не нашли по приоритету, ищем точное совпадение
+            if not found:
+                if genre_name in existing_genres:
+                    found = existing_genres[genre_name]
+
+            # Если всё ещё не нашли, создаём новый
+            if not found:
+                try:
+                    found, created = Genre.objects.get_or_create(
+                        name=genre_name.capitalize(),
+                        defaults={'description': f'Импортировано из API'}
+                    )
+                    existing_genres[genre_name] = found
+                except Exception:
+                    continue
+
+            if found and found not in result:
+                result.append(found)
+
+        if not result:
+            unknown = existing_genres.get('неизвестно')
+            if unknown:
+                result.append(unknown)
+
+        return result
 
     def download_poster(self, poster_url, movie_title):
         if not poster_url:
@@ -537,7 +558,6 @@ class Command(BaseCommand):
 
     def create_movie(self, data, title, existing_genres):
         try:
-            genre = self.get_best_genre(data.get('genres', []), existing_genres) or existing_genres.get('неизвестно')
             age_str = f"{data.get('ageRating', 16)}+"
             try:
                 age_rating, _ = AgeRating.objects.get_or_create(name=age_str)
@@ -551,11 +571,22 @@ class Command(BaseCommand):
             if not short_description and description:
                 short_description = description[:197] + "..." if len(description) > 200 else description
             short_description = short_description[:197] + "..." if len(short_description) > 200 else short_description
-            return Movie(
-                title=title, short_description=short_description, description=description,
-                duration=data.get('movieLength', 90), release_year=data.get('year', datetime.now().year),
-                genre=genre, age_rating=age_rating
+            movie = Movie(
+                title=title,
+                short_description=short_description,
+                description=description,
+                duration=data.get('movieLength', 90),
+                release_year=data.get('year', datetime.now().year),
+                age_rating=age_rating
             )
+            movie.save()
+
+            # Добавляем жанры после сохранения
+            genres = self.get_genres(data.get('genres', []), existing_genres)
+            for genre in genres:
+                MovieGenre.objects.get_or_create(movie=movie, genre=genre)
+
+            return movie
         except Exception as e:
             logger.error(f"Ошибка создания фильма {title}: {e}")
             return None
@@ -624,9 +655,8 @@ class Command(BaseCommand):
             except Exception as e:
                 logger.error(f"Ошибка сохранения постера: {e}")
 
-        # Жанр
-        if self.update_movie_genre(movie, full_movie_data.get('genres', []), existing_genres):
-            movie.save()
+                # Жанры
+                self.update_movie_genres(movie, full_movie_data.get('genres', []), existing_genres)
 
         # Персоны
         if not self.skip_persons:
@@ -653,15 +683,23 @@ class Command(BaseCommand):
                 self.stdout.write(f"  🔄 {display_name}")
         return status
 
-    def update_movie_genre(self, movie, api_genres, existing_genres):
-        if not api_genres: return False
-        new_genre = self.get_best_genre(api_genres, existing_genres) or existing_genres.get('неизвестно')
-        if not movie.genre or movie.genre.name == "Неизвестно" or self.force_update:
-            if movie.genre != new_genre:
-                movie.genre = new_genre
-                if self.verbose:
-                    self.stdout.write(f"     🔄 Жанр обновлен: {new_genre.name}")
-                return True
+    def update_movie_genres(self, movie, api_genres, existing_genres):
+        if not api_genres:
+            return False
+
+        new_genres = self.get_genres(api_genres, existing_genres)
+        current_genre_ids = set(movie.genres.values_list('id', flat=True))
+        new_genre_ids = {g.id for g in new_genres}
+
+        if current_genre_ids != new_genre_ids or not current_genre_ids:
+            # Удаляем старые связи
+            MovieGenre.objects.filter(movie=movie).delete()
+            # Создаём новые
+            for genre in new_genres:
+                MovieGenre.objects.create(movie=movie, genre=genre)
+            if self.verbose:
+                self.stdout.write(f"     🔄 Жанры обновлены: {', '.join(g.name for g in new_genres)}")
+            return True
         return False
 
     def create_screenings_for_movie(self, movie, stats):

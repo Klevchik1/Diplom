@@ -360,10 +360,10 @@ class Movie(models.Model):
         verbose_name='Постер фильма'
     )
     release_year = models.IntegerField(verbose_name='Год выпуска')
-    genre = models.ForeignKey(
+    genres = models.ManyToManyField(
         Genre,
-        on_delete=models.PROTECT,
-        verbose_name='Жанр',
+        through='MovieGenre',
+        verbose_name='Жанры',
         related_name='movies'
     )
     age_rating = models.ForeignKey(
@@ -413,7 +413,6 @@ class Movie(models.Model):
         verbose_name_plural = "Фильмы"
         indexes = [
             models.Index(fields=['title']),
-            models.Index(fields=['genre']),
             models.Index(fields=['age_rating']),
             models.Index(fields=['release_year']),
         ]
@@ -441,6 +440,18 @@ class MovieActor(models.Model):
         verbose_name = 'Актёр фильма'
         verbose_name_plural = 'Актёры фильмов'
         unique_together = ('movie', 'actor')
+
+
+class MovieGenre(models.Model):
+    """Связующая модель для фильмов и жанров"""
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, verbose_name='Фильм')
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE, verbose_name='Жанр')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата и время создания')
+
+    class Meta:
+        verbose_name = 'Жанр фильма'
+        verbose_name_plural = 'Жанры фильмов'
+        unique_together = ('movie', 'genre')
 
 
 class Screening(models.Model):

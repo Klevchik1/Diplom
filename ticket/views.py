@@ -35,7 +35,7 @@ from .models import (
     Screening, Ticket, Seat, Movie, Hall, User,
     Director, Actor, Country, HallType, TicketGroup,
     EmailChangeRequest, TicketStatus, ActionType, ModuleType,
-    MovieDirector, MovieActor, Genre  # Добавлен Genre
+    MovieDirector, MovieActor, Genre, MovieGenre
 )
 from .utils import generate_enhanced_ticket_pdf, generate_ticket_pdf
 from .report_utils import ReportGenerator
@@ -353,8 +353,8 @@ def home(request):
 
     # Получаем все фильмы
     movies = Movie.objects.prefetch_related(
-        'screenings__hall'
-    ).select_related('genre', 'age_rating').all()
+        'screenings__hall', 'genres'
+    ).select_related('age_rating').all()
 
     # Применяем текстовые фильтры
     if search_query:
@@ -364,7 +364,7 @@ def home(request):
         )
 
     if genre_filter:
-        movies = movies.filter(genre__name=genre_filter)
+        movies = movies.filter(genres__name=genre_filter)
 
     if age_rating_filter:
         movies = movies.filter(age_rating__name=age_rating_filter)
@@ -478,7 +478,7 @@ def user_logout(request):
 def movie_detail(request, movie_id):
     """Детальная страница фильма"""
     movie = get_object_or_404(
-        Movie.objects.select_related('genre', 'age_rating').prefetch_related('directors', 'actors'),
+        Movie.objects.select_related('age_rating').prefetch_related('directors', 'actors', 'genres'),
         pk=movie_id
     )
     local_now = timezone.localtime(timezone.now())
@@ -530,7 +530,7 @@ def screening_detail(request, screening_id):
     movie = Movie.objects.prefetch_related(
         'directors',
         'actors',
-        'genre',
+        'genres',
         'age_rating'
     ).get(pk=screening.movie.id)
 
@@ -1153,7 +1153,7 @@ def movie_add(request):
                 object_id=movie.pk,
                 object_repr=str(movie),
                 additional_data={
-                    'genre': movie.genre.name,
+                    'genres': ", ".join(g.name for g in movie.genres.all()),
                     'age_rating': str(movie.age_rating)
                 }
             )
@@ -1822,7 +1822,7 @@ def manager_dashboard(request):
 @user_passes_test(is_manager, login_url='login')
 def manager_movies(request):
     """Управление фильмами для менеджера"""
-    movies = Movie.objects.all().select_related('genre', 'age_rating').order_by('-created_at')
+    movies = Movie.objects.all().select_related('age_rating').prefetch_related('genres').order_by('-created_at')
     return render(request, 'ticket/manager/movies.html', {'movies': movies})
 
 

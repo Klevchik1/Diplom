@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import Group  # ДОБАВИТЬ ЭТУ СТРОКУ
+from django.contrib.auth.models import Group
 from django.utils import timezone
 from datetime import timedelta, datetime, time
 import random
@@ -13,7 +13,7 @@ from rest_framework.exceptions import ValidationError
 from ticket.models import (
     Hall, Movie, Screening, Seat, User, Genre, AgeRating,
     TicketStatus, Country, HallType, Director, Actor,
-    MovieDirector, MovieActor, ActionType, ModuleType,
+    MovieDirector, MovieActor, MovieGenre, ActionType, ModuleType,
     Ticket, TicketGroup, PendingRegistration, PasswordResetRequest,
     EmailChangeRequest, BackupManager, OperationLog
 )
@@ -64,11 +64,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         interactive = options.get('interactive', False)
 
-        # Интерактивный режим
         if interactive:
             self.stdout.write(self.style.WARNING('\n🔧 ИНТЕРАКТИВНЫЙ РЕЖИМ ЗАПОЛНЕНИЯ БАЗЫ ДАННЫХ\n'))
 
-            # Спрашиваем про очистку данных
             clear_data = self.get_user_input(
                 'Очистить старые данные? (y/n): ',
                 default='y'
@@ -79,7 +77,6 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING('⚠️ Пропускаем очистку старых данных\n'))
 
-            # Спрашиваем про каждую опцию
             skip_admin = self.get_user_input('Создать администратора? (y/n): ', default='y') != 'y'
             skip_manager = self.get_user_input('Создать менеджера? (y/n): ', default='y') != 'y'
             skip_countries = self.get_user_input('Создать страны? (y/n): ', default='y') != 'y'
@@ -97,7 +94,6 @@ class Command(BaseCommand):
             else:
                 skip_screenings = True
 
-            # Выполняем операции с учётом выбранных опций
             if not skip_admin:
                 self.create_admin()
             if not skip_manager:
@@ -144,7 +140,6 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING('⚠️ Невозможно создать фильмы: нет жанров или возрастных рейтингов'))
 
         else:
-            # Обычный режим с параметрами командной строки
             skip_movies = options.get('skip_movies', False)
             skip_halls = options.get('skip_halls', False)
             skip_screenings = options.get('skip_screenings', False)
@@ -201,37 +196,45 @@ class Command(BaseCommand):
         """Очистка старых данных (кроме суперпользователей)"""
         self.stdout.write('Очистка старых данных...')
 
-        # Удаляем в правильном порядке из-за внешних ключей
+        # ВАЖНО: Правильный порядок удаления с учётом зависимостей
         models_to_clear = [
+            # Сначала удаляем то, что ссылается на другие таблицы
+            ('Логов операций', OperationLog),
             ('Билетов', Ticket),
             ('Групп билетов', TicketGroup),
             ('Сеансов', Screening),
             ('Мест', Seat),
-            ('Фильмов', Movie),
+            ('Связей фильмов с жанрами', MovieGenre),
             ('Связей фильмов с режиссёрами', MovieDirector),
             ('Связей фильмов с актёрами', MovieActor),
+            ('Фильмов', Movie),
             ('Режиссёров', Director),
             ('Актёров', Actor),
-            ('Возрастных рейтингов', AgeRating),
             ('Залов', Hall),
             ('Типов залов', HallType),
             ('Жанров', Genre),
+            ('Возрастных рейтингов', AgeRating),
             ('Статусов билетов', TicketStatus),
             ('Стран', Country),
+            # Теперь удаляем справочники
             ('Типов действий', ActionType),
             ('Типов модулей', ModuleType),
             ('Временных регистраций', PendingRegistration),
             ('Запросов сброса пароля', PasswordResetRequest),
             ('Запросов смены email', EmailChangeRequest),
             ('Бэкапов', BackupManager),
-            ('Логов операций', OperationLog),
         ]
 
         for name, model in models_to_clear:
-            count = model.objects.count()
-            if count > 0:
-                model.objects.all().delete()
-                self.stdout.write(f'  ✅ Удалено {name}: {count} записей')
+            try:
+                count = model.objects.count()
+                if count > 0:
+                    model.objects.all().delete()
+                    self.stdout.write(f'  ✅ Удалено {name}: {count} записей')
+                else:
+                    self.stdout.write(f'  ⏭️ {name}: 0 записей (пропущено)')
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f'  ❌ Ошибка при удалении {name}: {e}'))
 
         self.stdout.write(self.style.SUCCESS('✅ Старые данные удалены'))
 
@@ -253,12 +256,10 @@ class Command(BaseCommand):
         """Создание менеджера и добавление в группу Manager"""
         self.stdout.write('Создание менеджера...')
 
-        # Создаем группу Manager если её нет
         manager_group, created = Group.objects.get_or_create(name='Manager')
         if created:
             self.stdout.write(self.style.SUCCESS('  ✅ Создана группа Manager'))
 
-        # Создаем пользователя-менеджера
         if not User.objects.filter(email='manager@example.com').exists():
             manager = User.objects.create_user(
                 email='manager@example.com',
@@ -266,14 +267,11 @@ class Command(BaseCommand):
                 name='Иван',
                 surname='Менеджеров',
                 number='+79991112233',
-                is_staff=False,  # Не админ
-                is_superuser=False,  # Не суперпользователь
-                is_email_verified=True  # Сразу верифицируем
+                is_staff=False,
+                is_superuser=False,
+                is_email_verified=True
             )
-
-            # Добавляем в группу Manager
             manager.groups.add(manager_group)
-
             self.stdout.write(self.style.SUCCESS(f'  ✅ Создан менеджер: {manager.email}'))
             self.stdout.write(self.style.SUCCESS(f'      Имя: {manager.name} {manager.surname}'))
             self.stdout.write(self.style.SUCCESS(f'      Пароль: manager'))
@@ -318,7 +316,6 @@ class Command(BaseCommand):
         """Создание типов действий и модулей для логирования"""
         self.stdout.write('Создание типов действий и модулей для логирования...')
 
-        # Типы действий
         action_types = [
             {'code': 'CREATE', 'name': 'Создание', 'description': 'Создание объекта'},
             {'code': 'UPDATE', 'name': 'Обновление', 'description': 'Обновление объекта'},
@@ -340,7 +337,6 @@ class Command(BaseCommand):
             if created:
                 self.stdout.write(self.style.SUCCESS(f'  ✅ Создан тип действия: {obj.name}'))
 
-        # Типы модулей
         module_types = [
             {'code': 'USERS', 'name': 'Пользователи', 'description': 'Управление пользователями'},
             {'code': 'MOVIES', 'name': 'Фильмы', 'description': 'Управление фильмами'},
@@ -574,7 +570,6 @@ class Command(BaseCommand):
 
         countries = {c.code: c for c in Country.objects.all()}
 
-        # Режиссёры
         directors_data = [
             {'name': 'Джеймс', 'surname': 'Кэмерон', 'country': 'US'},
             {'name': 'Кристофер', 'surname': 'Нолан', 'country': 'GB'},
@@ -605,7 +600,6 @@ class Command(BaseCommand):
             if created:
                 self.stdout.write(self.style.SUCCESS(f'  ✅ Создан режиссёр: {director.name} {director.surname}'))
 
-        # Актёры
         actors_data = [
             {'name': 'Леонардо', 'surname': 'ДиКаприо', 'country': 'US'},
             {'name': 'Том', 'surname': 'Хэнкс', 'country': 'US'},
@@ -643,16 +637,17 @@ class Command(BaseCommand):
         return directors, actors
 
     def create_movies(self, genres, age_ratings, directors, actors):
-        """Создание фильмов с реальными описаниями и возрастными рейтингами"""
+        """Создание фильмов с реальными описаниями и возрастными рейтингами (через MovieGenre)"""
         self.stdout.write('Создание фильмов...')
 
         posters_dir = os.path.join(settings.BASE_DIR, 'ticket', 'management', 'commands', 'posters')
 
+        # Теперь у каждого фильма может быть несколько жанров
         movies_data = [
             {
                 'title': 'Аватар: Путь воды',
                 'duration': 192,
-                'genre': 'Фантастика',
+                'genres': ['Фантастика', 'Приключения'],
                 'age_rating': '12+',
                 'poster': 'avatar.jpg',
                 'short_description': 'Джейк Салли и Нейтири создали семью, но им вновь угрожают люди с Земли.',
@@ -661,7 +656,7 @@ class Command(BaseCommand):
             {
                 'title': 'Один дома',
                 'duration': 103,
-                'genre': 'Комедия',
+                'genres': ['Комедия', 'Приключения'],
                 'age_rating': '6+',
                 'poster': 'home_alone.jpg',
                 'short_description': '8-летний Кевин случайно остается один дома и защищает свой дом от грабителей.',
@@ -670,7 +665,7 @@ class Command(BaseCommand):
             {
                 'title': 'Интерстеллар',
                 'duration': 169,
-                'genre': 'Фантастика',
+                'genres': ['Фантастика', 'Драма'],
                 'age_rating': '12+',
                 'poster': 'interstellar.jpg',
                 'short_description': 'Команда исследователей совершает путешествие через червоточину в поисках нового дома для человечества.',
@@ -679,7 +674,7 @@ class Command(BaseCommand):
             {
                 'title': 'Оппенгеймер',
                 'duration': 180,
-                'genre': 'Биография',
+                'genres': ['Биография', 'Драма', 'Исторический'],
                 'age_rating': '16+',
                 'poster': 'oppenheimer.jpg',
                 'short_description': 'История жизни американского физика Роберта Оппенгеймера, создателя атомной бомбы.',
@@ -688,7 +683,7 @@ class Command(BaseCommand):
             {
                 'title': 'Барби',
                 'duration': 114,
-                'genre': 'Комедия',
+                'genres': ['Комедия', 'Приключения'],
                 'age_rating': '12+',
                 'poster': 'barbie.jpg',
                 'short_description': 'Кукла Барби живет в идеальном мире, но обнаруживает, что её мир не так прекрасен.',
@@ -697,7 +692,7 @@ class Command(BaseCommand):
             {
                 'title': 'Джон Уик 4',
                 'duration': 169,
-                'genre': 'Боевик',
+                'genres': ['Боевик', 'Триллер'],
                 'age_rating': '18+',
                 'poster': 'john_wick.jpg',
                 'short_description': 'Джон Уик обнаруживает путь к победе над Правлением Кланов.',
@@ -706,7 +701,7 @@ class Command(BaseCommand):
             {
                 'title': 'Стражи Галактики 3',
                 'duration': 150,
-                'genre': 'Фантастика',
+                'genres': ['Фантастика', 'Комедия', 'Приключения'],
                 'age_rating': '16+',
                 'poster': 'guardians.jpg',
                 'short_description': 'Питер Квилл все еще оплачивает потерю Гаморы и должен сплотить свою команду.',
@@ -715,7 +710,7 @@ class Command(BaseCommand):
             {
                 'title': 'Человек-паук: Паутина вселенных',
                 'duration': 140,
-                'genre': 'Мультфильм',
+                'genres': ['Мультфильм', 'Фантастика', 'Боевик'],
                 'age_rating': '6+',
                 'poster': 'spiderman.jpg',
                 'short_description': 'Майлз Моралес переносится через Мультивселенную и встречает команду Людей-пауков.',
@@ -724,7 +719,7 @@ class Command(BaseCommand):
             {
                 'title': 'Миссия невыполнима 7',
                 'duration': 163,
-                'genre': 'Боевик',
+                'genres': ['Боевик', 'Триллер', 'Приключения'],
                 'age_rating': '12+',
                 'poster': 'mission_impossible.jpg',
                 'short_description': 'Итан Хант и его команда МВФ должны отследить новое ужасающее оружие.',
@@ -733,7 +728,7 @@ class Command(BaseCommand):
             {
                 'title': 'Индиана Джонс и реликвия судьбы',
                 'duration': 154,
-                'genre': 'Приключения',
+                'genres': ['Приключения', 'Боевик'],
                 'age_rating': '12+',
                 'poster': 'indiana_jones.jpg',
                 'short_description': 'Археолог Индиана Джонс отправляется в новое опасное приключение.',
@@ -742,7 +737,7 @@ class Command(BaseCommand):
             {
                 'title': 'Дюна',
                 'duration': 155,
-                'genre': 'Фантастика',
+                'genres': ['Фантастика', 'Драма', 'Приключения'],
                 'age_rating': '12+',
                 'poster': 'dune.jpg',
                 'short_description': 'Пол Атрейдес вместе с семьей отправляется на опасную планету Арракис.',
@@ -751,7 +746,7 @@ class Command(BaseCommand):
             {
                 'title': 'Трансформеры: Эпоха зверей',
                 'duration': 127,
-                'genre': 'Фантастика',
+                'genres': ['Фантастика', 'Боевик'],
                 'age_rating': '12+',
                 'poster': 'transformers.jpg',
                 'short_description': 'Автоботы и Максималы объединяются с человечеством против террористических Предаконов.',
@@ -761,13 +756,6 @@ class Command(BaseCommand):
 
         movies = []
         for data in movies_data:
-            # Получаем объект Genre
-            genre_name = data['genre'].strip().title()
-            genre_obj = genres.get(genre_name)
-            if not genre_obj:
-                genre_obj, _ = Genre.objects.get_or_create(name=genre_name)
-                genres[genre_name] = genre_obj
-
             # Получаем объект AgeRating
             age_rating_name = data['age_rating']
             age_rating_obj = age_ratings.get(age_rating_name)
@@ -775,16 +763,24 @@ class Command(BaseCommand):
                 age_rating_obj, _ = AgeRating.objects.get_or_create(name=age_rating_name)
                 age_ratings[age_rating_name] = age_rating_obj
 
-            # Создаем фильм
+            # Создаем фильм БЕЗ жанра (жанры добавим через MovieGenre после сохранения)
             movie = Movie.objects.create(
                 title=data['title'],
                 short_description=data['short_description'],
                 description=data['description'],
                 duration=data['duration'],
                 release_year=random.randint(2020, 2025),
-                genre=genre_obj,
                 age_rating=age_rating_obj
             )
+
+            # Добавляем жанры через промежуточную модель MovieGenre
+            for genre_name in data['genres']:
+                genre_name = genre_name.strip().title()
+                genre_obj = genres.get(genre_name)
+                if not genre_obj:
+                    genre_obj, _ = Genre.objects.get_or_create(name=genre_name)
+                    genres[genre_name] = genre_obj
+                MovieGenre.objects.get_or_create(movie=movie, genre=genre_obj)
 
             # Добавляем постер если он существует
             poster_path = os.path.join(posters_dir, data['poster'])
@@ -792,11 +788,13 @@ class Command(BaseCommand):
                 with open(poster_path, 'rb') as f:
                     movie.poster.save(data['poster'], File(f))
                     movie.save()
-                self.stdout.write(self.style.SUCCESS(f'  ✅ Создан фильм: {movie.title} ({age_rating_name}, с постером)'))
+                self.stdout.write(self.style.SUCCESS(
+                    f'  ✅ Создан фильм: {movie.title} ({age_rating_name}, жанры: {", ".join(data["genres"])}, с постером)'
+                ))
             else:
-                self.stdout.write(
-                    self.style.WARNING(
-                        f'  ⚠️ Создан фильм: {movie.title} ({age_rating_name}, постер не найден: {data["poster"]})'))
+                self.stdout.write(self.style.WARNING(
+                    f'  ⚠️ Создан фильм: {movie.title} ({age_rating_name}, жанры: {", ".join(data["genres"])}, постер не найден: {data["poster"]})'
+                ))
 
             # Добавляем режиссёров (случайным образом)
             if directors:
@@ -834,19 +832,17 @@ class Command(BaseCommand):
         from decimal import Decimal
 
         hall_type = hall.hall_type
-        base_price = hall_type.base_price  # Decimal
-        coefficient = hall_type.price_coefficient  # Decimal
-        time_multiplier = Decimal(str(self.get_time_multiplier(start_time)))  # Преобразуем float в Decimal
+        base_price = hall_type.base_price
+        coefficient = hall_type.price_coefficient
+        time_multiplier = Decimal(str(self.get_time_multiplier(start_time)))
 
-        # Все операнды теперь Decimal
         result = base_price * coefficient * time_multiplier
-        return int(result)  # Преобразуем в int для цены
+        return int(result)
 
     def is_time_slot_available(self, hall, start_time, duration):
         """Проверяет, свободен ли временной слот в зале"""
         end_time = start_time + timedelta(minutes=duration) + timedelta(minutes=20)
 
-        # Проверяем, что сеанс заканчивается до 24:00
         local_end = timezone.localtime(end_time)
         if local_end.hour >= 24 or (local_end.hour == 0 and local_end.minute > 0) or local_end.hour < start_time.hour:
             return False
@@ -863,12 +859,10 @@ class Command(BaseCommand):
         self.stdout.write('Создание сеансов...')
 
         now = timezone.localtime(timezone.now())
-        # Убираем поздние сеансы, которые могут перейти за полночь
         screening_times = ['08:00', '10:30', '13:00', '15:30', '18:00', '20:00']
         created_count = 0
         screenings_per_movie = {movie.id: 0 for movie in movies}
 
-        # Создаем сеансы на 30 дней вперед
         for day in range(30):
             current_date = now + timedelta(days=day)
             if day % 7 == 0:
@@ -878,9 +872,7 @@ class Command(BaseCommand):
                 available_times = screening_times.copy()
                 random.shuffle(available_times)
 
-                # Берем до 3 сеансов в день на зал
                 for time_str in available_times[:3]:
-                    # Выбираем случайный фильм
                     movie = random.choice(movies)
 
                     screening_time = datetime.combine(
@@ -889,24 +881,18 @@ class Command(BaseCommand):
                     )
                     screening_time = timezone.make_aware(screening_time)
 
-                    # Проверяем, что сеанс не в прошлом
                     if screening_time < now:
                         continue
 
-                    # Проверяем, что сеанс закончится до полуночи
                     end_time = screening_time + timedelta(minutes=movie.duration) + timedelta(minutes=10)
                     if end_time.date() > current_date.date():
-                        # Если сеанс переходит на следующий день, пропускаем
                         continue
 
-                    # Проверяем доступность слота
                     if not self.is_time_slot_available(hall, screening_time, movie.duration):
                         continue
 
-                    # Рассчитываем цену
                     ticket_price = self.calculate_ticket_price(hall, screening_time)
 
-                    # Создаем сеанс
                     try:
                         duration_timedelta = timedelta(minutes=movie.duration)
                         end_time = screening_time + duration_timedelta + timedelta(minutes=10)
@@ -924,7 +910,6 @@ class Command(BaseCommand):
                         self.stdout.write(self.style.WARNING(f'    ⚠️ Пропущен сеанс: {e}'))
                         continue
 
-        # Выводим статистику
         self.stdout.write(self.style.SUCCESS(f'✅ Всего создано {created_count} сеансов'))
         for movie in movies:
             count = screenings_per_movie.get(movie.id, 0)

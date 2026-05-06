@@ -60,9 +60,6 @@ cinema-management-system/                         # Корень проекта 
 │   │   └── production.py                         # Настройки продакшена
 │   ├── __init__.py
 │   ├── asgi.py                                   # ASGI конфигурация
-│   ├── production_settings.py                    # Продакшен-настройки (дубликат)
-│   ├── settings.py                               # Основные настройки (используется)
-│   ├── settings_patch.py                         # Патч для переопределения БД
 │   ├── urls.py                                   # Корневые URL-маршруты
 │   └── wsgi.py                                   # WSGI конфигурация
 │

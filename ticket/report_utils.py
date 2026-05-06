@@ -104,7 +104,7 @@ class ReportGenerator:
             movies_list.append({
                 'id': movie.id,
                 'title': movie.title,
-                'genre': movie.genre.name if movie.genre else '',
+                'genre': ", ".join(g.name for g in movie.genres.all()) if movie.genres.exists() else '',
                 'age_rating': str(movie.age_rating) if movie.age_rating else '',
                 'duration': movie.duration if hasattr(movie, 'duration') else None,
                 'tickets_sold': tickets_sold,

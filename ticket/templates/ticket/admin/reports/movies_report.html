@@ -63,7 +63,7 @@
                         </div>
                     </td>
                     <td>
-                        <span class="badge">{{ movie.genre }}</span>
+                        <span class="badge">{% for genre in movie.genres.all %}{{ genre.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
                     </td>
                     <td style="text-align: center;">
                         <span class="badge info">{{ movie.tickets_sold|default:0 }}</span>

@@ -20,7 +20,7 @@
     {% endif %}
     <div class="movie-info-large">
         <div class="movie-meta-large">
-            <span><strong>Жанр:</strong> {{ movie.genre }}</span>
+            <span><strong>Жанр:</strong> {% for genre in movie.genres.all %}{{ genre.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
             <span><strong>Год:</strong> {{ movie.release_year }}</span>
             <span><strong>Возраст:</strong> {{ movie.age_rating.name }}</span>
             <span><strong>Длительность:</strong> {{ movie.duration }}</span>
