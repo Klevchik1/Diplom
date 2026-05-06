@@ -3,10 +3,49 @@
 
 {% block title %}Управление фильмами{% endblock %}
 
+{# Переопределяем блок api_counter — показываем счётчик #}
+{% block api_counter %}
+<div class="api-counter" id="api-counter">
+    <div class="api-counter-main">
+        <span class="api-icon">🔑</span>
+        <span class="api-label">API запросов:</span>
+        <span class="api-value" id="api-remaining">...</span>
+        <span class="api-separator">/</span>
+        <span class="api-total" id="api-limit">...</span>
+        <div class="api-progress-bar" id="api-progress-bar">
+            <div class="api-progress-fill" id="api-progress-fill" style="width: 0%;"></div>
+        </div>
+    </div>
+    <div class="api-counter-details">
+        <span class="api-current-token" id="api-current-token" title="Текущий токен">
+            🔐 Токен: <strong id="api-token-label">...</strong>
+            (<span id="api-token-key">...</span>)
+        </span>
+        <button class="btn-manage-tokens" onclick="openTokenManager()" title="Управление токенами">
+            ⚙️ Управлять токенами
+        </button>
+    </div>
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="section-header">
     <h2>🎥 Управление фильмами</h2>
-    <a href="{% url 'manager_movie_add' %}" class="btn">➕ Добавить фильм</a>
+    <div class="btn-group">
+        <div class="dropdown-add">
+            <button class="btn btn-add-dropdown" onclick="toggleAddMenu()">
+                ➕ Добавить фильм ▾
+            </button>
+            <div class="dropdown-add-menu" id="add-menu" style="display: none;">
+                <a href="{% url 'manager_movie_add' %}" class="dropdown-item">
+                    <span>✏️</span> Вручную
+                </a>
+                <a href="#" class="dropdown-item" onclick="openApiImportModal(); return false;">
+                    <span>🔍</span> Найти в API
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="table-container">
@@ -15,7 +54,7 @@
             <tr>
                 <th>Постер</th>
                 <th>Название</th>
-                <th>Жанр</th>
+                <th>Жанры</th>
                 <th>Год</th>
                 <th>Возраст</th>
                 <th>Длительность</th>
@@ -29,25 +68,65 @@
                     {% if movie.poster %}
                         <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" class="poster-preview">
                     {% else %}
-                        <span>Нет постера</span>
+                        <span class="no-poster">—</span>
                     {% endif %}
                 </td>
                 <td>{{ movie.title }}</td>
-                <td>{% for genre in movie.genres.all %}{{ genre.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
-                <td>{{ movie.release_year }}</td>
-                <td>{{ movie.age_rating.name }}</td>
-                <td>{{ movie.get_duration_display }}</td>
                 <td>
-                    <a href="{% url 'manager_movie_edit' movie.id %}" class="btn btn-sm btn-warning">✏️ Ред.</a>
-                    <a href="{% url 'manager_movie_delete' movie.id %}" class="btn btn-sm btn-danger" data-confirm="Удалить фильм?">❌ Уд.</a>
+                    {% for genre in movie.genres.all %}
+                        <span class="genre-tag">{{ genre.name }}</span>
+                    {% endfor %}
+                </td>
+                <td>{{ movie.release_year }}</td>
+                <td><span class="age-badge">{{ movie.age_rating.name }}</span></td>
+                <td>{{ movie.get_duration_display }}</td>
+                <td class="actions-cell">
+                    <a href="{% url 'manager_movie_edit' movie.id %}" class="btn btn-sm btn-warning">✏️</a>
+                    <a href="{% url 'manager_movie_delete' movie.id %}" class="btn btn-sm btn-danger" data-confirm="Удалить фильм?">❌</a>
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="7" class="text-center">Нет фильмов</td>
+                <td colspan="7" class="text-center">Нет фильмов. <a href="{% url 'manager_movie_add' %}">Добавить</a></td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
+<!-- Модальное окно для импорта из API -->
+<div class="modal" id="api-import-modal" style="display: none;">
+    <div class="modal-content api-import-content">
+        <div class="modal-header">
+            <h3>🔍 Поиск фильма в API Poiskkino.dev</h3>
+            <button class="modal-close" onclick="closeApiImportModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="search-box">
+                <input type="text" id="api-search-input" class="form-control search-input"
+                       placeholder="Введите название фильма..." onkeyup="handleSearchKeyup(event)">
+                <button class="btn btn-search" onclick="searchMovie()">🔍 Найти</button>
+            </div>
+            <div class="loading-indicator" id="search-loading" style="display: none;">
+                <div class="spinner"></div>
+                <span>Поиск фильмов...</span>
+            </div>
+            <div class="search-results" id="search-results">
+                <div class="search-placeholder">
+                    <p>🔍 Введите название фильма для поиска в базе Poiskkino.dev</p>
+                    <p class="hint">Фильмы, уже существующие в вашей базе, будут отмечены</p>
+                </div>
+            </div>
+            <div class="modal-message" id="api-message" style="display: none;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ticket/css/manager/api-import.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'ticket/js/manager/api-import.js' %}"></script>
 {% endblock %}

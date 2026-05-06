@@ -6,10 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Панель менеджера{% endblock %} | Кинотеатр Премьера</title>
     <link rel="stylesheet" href="{% static 'ticket/css/manager/manager-base.css' %}">
+    <link rel="stylesheet" href="{% static 'ticket/css/manager/api-tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'ticket/css/manager/modal.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Шапка в точности как на главной -->
+    <!-- Шапка -->
     <div class="site-header">
         <div class="site-logo">КИНОТЕАТР ПРЕМЬЕРА</div>
         <div class="site-user-panel">
@@ -31,11 +33,36 @@
             </div>
         </div>
 
+        <!-- Счётчик API запросов — показывается только на странице фильмов -->
+        {% block api_counter %}
+        <div class="api-counter" id="api-counter" style="display: none;">
+            <div class="api-counter-main">
+                <span class="api-icon">🔑</span>
+                <span class="api-label">API запросов:</span>
+                <span class="api-value" id="api-remaining">...</span>
+                <span class="api-separator">/</span>
+                <span class="api-total" id="api-limit">...</span>
+                <div class="api-progress-bar" id="api-progress-bar">
+                    <div class="api-progress-fill" id="api-progress-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+            <div class="api-counter-details">
+                <span class="api-current-token" id="api-current-token" title="Текущий токен">
+                    🔐 Токен: <strong id="api-token-label">...</strong>
+                    (<span id="api-token-key">...</span>)
+                </span>
+                <button class="btn-manage-tokens" onclick="openTokenManager()" title="Управление токенами">
+                    ⚙️ Управлять токенами
+                </button>
+            </div>
+        </div>
+        {% endblock %}
+
         <!-- Навигация -->
         <nav class="manager-nav">
             <a href="{% url 'manager_dashboard' %}" {% if request.resolver_match.url_name == 'manager_dashboard' %}class="active"{% endif %}>📊 Дашборд</a>
-            <a href="{% url 'manager_movies' %}" {% if request.resolver_match.url_name == 'manager_movies' %}class="active"{% endif %}>🎥 Фильмы</a>
-            <a href="{% url 'manager_screenings' %}" {% if request.resolver_match.url_name == 'manager_screenings' %}class="active"{% endif %}>🎫 Сеансы</a>
+            <a href="{% url 'manager_movies' %}" {% if 'manager_movie' in request.resolver_match.url_name or request.resolver_match.url_name == 'manager_movies' %}class="active"{% endif %}>🎥 Фильмы</a>
+            <a href="{% url 'manager_screenings' %}" {% if 'manager_screening' in request.resolver_match.url_name %}class="active"{% endif %}>🎫 Сеансы</a>
             <a href="{% url 'manager_statistics' %}" {% if request.resolver_match.url_name == 'manager_statistics' %}class="active"{% endif %}>📈 Статистика</a>
         </nav>
 
@@ -55,6 +82,77 @@
     </div>
 
     {% csrf_token %}
+
+    <!-- Модальное окно управления токенами -->
+    <div class="modal" id="token-manager-modal" style="display: none;">
+        <div class="modal-content token-manager-content">
+            <div class="modal-header">
+                <h3>🔑 Управление API токенами Poiskkino.dev</h3>
+                <button class="modal-close" onclick="closeTokenManager()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="token-add-section">
+                    <h4>➕ Добавить новый токен</h4>
+                    <div class="token-add-form">
+                        <input type="text" id="new-token-value" class="form-control" placeholder="Вставьте API токен...">
+                        <input type="text" id="new-token-label" class="form-control" placeholder="Название (например: Основной)">
+                        <button class="btn" onclick="addNewToken()">Добавить</button>
+                    </div>
+                    <div class="token-hint">
+                        💡 Получить токен: <a href="https://poiskkino.dev/" target="_blank">poiskkino.dev</a> → Личный кабинет
+                    </div>
+                </div>
+
+                <div class="token-list-section">
+                    <h4>📋 Ваши токены</h4>
+                    <div id="token-list">
+                        <div class="loading-indicator">
+                            <div class="spinner"></div>
+                            <span>Загрузка...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="token-requests-section">
+                    <h4>📊 Последние запросы</h4>
+                    <div id="last-requests">
+                        <p class="text-muted">Загрузка...</p>
+                    </div>
+                </div>
+
+                <div class="modal-message" id="token-message" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'ticket/js/manager/manager-base.js' %}"></script>
+    <script src="{% static 'ticket/js/manager/api-tokens.js' %}"></script>
+    <script>
+        // Счётчик API — обновление
+        function updateApiCounter() {
+            fetch('/manager/api/tokens/info/')
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.success) return;
+                    let totalRemaining = 0, totalLimit = 0;
+                    data.tokens.forEach(t => { totalRemaining += t.remaining; totalLimit += t.limit; });
+
+                    const el = (id) => document.getElementById(id);
+                    if (el('api-remaining')) el('api-remaining').textContent = totalRemaining || 0;
+                    if (el('api-limit')) el('api-limit').textContent = totalLimit || 0;
+                    if (el('api-progress-fill')) {
+                        const pct = totalLimit > 0 ? Math.round((totalRemaining / totalLimit) * 100) : 0;
+                        el('api-progress-fill').style.width = pct + '%';
+                        el('api-progress-fill').style.background = pct > 50 ? '#4CAF50' : pct > 20 ? '#FF9800' : '#F44336';
+                    }
+                    if (el('api-token-label') && data.current_token_info) {
+                        el('api-token-label').textContent = data.current_token_info.label || '—';
+                        el('api-token-key').textContent = data.current_token_info.key_preview || '—';
+                    }
+                }).catch(() => {});
+        }
+        document.addEventListener('DOMContentLoaded', () => { updateApiCounter(); setInterval(updateApiCounter, 30000); });
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

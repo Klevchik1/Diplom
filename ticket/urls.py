@@ -59,6 +59,16 @@ urlpatterns = [
     path('manager/api/countries/', views.manager_api_countries, name='manager_api_countries'),
     path('manager/api/quick-add-director/', views.manager_quick_add_director, name='manager_quick_add_director'),
     path('manager/api/quick-add-actor/', views.manager_quick_add_actor, name='manager_quick_add_actor'),
+    # API для импорта фильмов
+    path('manager/api/search-movie/', views.search_movie_api, name='search_movie_api'),
+    path('manager/api/import-movie/', views.import_single_movie_api, name='import_single_movie_api'),
+    path('manager/api/remaining-requests/', views.api_remaining_requests, name='api_remaining_requests'),
+    # Управление токенами API
+    path('manager/api/tokens/info/', views.api_token_info, name='api_token_info'),
+    path('manager/api/tokens/add/', views.api_add_token, name='api_add_token'),
+    path('manager/api/tokens/toggle/', views.api_toggle_token, name='api_toggle_token'),
+    path('manager/api/tokens/delete/', views.api_delete_token, name='api_delete_token'),
+    path('manager/api/tokens/set-current/', views.api_set_current_token, name='api_set_current_token'),
     # YooKassa
     path('payment/result/<uuid:group_uuid>/', views.payment_result, name='payment_result'),
     path('webhook/yookassa/', views.yookassa_webhook, name='yookassa_webhook'),

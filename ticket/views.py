@@ -23,6 +23,7 @@ from .forms import DirectorForm, ActorForm
 from django.views.decorators.csrf import csrf_exempt
 from .payment_service import YooKassaService
 from .models import Payment
+from django.core.files.base import ContentFile
 
 from .email_utils import send_verification_email, send_welcome_email, send_password_reset_email, send_email_change_verification
 from .forms import (
@@ -1584,6 +1585,461 @@ def password_reset_confirm(request):
     })
 
 
+def is_manager(user):
+    """Проверка, является ли пользователь менеджером или staff"""
+    return user.is_authenticated and (user.is_staff or user.groups.filter(name='Manager').exists())
+
+
+# ═══════════════════════════════════════════════
+# API ДЛЯ ИМПОРТА ОДНОГО ФИЛЬМА ИЗ API
+# ═══════════════════════════════════════════════
+
+@user_passes_test(is_manager, login_url='login')
+def search_movie_api(request):
+    """Поиск фильма по названию через API (GET запрос)"""
+    query = request.GET.get('query', '').strip()
+
+    if not query or len(query) < 2:
+        return JsonResponse({
+            'success': False,
+            'message': 'Введите минимум 2 символа для поиска'
+        })
+
+    try:
+        from .tmdb_client import KinopoiskDevClient
+        client = KinopoiskDevClient()
+
+        result = client.search_movies(query, page=1, limit=10)
+
+        if not result or 'docs' not in result:
+            return JsonResponse({
+                'success': False,
+                'message': 'Ничего не найдено или ошибка API'
+            })
+
+        movies = []
+        for movie in result.get('docs', []):
+            # Проверяем, есть ли уже в БД
+            title = movie.get('name', '')
+            existing = Movie.objects.filter(title__iexact=title).first()
+
+            movies.append({
+                'id': movie.get('id'),
+                'title': title,
+                'year': movie.get('year'),
+                'duration': movie.get('movieLength'),
+                'description': (movie.get('shortDescription') or movie.get('description', ''))[:200],
+                'poster': movie.get('poster', {}).get('url') or movie.get('poster', {}).get('previewUrl') if isinstance(movie.get('poster'), dict) else None,
+                'rating_kp': movie.get('rating', {}).get('kp') if isinstance(movie.get('rating'), dict) else None,
+                'genres': [g.get('name', '') for g in movie.get('genres', [])],
+                'exists_in_db': existing is not None,
+                'existing_id': existing.id if existing else None,
+            })
+
+        return JsonResponse({
+            'success': True,
+            'movies': movies,
+            'total': len(movies),
+            'remaining_requests': get_remaining_requests_info()
+        })
+
+    except Exception as e:
+        logger.error(f"Ошибка поиска фильма: {e}")
+        return JsonResponse({
+            'success': False,
+            'message': f'Ошибка поиска: {str(e)}'
+        })
+
+
+@user_passes_test(is_manager, login_url='login')
+@require_POST
+def import_single_movie_api(request):
+    """Импорт одного фильма по ID из API"""
+    import json
+    data = json.loads(request.body)
+    movie_id = data.get('movie_id')
+    download_poster = data.get('download_poster', True)
+
+    if not movie_id:
+        return JsonResponse({
+            'success': False,
+            'message': 'Не указан ID фильма'
+        })
+
+    try:
+        from .tmdb_client import KinopoiskDevClient
+        client = KinopoiskDevClient()
+
+        # Получаем детали фильма
+        movie_data = client.get_movie_by_id(movie_id)
+
+        if not movie_data:
+            return JsonResponse({
+                'success': False,
+                'message': 'Не удалось получить данные фильма'
+            })
+
+        title = movie_data.get('name', '')
+
+        # Проверяем, существует ли уже
+        existing = Movie.objects.filter(title__iexact=title).first()
+        if existing:
+            return JsonResponse({
+                'success': False,
+                'message': f'Фильм "{title}" уже существует в базе (ID: {existing.id})',
+                'exists': True,
+                'existing_id': existing.id
+            })
+
+        # Создаём фильм
+        # Возрастной рейтинг
+        age_str = f"{movie_data.get('ageRating', 16)}+"
+        age_rating, _ = AgeRating.objects.get_or_create(name=age_str)
+
+        # Описание
+        description = movie_data.get('description', '') or movie_data.get('shortDescription', '')
+        if not description or len(description.strip()) < 10:
+            description = 'Описание отсутствует'
+        description = description[:997] + "..." if len(description) > 1000 else description
+
+        short_desc = movie_data.get('shortDescription', '') or description[:197] + "..."
+        short_desc = short_desc[:197] + "..." if len(short_desc) > 200 else short_desc
+
+        # Длительность
+        duration = movie_data.get('movieLength', 90)
+
+        # Год
+        year = movie_data.get('year', timezone.now().year)
+
+        # Обрезаем название
+        safe_title = title
+        if len(title) > 50:
+            safe_title = title[:47] + "..."
+
+        movie = Movie.objects.create(
+            title=safe_title,
+            short_description=short_desc,
+            description=description,
+            duration=duration,
+            release_year=year,
+            age_rating=age_rating
+        )
+
+        created_items = {
+            'movie': True,
+            'genres': [],
+            'directors': [],
+            'actors': [],
+            'poster': False
+        }
+
+        # Жанры
+        for genre_data in movie_data.get('genres', []):
+            genre_name = genre_data.get('name', '')
+            if genre_name:
+                genre, _ = Genre.objects.get_or_create(
+                    name=genre_name.capitalize(),
+                    defaults={'description': 'Импортировано из API'}
+                )
+                MovieGenre.objects.get_or_create(movie=movie, genre=genre)
+                created_items['genres'].append(genre.name)
+
+        # Персоны (режиссёры и актёры)
+        for person in movie_data.get('persons', [])[:30]:  # Максимум 30 персон
+            person_name = person.get('name', '')
+            person_id = person.get('id')
+            profession = person.get('profession', '').lower()
+
+            if not person_name:
+                continue
+
+            name_parts = person_name.split(' ', 1)
+            first_name = name_parts[0][:20] if name_parts else ""
+            last_name = name_parts[1][:20] if len(name_parts) > 1 else ""
+
+            if profession in ['режиссеры', 'director', 'режиссер', 'режиссёр']:
+                director, created = Director.objects.get_or_create(
+                    name=first_name,
+                    surname=last_name,
+                    defaults={'biography': f'ID API: {person_id}'}
+                )
+                MovieDirector.objects.get_or_create(movie=movie, director=director)
+                created_items['directors'].append(f"{first_name} {last_name}")
+
+            elif profession in ['актеры', 'actor', 'актер', 'актёр']:
+                actor, created = Actor.objects.get_or_create(
+                    name=first_name,
+                    surname=last_name,
+                    defaults={'biography': f'ID API: {person_id}'}
+                )
+                MovieActor.objects.get_or_create(movie=movie, actor=actor)
+                created_items['actors'].append(f"{first_name} {last_name}")
+
+        # Постер
+        if download_poster:
+            poster_url = None
+            poster_data = movie_data.get('poster', {})
+            if isinstance(poster_data, dict):
+                poster_url = poster_data.get('url') or poster_data.get('previewUrl')
+
+            if poster_url:
+                try:
+                    image_content = client.download_image(poster_url)
+                    if image_content:
+                        import re
+                        safe_name = re.sub(r'[^\w\s-]', '', safe_title)[:50].strip()
+                        movie.poster.save(
+                            f"{safe_name}.jpg",
+                            ContentFile(image_content),
+                            save=True
+                        )
+                        created_items['poster'] = True
+                except Exception as e:
+                    logger.error(f"Ошибка скачивания постера: {e}")
+
+        # Логируем
+        OperationLogger.log_operation(
+            request=request,
+            action_type='CREATE',
+            module_type='MOVIES',
+            description=f'Импорт фильма из API: {safe_title}',
+            object_id=movie.id,
+            object_repr=str(movie),
+            additional_data=created_items
+        )
+
+        return JsonResponse({
+            'success': True,
+            'message': f'✅ Фильм "{safe_title}" успешно импортирован!',
+            'movie': {
+                'id': movie.id,
+                'title': safe_title,
+                'year': year,
+                'duration': duration,
+            },
+            'created': created_items,
+            'remaining_requests': get_remaining_requests_info()
+        })
+
+    except Exception as e:
+        logger.error(f"Ошибка импорта фильма: {e}")
+        return JsonResponse({
+            'success': False,
+            'message': f'Ошибка импорта: {str(e)}'
+        })
+
+
+def get_remaining_requests_info():
+    """Получить информацию об оставшихся запросах API"""
+    try:
+        from ticket.models import APIToken
+        tokens = APIToken.objects.all()
+        total_remaining = sum(t.remaining_today() for t in tokens)
+        total_limit = sum(t.daily_limit for t in tokens)
+        return {
+            'remaining': total_remaining,
+            'limit': total_limit,
+            'percent': int((total_remaining / total_limit * 100)) if total_limit > 0 else 0
+        }
+    except Exception:
+        return {'remaining': '?', 'limit': '?', 'percent': 0}
+
+
+@user_passes_test(is_manager, login_url='login')
+def api_remaining_requests(request):
+    """API для получения оставшихся запросов"""
+    info = get_remaining_requests_info()
+    return JsonResponse(info)
+
+
+# ═══════════════════════════════════════════════
+# УПРАВЛЕНИЕ API ТОКЕНАМИ ДЛЯ МЕНЕДЖЕРА
+# ═══════════════════════════════════════════════
+
+@user_passes_test(is_manager, login_url='login')
+def api_token_info(request):
+    """Получить детальную информацию о всех токенах"""
+    try:
+        from ticket.models import APIToken, APIRequestLog
+        from django.conf import settings  # ← ДОБАВИТЬ
+
+        # ВСЕ токены, не только активные
+        tokens = APIToken.objects.all()
+
+        current_token = None
+        try:
+            from ticket.tmdb_client import KinopoiskDevClient
+            client = KinopoiskDevClient()
+            current_token = client._token_model
+            current_api_key = client._api_key
+        except Exception:
+            current_api_key = getattr(settings, 'KINOPOISK_API_KEY', 'Не задан')
+
+        token_list = []
+        for t in tokens:
+            is_current = bool(current_token and current_token.id == t.id)
+            token_list.append({
+                'id': t.id,
+                'label': t.label,
+                'token_preview': t.token[:8] + '...' + t.token[-4:] if len(t.token) > 12 else t.token[:8] + '...',
+                'is_active': t.is_active,
+                'is_current': is_current,
+                'requests_today': t.requests_today,
+                'limit': t.daily_limit,
+                'remaining': t.remaining_today(),
+                'total_requests': t.total_requests,
+                'last_reset': t.last_reset_date.strftime('%d.%m.%Y') if t.last_reset_date else '—'
+            })
+
+        last_requests = list(APIRequestLog.objects.select_related('token').order_by('-created_at')[:5].values(
+            'endpoint', 'success', 'status_code', 'created_at', 'token__label'
+        ))
+
+        return JsonResponse({
+            'success': True,
+            'tokens': token_list,
+            'tokens_count': len(token_list),
+            'current_token_info': {
+                'key_preview': current_api_key[:8] + '...' + current_api_key[-4:] if current_api_key and len(current_api_key) > 12 else (current_api_key or 'Не задан'),
+                'is_from_db': current_token is not None,
+                'label': current_token.label if current_token else 'Из settings/.env'
+            },
+            'last_requests': last_requests
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+
+@user_passes_test(is_manager, login_url='login')
+@require_POST
+def api_add_token(request):
+    """Добавить новый токен"""
+    import json
+    data = json.loads(request.body)
+    token_value = data.get('token', '').strip()
+    label = data.get('label', '').strip()
+
+    if not token_value:
+        return JsonResponse({'success': False, 'message': 'Введите токен'})
+    if not label:
+        label = f'Токен {APIToken.objects.count() + 1}'
+
+    try:
+        from ticket.models import APIToken
+
+        # Проверяем, нет ли уже такого токена
+        if APIToken.objects.filter(token=token_value).exists():
+            return JsonResponse({'success': False, 'message': 'Такой токен уже существует'})
+
+        token = APIToken.objects.create(
+            token=token_value,
+            label=label,
+            daily_limit=200
+        )
+
+        # Логируем
+        OperationLogger.log_operation(
+            request=request,
+            action_type='CREATE',
+            module_type='SYSTEM',
+            description=f'Добавлен новый API токен: {label}',
+            object_id=token.id,
+            object_repr=str(token)
+        )
+
+        return JsonResponse({
+            'success': True,
+            'message': f'✅ Токен "{label}" успешно добавлен!',
+            'token': {
+                'id': token.id,
+                'label': token.label,
+                'token_preview': token.token[:8] + '...' + token.token[-4:]
+            }
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+
+@user_passes_test(is_manager, login_url='login')
+@require_POST
+def api_toggle_token(request):
+    """Включить/выключить токен"""
+    import json
+    data = json.loads(request.body)
+    token_id = data.get('token_id')
+    action = data.get('action')  # 'activate' или 'deactivate'
+
+    try:
+        from ticket.models import APIToken
+        token = APIToken.objects.get(id=token_id)
+
+        if action == 'activate':
+            token.is_active = True
+            token.save()
+            message = f'✅ Токен "{token.label}" активирован'
+        else:
+            token.is_active = False
+            token.save()
+            message = f'🔴 Токен "{token.label}" деактивирован'
+
+        return JsonResponse({'success': True, 'message': message})
+    except APIToken.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Токен не найден'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+
+@user_passes_test(is_manager, login_url='login')
+@require_POST
+def api_delete_token(request):
+    """Удалить токен"""
+    import json
+    data = json.loads(request.body)
+    token_id = data.get('token_id')
+
+    try:
+        from ticket.models import APIToken
+        token = APIToken.objects.get(id=token_id)
+        label = token.label
+        token.delete()
+
+        return JsonResponse({
+            'success': True,
+            'message': f'🗑️ Токен "{label}" удалён'
+        })
+    except APIToken.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Токен не найден'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+
+@user_passes_test(is_manager, login_url='login')
+@require_POST
+def api_set_current_token(request):
+    """Переключить текущий токен — деактивировать все активные и активировать выбранный"""
+    import json
+    data = json.loads(request.body)
+    token_id = data.get('token_id')
+
+    try:
+        from ticket.models import APIToken
+        token = APIToken.objects.get(id=token_id)
+
+        # Деактивируем только активные токены (чтобы только один был активен)
+        APIToken.objects.filter(is_active=True).update(is_active=False)
+
+        # Активируем выбранный
+        token.is_active = True
+        token.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': f'✅ Токен "{token.label}" теперь текущий'
+        })
+    except APIToken.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Токен не найден'})
+
+
 def about(request):
     """Страница 'О кинотеатре' с руководством пользователя"""
     from django.db.models import Count
@@ -1770,11 +2226,6 @@ def generate_report(request):
             'end_date': end_date
         }
     })
-
-
-def is_manager(user):
-    """Проверка, является ли пользователь менеджером или staff"""
-    return user.is_authenticated and (user.is_staff or user.groups.filter(name='Manager').exists())
 
 
 @user_passes_test(is_manager, login_url='login')

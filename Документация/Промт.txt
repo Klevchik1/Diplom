@@ -117,8 +117,10 @@ cinema-management-system/                         # Корень проекта 
 │   │       ├── create_manager.py                 # Создание менеджера
 │   │       ├── createsuperuser_custom.py         # Создание суперпользователя
 │   │       ├── import_kinopoisk_movies.py        # Импорт фильмов из API
+│   │       ├── init_tokens.py        		    # Инициализация API токенов
 │   │       ├── restore_db.py                     # Восстановление БД
 │   │       ├── setup_manager_permissions.py      # Настройка прав менеджера
+│   │       ├── smart_import.py      		   # Умный импорт с контролем лимитов API, ротацией токенов и сохранением прогресса.
 │   │       └── posters/                          # Тестовые постеры
 │   │
 │   ├── migrations/                               # Миграции БД
@@ -134,8 +136,11 @@ cinema-management-system/                         # Корень проекта 
 │   │       │   │   ├── admin-login.css
 │   │       │   │   ├── backup-management.css
 │   │       │   │   ├── dashboard.css
+│   │       │   │   ├── import-form.css
 │   │       │   │   └── reports.css
 │   │       │   ├── manager/                      # Панель менеджера
+│   │       │   │   ├── api-import.css
+│   │       │   │   ├── api-tokens.css
 │   │       │   │   ├── manager-base.css
 │   │       │   │   ├── manager-forms.css
 │   │       │   │   ├── manager-statistics.css
@@ -156,6 +161,8 @@ cinema-management-system/                         # Корень проекта 
 │   │           │   ├── admin-base.js
 │   │           │   └── backup-management.js
 │   │           ├── manager/                      # Панель менеджера
+│   │           │   ├── api-import.js
+│   │           │   ├── api-tokens.js
 │   │           │   ├── manager-base.js
 │   │           │   ├── manager-forms.js
 │   │           │   ├── manager-statistics.js

@@ -12,28 +12,33 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initSelect2() {
-    // Подключаем Select2 для красивого выбора с поиском
     if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
-        $('#id_directors, #id_actors').select2({
-            width: '100%',
-            placeholder: 'Выберите из списка',
-            allowClear: true,
-            language: {
-                noResults: function() {
-                    return "Ничего не найдено";
-                },
-                searching: function() {
-                    return "Поиск...";
+        // Принудительно инициализируем с тёмной темой
+        $('#id_directors, #id_actors, #id_genres').each(function() {
+            $(this).select2({
+                width: '100%',
+                placeholder: 'Выберите из списка',
+                allowClear: true,
+                dropdownAutoWidth: false,
+                theme: 'default',
+                language: {
+                    noResults: function() { return "Ничего не найдено"; },
+                    searching: function() { return "Поиск..."; }
                 }
-            }
+            });
         });
     } else {
-        // Если Select2 не подключен, просто увеличиваем размер поля
-        const directorsField = document.getElementById('id_directors');
-        const actorsField = document.getElementById('id_actors');
-
-        if (directorsField) directorsField.size = 8;
-        if (actorsField) actorsField.size = 8;
+        // Fallback — просто делаем поля больше
+        const fields = ['id_directors', 'id_actors', 'id_genres'];
+        fields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.size = 8;
+                el.style.background = 'rgba(20, 20, 20, 0.8)';
+                el.style.color = 'white';
+                el.style.border = '2px solid #ff0000';
+            }
+        });
     }
 }
 

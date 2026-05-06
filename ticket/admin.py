@@ -12,7 +12,7 @@ from .models import (
     Report, OperationLog, AgeRating, TicketStatus, Country,
     HallType, Director, Actor, MovieDirector, MovieActor,
     TicketGroup, ActionType, ModuleType, EmailChangeRequest,
-    MovieGenre
+    MovieGenre, ImportCache, ImportTask, APIRequestLog, APIToken
 )
 from .models import Hall, Movie, Screening, Seat, Ticket, User, Genre
 from .report_utils import ReportGenerator
@@ -464,43 +464,44 @@ class MovieAdmin(LoggingModelAdmin):
         urls = super().get_urls()
         custom_urls = [
             path('import-from-api/',
-                 self.admin_site.admin_view(self.import_from_api_view),
+                 self.admin_site.admin_view(self.smart_import_view),
                  name='movie-import-from-api'),
         ]
         return custom_urls + urls
 
-    def import_from_api_view(self, request):
-        if request.method == 'POST':
-            form = ImportMoviesForm(request.POST)
-            if form.is_valid():
-                # Запускаем команду импорта
-                pages = form.cleaned_data['pages']
-                year_start = form.cleaned_data['year_start']
-                download_posters = form.cleaned_data['download_posters']
-                import_persons = form.cleaned_data['import_persons']
-                skip_existing = form.cleaned_data['skip_existing']
+    def smart_import_view(self, request):
+        """Новая страница умного импорта с информацией о токенах"""
+        from django.core.management import call_command
+        import io, sys
 
-                # Перехватываем вывод команды
+        # Получаем информацию о токенах
+        try:
+            token_info = KinopoiskDevClient.get_total_available_tokens()
+        except Exception:
+            token_info = {'tokens_count': 0, 'total_remaining': 0, 'total_limit': 0, 'tokens': []}
+
+        if request.method == 'POST':
+            form = SmartImportForm(request.POST)
+            if form.is_valid():
                 stdout = sys.stdout
                 string_io = io.StringIO()
                 sys.stdout = string_io
 
                 try:
                     call_command(
-                        'import_kinopoisk_movies',
-                        pages=pages,
-                        year_start=year_start,
-                        download_posters=download_posters,
-                        import_persons=import_persons,
-                        skip_existing=skip_existing
+                        'smart_import',
+                        type=form.cleaned_data['import_type'],
+                        pages=form.cleaned_data['pages'],
+                        year_from=form.cleaned_data['year_from'],
+                        year_to=form.cleaned_data['year_to'],
+                        no_posters=not form.cleaned_data['import_posters'],
+                        no_persons=not form.cleaned_data['import_persons'],
                     )
                     output = string_io.getvalue()
-                    messages.success(request, "Импорт успешно выполнен!")
-
+                    messages.success(request, "✅ Импорт успешно выполнен!")
                 except Exception as e:
                     output = str(e)
-                    messages.error(request, f"Ошибка импорта: {e}")
-
+                    messages.error(request, f"❌ Ошибка импорта: {e}")
                 finally:
                     sys.stdout = stdout
 
@@ -510,12 +511,13 @@ class MovieAdmin(LoggingModelAdmin):
                     'opts': self.model._meta,
                 })
         else:
-            form = ImportMoviesForm()
+            form = SmartImportForm()
 
         context = {
-            'title': 'Импорт фильмов из API Кинопоиска',
+            'title': 'Умный импорт фильмов из Poiskkino.dev',
             'form': form,
             'opts': self.model._meta,
+            'token_info': token_info,
         }
         return render(request, 'admin/import_form.html', context)
 
@@ -1383,4 +1385,180 @@ class ImportMoviesForm(forms.Form):
         required=False,
         initial=True,
         help_text='Не импортировать фильмы, которые уже есть в БД'
+    )
+
+
+# ═══════════════════════════════════════════════
+# АДМИНКА ДЛЯ API ТОКЕНОВ И ИМПОРТА
+# ═══════════════════════════════════════════════
+
+@admin.register(APIToken)
+class APITokenAdmin(admin.ModelAdmin):
+    list_display = ('label', 'is_active', 'requests_today', 'daily_limit', 'remaining_display', 'total_requests', 'last_reset_date')
+    list_filter = ('is_active',)
+    search_fields = ('label', 'token')
+    readonly_fields = ('requests_today', 'last_reset_date', 'total_requests')
+
+    def remaining_display(self, obj):
+        remaining = obj.remaining_today()
+        color = 'green' if remaining > 50 else 'orange' if remaining > 10 else 'red'
+        return format_html(
+            '<span style="color:{}; font-weight:bold;">{}</span>',
+            color, remaining
+        )
+
+    remaining_display.short_description = 'Осталось'
+
+    actions = ['reset_daily_counters']
+
+    def reset_daily_counters(self, request, queryset):
+        queryset.update(requests_today=0, last_reset_date=timezone.now().date())
+        self.message_user(request, 'Счётчики сброшены')
+
+    reset_daily_counters.short_description = '🔄 Сбросить дневные счётчики'
+
+
+@admin.register(APIRequestLog)
+class APIRequestLogAdmin(admin.ModelAdmin):
+    list_display = ('created_at', 'token_label', 'endpoint', 'success_status', 'status_code', 'duration_ms')
+    list_filter = ('success', 'token', 'endpoint', 'created_at')
+    search_fields = ('endpoint', 'error_message')
+    readonly_fields = ('token', 'endpoint', 'params', 'status_code', 'success', 'response_size', 'duration_ms', 'error_message', 'created_at')
+    date_hierarchy = 'created_at'
+
+    def token_label(self, obj):
+        return obj.token.label if obj.token else '—'
+
+    token_label.short_description = 'Токен'
+
+    def success_status(self, obj):
+        return '✅' if obj.success else '❌'
+
+    success_status.short_description = ''
+
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(ImportTask)
+class ImportTaskAdmin(admin.ModelAdmin):
+    list_display = ('id', 'import_type', 'status', 'progress_bar', 'total_processed', 'api_requests_made', 'created_at')
+    list_filter = ('status', 'import_type')
+    readonly_fields = ('status', 'current_page', 'total_processed', 'api_requests_made', 'started_at', 'completed_at')
+
+    def progress_bar(self, obj):
+        percent = obj.progress_percent
+        color = 'green' if obj.status == 'completed' else 'blue' if obj.status == 'running' else 'gray'
+        return format_html(
+            '<div style="background:#eee; width:100px; border-radius:3px;">'
+            '<div style="background:{}; width:{}%; height:20px; border-radius:3px; text-align:center; color:white; font-size:11px; line-height:20px;">{}%</div>'
+            '</div>',
+            color, percent, percent
+        )
+
+    progress_bar.short_description = 'Прогресс'
+
+    actions = ['run_selected_tasks']
+
+    def run_selected_tasks(self, request, queryset):
+        for task in queryset.filter(status__in=['pending', 'paused']):
+            # Запускаем в фоновом режиме
+            import threading
+            thread = threading.Thread(target=self._run_import_task, args=(task,))
+            thread.daemon = True
+            thread.start()
+        self.message_user(request, f'Запущено {queryset.count()} задач')
+
+    run_selected_tasks.short_description = '▶️ Запустить выбранные задачи'
+
+    def _run_import_task(self, task):
+        """Фоновый запуск импорта"""
+        task.status = 'running'
+        task.started_at = timezone.now()
+        task.save()
+
+        try:
+            importer = SmartImporter(task=task)
+            importer.run_import(
+                pages=task.pages_limit,
+                year_from=task.year_from,
+                year_to=task.year_to,
+                import_posters=task.import_posters,
+                import_persons=task.import_persons
+            )
+            task.status = 'completed'
+            task.completed_at = timezone.now()
+        except Exception as e:
+            task.status = 'failed'
+            task.last_error = str(e)
+
+        task.save()
+
+
+@admin.register(ImportCache)
+class ImportCacheAdmin(admin.ModelAdmin):
+    list_display = ('cache_type', 'external_id', 'internal_id', 'created_at', 'expires_at')
+    list_filter = ('cache_type',)
+    search_fields = ('external_id',)
+    readonly_fields = ('created_at',)
+
+
+class SmartImportForm(forms.Form):
+    """Форма для умного импорта с выбором категорий"""
+
+    import_type = forms.ChoiceField(
+        choices=[
+            ('movies', '🎬 Только фильмы'),
+            ('genres', '🎭 Только жанры'),
+            ('persons', '👥 Только персоны'),
+            ('full', '📦 Полный импорт'),
+        ],
+        initial='movies',
+        label='Тип импорта',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    pages = forms.IntegerField(
+        min_value=1, max_value=20, initial=3,
+        label='Количество страниц (×50 фильмов)',
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    )
+
+    year_from = forms.IntegerField(
+        min_value=2000, max_value=2026, initial=2024,
+        label='Год от',
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    )
+
+    year_to = forms.IntegerField(
+        min_value=2000, max_value=2026, initial=2025,
+        label='Год до',
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    )
+
+    import_posters = forms.BooleanField(
+        required=False, initial=True,
+        label='🖼️ Скачивать постеры',
+    )
+
+    import_persons = forms.BooleanField(
+        required=False, initial=True,
+        label='👥 Импортировать актёров и режиссёров',
+    )
+
+    import_genres = forms.BooleanField(
+        required=False, initial=True,
+        label='🎭 Импортировать жанры',
+    )
+
+    skip_existing = forms.BooleanField(
+        required=False, initial=True,
+        label='⏭️ Пропускать существующие фильмы',
+    )
+
+    max_api_requests = forms.IntegerField(
+        min_value=5, max_value=500, initial=50,
+        label='🔌 Максимум API запросов',
+        help_text='Импорт остановится при достижении лимита',
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
     )

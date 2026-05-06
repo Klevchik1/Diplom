@@ -1,0 +1,164 @@
+/* Импорт форма */
+.import-container {
+    padding: 20px;
+    max-width: 800px;
+}
+
+.token-status-card {
+    background: #f0f7ff;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #2196F3;
+}
+
+.token-status-card h3 {
+    margin: 0 0 10px 0;
+}
+
+.requests-remaining {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.requests-remaining.green { color: #4CAF50; }
+.requests-remaining.orange { color: #FF9800; }
+.requests-remaining.red { color: #F44336; }
+
+.progress-bar-bg {
+    background: #e0e0e0;
+    height: 20px;
+    border-radius: 10px;
+    margin: 10px 0;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.progress-bar-fill.green { background: #4CAF50; }
+.progress-bar-fill.orange { background: #FF9800; }
+.progress-bar-fill.red { background: #F44336; }
+
+.token-list {
+    margin: 10px 0 0 0;
+    padding-left: 20px;
+}
+
+.recommendations-card {
+    background: #fff3cd;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #ffc107;
+}
+
+.recommendations-card h4 {
+    margin: 0 0 10px 0;
+}
+
+.recommendations-card ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.recommendations-card li {
+    margin-bottom: 5px;
+}
+
+.form-fieldset {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+}
+
+.form-fieldset legend {
+    font-weight: bold;
+    padding: 0 10px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.help-text {
+    display: block;
+    color: #666;
+    margin-top: 5px;
+    font-size: 12px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.checkbox-group {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.form-actions {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.btn-submit {
+    background: #4CAF50;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-submit:hover {
+    background: #388E3C;
+}
+
+.btn-cancel {
+    color: #666;
+    text-decoration: none;
+}
+
+.btn-cancel:hover {
+    color: #333;
+}

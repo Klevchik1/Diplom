@@ -466,4 +466,70 @@ tr:hover td {
     .site-user-panel {
         justify-content: center;
     }
+
+    .api-counter {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .api-progress-bar {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+/* ===== СЧЁТЧИК API ЗАПРОСОВ ===== */
+.api-counter {
+    background: rgba(20, 20, 20, 0.9);
+    border: 1px solid #444;
+    border-radius: 10px;
+    padding: 12px 20px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.api-icon {
+    font-size: 20px;
+}
+
+.api-label {
+    color: #aaa;
+    font-size: 14px;
+}
+
+.api-value {
+    color: #ffcc00;
+    font-weight: bold;
+    font-size: 18px;
+    min-width: 30px;
+    text-align: right;
+}
+
+.api-separator {
+    color: #666;
+}
+
+.api-total {
+    color: #888;
+    font-size: 14px;
+}
+
+.api-progress-bar {
+    flex: 1;
+    min-width: 100px;
+    height: 8px;
+    background: #333;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-left: 10px;
+}
+
+.api-progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease, background 0.5s ease;
+    background: #4CAF50;
 }

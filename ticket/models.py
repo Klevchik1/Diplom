@@ -1601,6 +1601,184 @@ class EmailChangeRequest(models.Model):
         ]
 
 
+# ═══════════════════════════════════════════════
+# МОДЕЛИ ДЛЯ УПРАВЛЕНИЯ API И ИМПОРТОМ
+# ═══════════════════════════════════════════════
+
+class APIToken(models.Model):
+    """Модель для хранения API токенов Poiskkino.dev"""
+    token = models.CharField(max_length=64, unique=True, verbose_name='API токен')
+    label = models.CharField(max_length=50, verbose_name='Метка токена')
+    is_active = models.BooleanField(default=True, verbose_name='Активен')
+    daily_limit = models.IntegerField(default=200, verbose_name='Дневной лимит запросов')
+    requests_today = models.IntegerField(default=0, verbose_name='Запросов сегодня')
+    last_reset_date = models.DateField(auto_now_add=True, verbose_name='Дата сброса счётчика')
+    total_requests = models.IntegerField(default=0, verbose_name='Всего запросов')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата добавления')
+
+    def __str__(self):
+        return f"{self.label} ({'🟢' if self.is_active else '🔴'}) — {self.requests_today}/{self.daily_limit}"
+
+    def remaining_today(self):
+        """Оставшиеся запросы на сегодня"""
+        return max(0, self.daily_limit - self.requests_today)
+
+    def can_make_request(self):
+        """Можно ли делать запрос с этим токеном"""
+        today = timezone.now().date()
+        # Сбрасываем счётчик если новый день
+        if self.last_reset_date < today:
+            self.requests_today = 0
+            self.last_reset_date = today
+            self.save(update_fields=['requests_today', 'last_reset_date'])
+        return self.is_active and self.requests_today < self.daily_limit
+
+    def register_request(self):
+        """Зарегистрировать использование токена"""
+        today = timezone.now().date()
+        if self.last_reset_date < today:
+            self.requests_today = 1
+            self.last_reset_date = today
+        else:
+            self.requests_today += 1
+        self.total_requests += 1
+        self.save(update_fields=['requests_today', 'last_reset_date', 'total_requests'])
+
+    class Meta:
+        verbose_name = 'API токен'
+        verbose_name_plural = 'API токены'
+        ordering = ['-is_active', 'label']
+
+
+class APIRequestLog(models.Model):
+    """Журнал запросов к API"""
+    token = models.ForeignKey(APIToken, on_delete=models.SET_NULL, null=True, verbose_name='Токен')
+    endpoint = models.CharField(max_length=100, verbose_name='Эндпоинт')
+    params = models.JSONField(default=dict, verbose_name='Параметры запроса')
+    status_code = models.IntegerField(null=True, verbose_name='HTTP статус')
+    success = models.BooleanField(default=False, verbose_name='Успешно')
+    response_size = models.IntegerField(null=True, verbose_name='Размер ответа (байт)')
+    duration_ms = models.IntegerField(null=True, verbose_name='Длительность (мс)')
+    error_message = models.TextField(blank=True, verbose_name='Ошибка')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Время запроса')
+
+    def __str__(self):
+        return f"{self.endpoint} — {'✅' if self.success else '❌'} {self.status_code}"
+
+    class Meta:
+        verbose_name = 'Лог API запроса'
+        verbose_name_plural = 'Логи API запросов'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['-created_at']),
+            models.Index(fields=['token', '-created_at']),
+            models.Index(fields=['success']),
+        ]
+
+
+class ImportTask(models.Model):
+    """Задача импорта с сохранением прогресса"""
+    STATUS_CHOICES = [
+        ('pending', 'Ожидает'),
+        ('running', 'Выполняется'),
+        ('paused', 'Приостановлена'),
+        ('completed', 'Завершена'),
+        ('failed', 'Ошибка'),
+    ]
+
+    IMPORT_TYPE_CHOICES = [
+        ('movies', 'Фильмы'),
+        ('genres', 'Жанры'),
+        ('persons', 'Персоны (актёры/режиссёры)'),
+        ('full', 'Полный импорт'),
+    ]
+
+    import_type = models.CharField(max_length=20, choices=IMPORT_TYPE_CHOICES, default='full', verbose_name='Тип импорта')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='Статус')
+
+    # Параметры импорта
+    pages_limit = models.IntegerField(default=5, verbose_name='Лимит страниц')
+    movies_per_page = models.IntegerField(default=50, verbose_name='Фильмов на странице')
+    year_from = models.IntegerField(default=2020, verbose_name='Год от')
+    year_to = models.IntegerField(default=2025, verbose_name='Год до')
+    import_posters = models.BooleanField(default=True, verbose_name='Импорт постеров')
+    import_persons = models.BooleanField(default=True, verbose_name='Импорт персон')
+    import_genres = models.BooleanField(default=True, verbose_name='Импорт жанров')
+    import_countries = models.BooleanField(default=True, verbose_name='Импорт стран')
+    skip_existing = models.BooleanField(default=True, verbose_name='Пропускать существующие')
+
+    # Прогресс
+    current_page = models.IntegerField(default=0, verbose_name='Текущая страница')
+    current_movie_index = models.IntegerField(default=0, verbose_name='Индекс фильма')
+    total_processed = models.IntegerField(default=0, verbose_name='Всего обработано')
+
+    # Статистика
+    movies_new = models.IntegerField(default=0, verbose_name='Новых фильмов')
+    movies_updated = models.IntegerField(default=0, verbose_name='Обновлено фильмов')
+    persons_created = models.IntegerField(default=0, verbose_name='Создано персон')
+    genres_created = models.IntegerField(default=0, verbose_name='Создано жанров')
+    countries_created = models.IntegerField(default=0, verbose_name='Создано стран')
+    posters_downloaded = models.IntegerField(default=0, verbose_name='Скачано постеров')
+    api_requests_made = models.IntegerField(default=0, verbose_name='API запросов')
+    errors_count = models.IntegerField(default=0, verbose_name='Ошибок')
+
+    # Временные метки
+    started_at = models.DateTimeField(null=True, verbose_name='Начало')
+    completed_at = models.DateTimeField(null=True, verbose_name='Завершение')
+    last_error = models.TextField(blank=True, verbose_name='Последняя ошибка')
+
+    progress_data = models.JSONField(default=dict, verbose_name='Данные прогресса')
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создана')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлена')
+
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Пользователь')
+
+    def __str__(self):
+        return f"Импорт {self.get_import_type_display()} — {self.get_status_display()} ({self.total_processed} обр.)"
+
+    @property
+    def progress_percent(self):
+        if self.pages_limit > 0:
+            return min(100, int((self.current_page / self.pages_limit) * 100))
+        return 0
+
+    class Meta:
+        verbose_name = 'Задача импорта'
+        verbose_name_plural = 'Задачи импорта'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['-created_at']),
+        ]
+
+
+class ImportCache(models.Model):
+    """Кэш импортированных данных для избежания повторных запросов"""
+    cache_type = models.CharField(max_length=20, choices=[
+        ('movie', 'Фильм'),
+        ('person', 'Персона'),
+        ('genre', 'Жанр'),
+        ('country', 'Страна'),
+    ], verbose_name='Тип данных')
+    external_id = models.IntegerField(verbose_name='Внешний ID (API)')
+    internal_id = models.IntegerField(null=True, verbose_name='Внутренний ID (БД)')
+    data = models.JSONField(default=dict, verbose_name='Данные из API')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
+    expires_at = models.DateTimeField(null=True, verbose_name='Истекает')
+
+    def __str__(self):
+        return f"{self.cache_type} #{self.external_id}"
+
+    class Meta:
+        verbose_name = 'Кэш импорта'
+        verbose_name_plural = 'Кэш импорта'
+        unique_together = ('cache_type', 'external_id')
+        indexes = [
+            models.Index(fields=['cache_type', 'external_id']),
+        ]
+
+
 # Модель-заглушка для отчетов
 class Report(models.Model):
     """Модель для отображения отчетов в админке"""

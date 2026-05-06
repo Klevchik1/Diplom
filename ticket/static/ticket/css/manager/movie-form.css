@@ -145,36 +145,39 @@
 }
 
 /* Если используется Select2 */
-.select2-container--default .select2-selection--multiple {
+.select2-container--default .select2-selection--multiple,
+.select2-container--default .select2-selection--single {
     background-color: rgba(20, 20, 20, 0.8) !important;
     border: 2px solid #ff0000 !important;
     border-radius: 8px !important;
-    min-height: 100px;
+    min-height: 42px;
 }
 
 .select2-container--default .select2-selection--multiple .select2-selection__choice {
-    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%) !important;
+    background: linear-gradient(135deg, #ff0000, #cc0000) !important;
     color: white !important;
     border: none !important;
-    padding: 5px 10px !important;
+    padding: 4px 8px !important;
     border-radius: 5px !important;
+    margin: 3px !important;
 }
 
 .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
     color: white !important;
     margin-right: 5px;
-    border: none !important;
 }
 
 .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
-    background: transparent !important;
     color: #ffcc00 !important;
+    background: transparent !important;
 }
 
+/* Выпадающий список */
 .select2-dropdown {
     background-color: #1e1e1e !important;
     border: 2px solid #ff0000 !important;
     border-radius: 8px !important;
+    z-index: 9999 !important;
 }
 
 .select2-results__option {
@@ -183,15 +186,30 @@
 }
 
 .select2-results__option--highlighted {
-    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%) !important;
+    background: #ff0000 !important;
 }
 
+.select2-results__option[aria-selected="true"] {
+    background: rgba(255, 0, 0, 0.3) !important;
+}
+
+/* Поле поиска в Select2 */
 .select2-search__field {
-    background-color: #333 !important;
+    background-color: #222 !important;
     color: white !important;
     border: 1px solid #ff0000 !important;
     border-radius: 5px !important;
-    padding: 5px !important;
+    padding: 6px !important;
+}
+
+.select2-search__field:focus {
+    outline: none;
+    border-color: #ffcc00 !important;
+}
+
+/* Placeholder */
+.select2-container--default .select2-selection--multiple .select2-selection__placeholder {
+    color: #888 !important;
 }
 
 /* Текст подсказки */

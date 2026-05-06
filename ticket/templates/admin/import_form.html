@@ -1,23 +1,109 @@
 {% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static 'ticket/css/admin/import-form.css' %}">
+{% endblock %}
 
 {% block content %}
-<div style="padding: 20px;">
+<div class="import-container">
     <h1>{{ title }}</h1>
-    
-    <div style="background: #f8f9fa; padding: 20px; margin-bottom: 20px; border-radius: 5px;">
-        <p>Импорт фильмов из API Poiskkino.dev (бывший Кинопоиск).</p>
-        <p>Будет импортировано до {{ form.pages.value|default:2 }} страниц по 50 фильмов на странице.</p>
+
+    {% if token_info %}
+    <div class="token-status-card">
+        <h3>🔑 Статус API токенов</h3>
+        <p><strong>Всего токенов:</strong> {{ token_info.tokens_count }}</p>
+        <p><strong>Осталось запросов сегодня:</strong>
+            <span class="requests-remaining {% if token_info.total_remaining > 100 %}green{% elif token_info.total_remaining > 30 %}orange{% else %}red{% endif %}">
+                {{ token_info.total_remaining }}
+            </span>
+            / {{ token_info.total_limit }}
+        </p>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill {% if token_info.total_remaining > 100 %}green{% elif token_info.total_remaining > 30 %}orange{% else %}red{% endif %}"
+                 style="width: {% widthratio token_info.total_remaining token_info.total_limit 100 %}%;">
+            </div>
+        </div>
+        <ul class="token-list">
+        {% for t in token_info.tokens %}
+            <li>{{ t.label }}: <strong>{{ t.remaining }}</strong>/{{ t.limit }} {% if t.is_active %}🟢{% else %}🔴{% endif %}</li>
+        {% endfor %}
+        </ul>
     </div>
-    
-    <form method="post" style="max-width: 600px;">
+    {% endif %}
+
+    <div class="recommendations-card">
+        <h4>⚡ Рекомендации:</h4>
+        <ul>
+            <li>Для теста: <strong>1 страница</strong> (50 фильмов, ~10-20 запросов)</li>
+            <li>Для наполнения: <strong>3-5 страниц</strong> (150-250 фильмов, ~30-50 запросов)</li>
+            <li>Полный импорт: <strong>10+ страниц</strong> (используйте несколько токенов)</li>
+        </ul>
+    </div>
+
+    <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        
-        <div style="margin-top: 20px;">
-            <button type="submit" style="background: #417690; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">
-                Начать импорт
+
+        <fieldset class="form-fieldset">
+            <legend>📋 Тип импорта</legend>
+            <div class="form-group">
+                {{ form.import_type.label_tag }}
+                {{ form.import_type }}
+            </div>
+        </fieldset>
+
+        <fieldset class="form-fieldset">
+            <legend>⚙️ Параметры</legend>
+            <div class="form-grid">
+                <div class="form-group">
+                    {{ form.pages.label_tag }}
+                    {{ form.pages }}
+                    <small class="help-text">×50 фильмов на странице</small>
+                </div>
+                <div class="form-group">
+                    {{ form.max_api_requests.label_tag }}
+                    {{ form.max_api_requests }}
+                    <small class="help-text">{{ form.max_api_requests.help_text }}</small>
+                </div>
+                <div class="form-group">
+                    {{ form.year_from.label_tag }}
+                    {{ form.year_from }}
+                </div>
+                <div class="form-group">
+                    {{ form.year_to.label_tag }}
+                    {{ form.year_to }}
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-fieldset">
+            <legend>🎯 Что импортировать</legend>
+            <div class="checkbox-group">
+                <label class="checkbox-label">
+                    {{ form.import_posters }}
+                    <span>{{ form.import_posters.label }}</span>
+                </label>
+                <label class="checkbox-label">
+                    {{ form.import_persons }}
+                    <span>{{ form.import_persons.label }}</span>
+                </label>
+                <label class="checkbox-label">
+                    {{ form.import_genres }}
+                    <span>{{ form.import_genres.label }}</span>
+                </label>
+                <label class="checkbox-label">
+                    {{ form.skip_existing }}
+                    <span>{{ form.skip_existing.label }}</span>
+                </label>
+            </div>
+        </fieldset>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-submit">
+                🚀 Начать умный импорт
             </button>
-            <a href="{% url 'admin:ticket_movie_changelist' %}" style="margin-left: 10px; color: #666;">Отмена</a>
+            <a href="{% url 'admin:ticket_movie_changelist' %}" class="btn-cancel">Отмена</a>
         </div>
     </form>
 </div>

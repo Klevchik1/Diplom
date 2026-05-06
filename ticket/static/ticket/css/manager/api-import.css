@@ -1,0 +1,339 @@
+/* ===== СТИЛИ ДЛЯ ИМПОРТА ИЗ API ===== */
+
+/* Кнопка с выпадающим меню */
+.dropdown-add {
+    position: relative;
+    display: inline-block;
+}
+
+.btn-add-dropdown {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-add-dropdown:hover {
+    background: linear-gradient(135deg, #45a049, #388E3C);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.dropdown-add-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 5px;
+    background: #1e1e1e;
+    border: 2px solid #ff0000;
+    border-radius: 8px;
+    min-width: 200px;
+    z-index: 1000;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    color: white;
+    text-decoration: none;
+    transition: all 0.2s;
+    border-bottom: 1px solid #333;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 0, 0, 0.1);
+    color: #ffcc00;
+}
+
+.dropdown-item span {
+    font-size: 18px;
+}
+
+/* Модальное окно импорта */
+.api-import-content {
+    max-width: 700px;
+    width: 90%;
+}
+
+.search-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 2px solid #ff0000;
+    border-radius: 8px;
+    background: rgba(20, 20, 20, 0.8);
+    color: white;
+    font-size: 16px;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #ffcc00;
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
+}
+
+.btn-search {
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #ff0000, #cc0000);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    white-space: nowrap;
+}
+
+.btn-search:hover {
+    background: linear-gradient(135deg, #cc0000, #990000);
+}
+
+/* Индикатор загрузки */
+.loading-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    justify-content: center;
+    color: #aaa;
+}
+
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #333;
+    border-top: 3px solid #ff0000;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Результаты поиска */
+.search-results {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.search-placeholder {
+    text-align: center;
+    padding: 30px;
+    color: #888;
+}
+
+.search-placeholder p {
+    margin: 5px 0;
+}
+
+.hint {
+    font-size: 13px;
+    color: #666;
+}
+
+/* Карточка фильма */
+.movie-result-card {
+    background: rgba(30, 30, 30, 0.9);
+    border: 2px solid #444;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 15px;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.movie-result-card:hover {
+    border-color: #ffcc00;
+    box-shadow: 0 0 15px rgba(255, 204, 0, 0.2);
+}
+
+.movie-result-card.exists {
+    border-color: #4CAF50;
+    opacity: 0.7;
+}
+
+.movie-result-card.exists:hover {
+    border-color: #4CAF50;
+}
+
+.movie-result-poster {
+    width: 80px;
+    height: 120px;
+    border-radius: 5px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #333;
+}
+
+.movie-result-poster-placeholder {
+    width: 80px;
+    height: 120px;
+    border-radius: 5px;
+    background: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.movie-result-info {
+    flex: 1;
+}
+
+.movie-result-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffcc00;
+    margin-bottom: 5px;
+}
+
+.movie-result-meta {
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 5px;
+}
+
+.movie-result-description {
+    font-size: 13px;
+    color: #ccc;
+    line-height: 1.4;
+    margin-bottom: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.movie-result-genres {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.genre-tag {
+    background: rgba(255, 0, 0, 0.2);
+    color: #ff6666;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+}
+
+.btn-import-movie {
+    padding: 8px 20px;
+    background: linear-gradient(135deg, #4CAF50, #388E3C);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-import-movie:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(76, 175, 80, 0.4);
+}
+
+.btn-import-movie:disabled {
+    background: #666;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-import-movie.exists-btn {
+    background: #666;
+}
+
+.movie-result-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.exists-badge {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Модальное сообщение */
+.modal-message {
+    padding: 12px;
+    border-radius: 5px;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.modal-message.success {
+    background: rgba(76, 175, 80, 0.1);
+    border: 1px solid #4CAF50;
+    color: #4CAF50;
+}
+
+.modal-message.error {
+    background: rgba(244, 67, 54, 0.1);
+    border: 1px solid #F44336;
+    color: #F44336;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .movie-result-card {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .movie-result-poster,
+    .movie-result-poster-placeholder {
+        width: 120px;
+        height: 180px;
+    }
+
+    .search-box {
+        flex-direction: column;
+    }
+}
+
+/* Полоса прокрутки */
+.search-results::-webkit-scrollbar {
+    width: 6px;
+}
+
+.search-results::-webkit-scrollbar-track {
+    background: #1e1e1e;
+    border-radius: 3px;
+}
+
+.search-results::-webkit-scrollbar-thumb {
+    background: #ff0000;
+    border-radius: 3px;
+}
