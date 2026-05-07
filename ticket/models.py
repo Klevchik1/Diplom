@@ -1790,3 +1790,53 @@ class Report(models.Model):
 
     def __str__(self):
         return "Система отчетности"
+
+
+class PriceHistory(models.Model):
+    """История изменения цен на билеты для сеансов"""
+    screening = models.ForeignKey(
+        'Screening',
+        on_delete=models.CASCADE,
+        verbose_name='Сеанс',
+        related_name='price_history'
+    )
+    old_price = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        verbose_name='Старая цена'
+    )
+    new_price = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        verbose_name='Новая цена'
+    )
+    changed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Кто изменил',
+        related_name='price_changes'
+    )
+    changed_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата и время изменения'
+    )
+    reason = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name='Причина изменения'
+    )
+
+    def __str__(self):
+        return f"Цена сеанса #{self.screening.id}: {self.old_price} → {self.new_price} руб."
+
+    class Meta:
+        verbose_name = 'История изменения цен'
+        verbose_name_plural = 'История изменения цен'
+        ordering = ['-changed_at']
+        indexes = [
+            models.Index(fields=['screening']),
+            models.Index(fields=['-changed_at']),
+        ]

@@ -147,6 +147,7 @@ cinema-management-system/                         # Корень проекта 
 │   │       │   │   ├── manager-statistics.css
 │   │       │   │   ├── modal.css
 │   │       │   │   └── movie-form.css
+│   │       │   │   └── settings.css
 │   │       │   └── user/                         # Пользовательская часть
 │   │       │       ├── about.css
 │   │       │       ├── auth.css
@@ -243,6 +244,7 @@ cinema-management-system/                         # Корень проекта 
 │   │           ├── screening_confirm_delete.html
 │   │           ├── screening_form.html
 │   │           ├── screenings.html
+│   │           ├── settings.html
 │   │           └── statistics.html
 │   │
 │   ├── templatetags/                             # Кастомные теги шаблонов

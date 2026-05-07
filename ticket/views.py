@@ -36,7 +36,7 @@ from .models import (
     Screening, Ticket, Seat, Movie, Hall, User,
     Director, Actor, Country, HallType, TicketGroup,
     EmailChangeRequest, TicketStatus, ActionType, ModuleType,
-    MovieDirector, MovieActor, Genre, MovieGenre
+    MovieDirector, MovieActor, Genre, MovieGenre, PriceHistory
 )
 from .utils import generate_enhanced_ticket_pdf, generate_ticket_pdf
 from .report_utils import ReportGenerator
@@ -1349,11 +1349,25 @@ def screening_edit(request, screening_id):
 
             old_hall = screening.hall
             old_start_time = screening.start_time
+            old_price = screening.ticket_price
 
             if (updated_screening.hall != old_hall) or (updated_screening.start_time != old_start_time):
                 updated_screening.ticket_price = updated_screening.calculate_ticket_price()
 
             updated_screening.save()
+
+            if updated_screening.ticket_price != old_price:
+                PriceHistory.objects.create(
+                    screening=updated_screening,
+                    old_price=old_price,
+                    new_price=updated_screening.ticket_price,
+                    changed_by=request.user,
+                    reason='Изменение через админ-панель'
+                )
+                OperationLogger.log_price_change(
+                    updated_screening, old_price, updated_screening.ticket_price,
+                    request.user
+                )
 
             OperationLogger.log_operation(
                 request=request,
@@ -2448,12 +2462,28 @@ def manager_screening_edit(request, screening_id):
                 duration_timedelta = timedelta(minutes=updated_screening.movie.duration)
                 updated_screening.end_time = updated_screening.start_time + duration_timedelta + timedelta(minutes=10)
 
+                old_price = screening.ticket_price
+
                 if (updated_screening.hall != screening.hall) or (updated_screening.start_time != screening.start_time):
                     updated_screening.ticket_price = updated_screening.calculate_ticket_price()
 
             try:
                 updated_screening.clean()
                 updated_screening.save()
+
+                # Сохраняем историю изменения цены
+                if updated_screening.ticket_price != old_price:
+                    PriceHistory.objects.create(
+                        screening=updated_screening,
+                        old_price=old_price,
+                        new_price=updated_screening.ticket_price,
+                        changed_by=request.user,
+                        reason='Изменение через панель менеджера'
+                    )
+                    OperationLogger.log_price_change(
+                        updated_screening, old_price, updated_screening.ticket_price,
+                        request.user
+                    )
 
                 OperationLogger.log_operation(
                     request=request,
@@ -2743,3 +2773,50 @@ def request_group_refund(request, group_uuid):
         messages.error(request, f'❌ {message}')
 
     return redirect('profile')
+
+
+@user_passes_test(lambda u: u.is_authenticated and u.is_superuser, login_url='manager_dashboard')
+def manager_settings(request):
+    """Страница настроек системы со ссылками на все справочники"""
+    context = {
+        'admin_base_url': '/admin/ticket/',
+        'sections': [
+            {
+                'title': 'Фильмы и медиа',
+                'icon': '🎬',
+                'links': [
+                    {'name': 'Жанры', 'url': '/admin/ticket/genre/', 'description': 'Управление жанрами фильмов'},
+                    {'name': 'Возрастные рейтинги', 'url': '/admin/ticket/agerating/', 'description': '0+, 6+, 12+, 16+, 18+'},
+                    {'name': 'Страны', 'url': '/admin/ticket/country/', 'description': 'Страны производства'},
+                    {'name': 'Режиссёры', 'url': '/admin/ticket/director/', 'description': 'Управление режиссёрами'},
+                    {'name': 'Актёры', 'url': '/admin/ticket/actor/', 'description': 'Управление актёрами'},
+                ]
+            },
+            {
+                'title': 'Залы и места',
+                'icon': '🏢',
+                'links': [
+                    {'name': 'Типы залов', 'url': '/admin/ticket/halltype/', 'description': 'VIP, Стандарт, IMAX'},
+                    {'name': 'Залы', 'url': '/admin/ticket/hall/', 'description': 'Управление залами'},
+                    {'name': 'Места', 'url': '/admin/ticket/seat/', 'description': 'Просмотр мест (только чтение)'},
+                ]
+            },
+            {
+                'title': 'Билеты и платежи',
+                'icon': '🎫',
+                'links': [
+                    {'name': 'Статусы билетов', 'url': '/admin/ticket/ticketstatus/', 'description': 'Настройка статусов билетов'},
+                ]
+            },
+            {
+                'title': 'Система',
+                'icon': '⚙️',
+                'links': [
+                    {'name': 'API токены', 'url': '/admin/ticket/apitoken/', 'description': 'Управление токенами Poiskkino.dev'},
+                    {'name': 'Бэкапы', 'url': '/admin/ticket/backupmanager/', 'description': 'Управление бэкапами БД'},
+                    {'name': 'Пользователи', 'url': '/admin/ticket/user/', 'description': 'Управление пользователями'},
+                ]
+            },
+        ]
+    }
+    return render(request, 'ticket/manager/settings.html', context)

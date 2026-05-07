@@ -297,3 +297,27 @@ class OperationLogger:
             return [OperationLogger._serialize_value(v) for v in value]
 
         return value
+
+    @staticmethod
+    def log_price_change(screening, old_price, new_price, user=None, reason='Изменение через форму'):
+        """Логирование изменения цены"""
+        try:
+            # Логируем в OperationLog
+            OperationLogger.log_system_operation(
+                action_type='UPDATE',
+                module_type='SCREENINGS',
+                description=f'Изменение цены билета для сеанса #{screening.id}',
+                object_id=screening.id,
+                object_repr=str(screening),
+                additional_data={
+                    'old_price': str(old_price),
+                    'new_price': str(new_price),
+                    'user': user.email if user else 'system',
+                    'reason': reason
+                }
+            )
+
+            logger.info(f"Price change logged: screening={screening.id}, {old_price} -> {new_price}")
+
+        except Exception as e:
+            logger.error(f"Error logging price change: {e}")

@@ -12,7 +12,7 @@ from .models import (
     Report, OperationLog, AgeRating, TicketStatus, Country,
     HallType, Director, Actor, MovieDirector, MovieActor,
     TicketGroup, ActionType, ModuleType, EmailChangeRequest,
-    MovieGenre, ImportCache, ImportTask, APIRequestLog, APIToken
+    MovieGenre, ImportCache, ImportTask, APIRequestLog, APIToken, PriceHistory
 )
 from .models import Hall, Movie, Screening, Seat, Ticket, User, Genre
 from .report_utils import ReportGenerator
@@ -1580,3 +1580,28 @@ class SmartImportForm(forms.Form):
         help_text='Импорт остановится при достижении лимита',
         widget=forms.NumberInput(attrs={'class': 'form-control'})
     )
+
+
+@admin.register(PriceHistory)
+class PriceHistoryAdmin(LoggingModelAdmin):
+    list_display = ('screening', 'old_price', 'new_price', 'price_change', 'changed_by', 'changed_at')
+    list_filter = ('changed_at', 'changed_by')
+    search_fields = ('screening__movie__title', 'changed_by__email')
+    readonly_fields = ('screening', 'old_price', 'new_price', 'changed_by', 'changed_at', 'reason')
+
+    def price_change(self, obj):
+        """Отображение изменения цены"""
+        change = obj.new_price - obj.old_price
+        if change > 0:
+            return f"+{change} руб."
+        elif change < 0:
+            return f"{change} руб."
+        return "0 руб."
+
+    price_change.short_description = 'Изменение'
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

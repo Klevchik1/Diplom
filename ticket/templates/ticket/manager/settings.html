@@ -1,0 +1,29 @@
+{% extends 'ticket/manager/base_manager.html' %}
+{% load static %}
+
+{% block title %}Настройки системы{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>⚙️ Настройки системы</h2>
+    <p>Централизованный доступ ко всем справочникам и настройкам кинотеатра</p>
+</div>
+
+<div class="settings-grid">
+    {% for section in sections %}
+    <div class="settings-section">
+        <h3><span class="icon">{{ section.icon }}</span> {{ section.title }}</h3>
+        
+        {% for link in section.links %}
+        <a href="{{ link.url }}" class="settings-link" target="_blank">
+            <div>
+                <div class="settings-link-name">{{ link.name }}</div>
+                <div class="settings-link-desc">{{ link.description }}</div>
+            </div>
+            <span class="settings-link-arrow">→</span>
+        </a>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

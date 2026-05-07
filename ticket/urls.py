@@ -59,6 +59,7 @@ urlpatterns = [
     path('manager/api/countries/', views.manager_api_countries, name='manager_api_countries'),
     path('manager/api/quick-add-director/', views.manager_quick_add_director, name='manager_quick_add_director'),
     path('manager/api/quick-add-actor/', views.manager_quick_add_actor, name='manager_quick_add_actor'),
+    path('manager/settings/', views.manager_settings, name='manager_settings'),
     # API для импорта фильмов
     path('manager/api/search-movie/', views.search_movie_api, name='search_movie_api'),
     path('manager/api/import-movie/', views.import_single_movie_api, name='import_single_movie_api'),

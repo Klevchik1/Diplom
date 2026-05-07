@@ -4,10 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Панель менеджера{% endblock %} | Кинотеатр Премьера</title>
+    <title>{% block title %}Панель управления{% endblock %} | Кинотеатр Премьера</title>
     <link rel="stylesheet" href="{% static 'ticket/css/manager/manager-base.css' %}">
     <link rel="stylesheet" href="{% static 'ticket/css/manager/api-tokens.css' %}">
     <link rel="stylesheet" href="{% static 'ticket/css/manager/modal.css' %}">
+    <link rel="stylesheet" href="{% static 'ticket/css/manager/settings.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -26,10 +27,13 @@
     <div class="manager-container">
         <!-- Заголовок панели -->
         <div class="manager-header">
-            <h1>👔 Панель управления менеджера</h1>
+            <h1>👔 Панель управления</h1>
             <div class="user-info">
                 <span>{{ user.name }} {{ user.surname }}</span>
                 <span>{{ user.email }}</span>
+                {% if user.is_superuser %}
+                <a href="/admin/" class="btn-admin-link" target="_blank">🔧 Админ-панель</a>
+                {% endif %}
             </div>
         </div>
 
@@ -64,6 +68,9 @@
             <a href="{% url 'manager_movies' %}" {% if 'manager_movie' in request.resolver_match.url_name or request.resolver_match.url_name == 'manager_movies' %}class="active"{% endif %}>🎥 Фильмы</a>
             <a href="{% url 'manager_screenings' %}" {% if 'manager_screening' in request.resolver_match.url_name %}class="active"{% endif %}>🎫 Сеансы</a>
             <a href="{% url 'manager_statistics' %}" {% if request.resolver_match.url_name == 'manager_statistics' %}class="active"{% endif %}>📈 Статистика</a>
+            {% if user.is_superuser %}
+            <a href="{% url 'manager_settings' %}" {% if request.resolver_match.url_name == 'manager_settings' %}class="active"{% endif %}>⚙️ Настройки</a>
+            {% endif %}
         </nav>
 
         <!-- Сообщения -->
