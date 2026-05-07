@@ -241,3 +241,59 @@ class OperationLogger:
             logger.info(f"System operation logged: {action_type.code} - {module_type.code} - {description}")
         except Exception as e:
             logger.error(f"Error logging system operation: {e}")
+
+    @staticmethod
+    def _get_field_changes(form):
+        """
+        Сравнивает form.initial с form.cleaned_data и возвращает словарь изменений.
+
+        Args:
+            form: Django ModelForm после валидации (form.is_valid() == True)
+
+        Returns:
+            dict: {"field_name": {"old": old_value, "new": new_value}, ...}
+                  Только для полей, которые реально изменились.
+        """
+        if not form.initial:
+            return {}
+
+        changes = {}
+
+        for field_name, new_value in form.cleaned_data.items():
+            if field_name not in form.initial:
+                continue
+
+            old_value = form.initial.get(field_name)
+
+            # Приводим к строкам для корректного сравнения (даты, Decimal и т.д.)
+            old_str = str(old_value) if old_value is not None else None
+            new_str = str(new_value) if new_value is not None else None
+
+            if old_str != new_str:
+                # Для JSON-сериализации преобразуем специальные типы
+                changes[field_name] = {
+                    "old": OperationLogger._serialize_value(old_value),
+                    "new": OperationLogger._serialize_value(new_value)
+                }
+
+        return changes
+
+    @staticmethod
+    def _serialize_value(value):
+        """Преобразует значение в JSON-сериализуемый формат"""
+        from decimal import Decimal
+        from datetime import date, datetime, time
+
+        if value is None:
+            return None
+        if isinstance(value, (datetime, date, time)):
+            return value.isoformat()
+        if isinstance(value, Decimal):
+            return float(value)
+        if hasattr(value, 'pk'):
+            # ForeignKey/Model instance
+            return {"id": value.pk, "repr": str(value)}
+        if isinstance(value, (list, tuple)):
+            return [OperationLogger._serialize_value(v) for v in value]
+
+        return value

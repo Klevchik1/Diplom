@@ -31,7 +31,7 @@ class LoggingModelAdmin(admin.ModelAdmin):
     """Базовый класс для автоматического логирования операций в админке"""
 
     def save_model(self, request, obj, form, change):
-        """Логирование создания/изменения объектов"""
+        """Логирование создания/изменения объектов с детализацией изменений"""
         action = 'UPDATE' if change else 'CREATE'
 
         # Определяем module_type на основе модели
@@ -56,13 +56,31 @@ class LoggingModelAdmin(admin.ModelAdmin):
 
         module_type = module_map.get(obj.__class__.__name__, 'SYSTEM')
 
+        # Подготавливаем дополнительные данные
+        additional_data = None
+
+        if change:
+            # При UPDATE — собираем информацию об изменениях полей
+            changes = OperationLogger._get_field_changes(form)
+            if changes:
+                additional_data = {
+                    "action": "UPDATE",
+                    "changes": changes,
+                    "changed_fields": list(changes.keys()),
+                    "changed_fields_count": len(changes)
+                }
+
+        # Сохраняем объект
+        super().save_model(request, obj, form, change)
+
+        # Логируем операцию с детальными данными об изменениях
         OperationLogger.log_model_operation(
             request=request,
             action_type=action,
             instance=obj,
-            description=f"{action} {obj._meta.verbose_name} '{str(obj)}'"
+            description=f"{action} {obj._meta.verbose_name} '{str(obj)}'",
+            additional_data=additional_data
         )
-        super().save_model(request, obj, form, change)
 
     def delete_model(self, request, obj):
         """Логирование удаления объектов"""

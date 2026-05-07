@@ -28,10 +28,10 @@ class LogExporter:
             log_data = {
                 'timestamp': log.timestamp.isoformat(),
                 'user': log.user.email if log.user else None,
-                'action_type': log.action_type,
-                'action_type_display': log.get_action_type_display(),
-                'module_type': log.module_type,
-                'module_type_display': log.get_module_type_display(),
+                'action_type': log.action_type.code if log.action_type else None,
+                'action_type_display': log.action_type.name if log.action_type else '—',
+                'module_type': log.module_type.code if log.module_type else None,
+                'module_type_display': log.module_type.name if log.module_type else '—',
                 'description': log.description,
                 'object_repr': log.object_repr,
                 'object_id': log.object_id,
@@ -104,10 +104,14 @@ class LogExporter:
                 time_para = Paragraph(log.timestamp.strftime('%d.%m.%Y<br/>%H:%M'),
                                       LogExporter._get_cell_style(has_custom_font))
                 user_para = Paragraph(user_email, LogExporter._get_cell_style(has_custom_font))
-                action_para = Paragraph(log.get_action_type_display(),
-                                        LogExporter._get_cell_style(has_custom_font))
-                module_para = Paragraph(log.get_module_type_display(),
-                                        LogExporter._get_cell_style(has_custom_font))
+                action_para = Paragraph(
+                    log.action_type.name if log.action_type else '—',
+                    LogExporter._get_cell_style(has_custom_font)
+                )
+                module_para = Paragraph(
+                    log.module_type.name if log.module_type else '—',
+                    LogExporter._get_cell_style(has_custom_font)
+                )
                 desc_para = Paragraph(description, LogExporter._get_cell_style(has_custom_font))
                 object_para = Paragraph(object_repr, LogExporter._get_cell_style(has_custom_font))
 
