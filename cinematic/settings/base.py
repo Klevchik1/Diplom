@@ -18,6 +18,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-7p1@uwnq9vb=5wm+dx0^@alalr
 INSTALLED_APPS = [
     'django.contrib.admin',
     'ticket.apps.TicketConfig',
+#    'django_crontab',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -129,3 +130,11 @@ KINOPOISK_API_KEY = os.getenv('KINOPOISK_API_KEY')
 # YooKassa Settings
 YOOKASSA_SHOP_ID = os.getenv('YOOKASSA_SHOP_ID')
 YOOKASSA_SECRET_KEY = os.getenv('YOOKASSA_SECRET_KEY')
+
+# CRONJOBS = [
+#     # Каждые 5 минут проверять завершённые сеансы
+#     ('*/5 * * * *', 'ticket.management.commands.auto_update_ticket_statuses.Command'),
+#
+#     # Каждый час очищать просроченные регистрации
+#     ('0 * * * *', 'ticket.management.commands.cleanup_expired_registrations.Command'),
+# ]

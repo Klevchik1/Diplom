@@ -111,6 +111,7 @@ cinema-management-system/                         # Корень проекта 
 │   │   ├── __init__.py
 │   │   └── commands/
 │   │       ├── __init__.py
+│   │       ├── auto_update_ticket_statuses.py    # Автообновление статуса билетов
 │   │       ├── backup_db.py                      # Создание бэкапа БД
 │   │       ├── big_populate_db.py                # Заполнение тестовыми данными
 │   │       ├── cleanup_expired_registrations.py  # Очистка просроченных регистраций

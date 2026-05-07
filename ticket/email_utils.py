@@ -181,3 +181,44 @@ def send_email_change_verification(user, new_email, verification_code):
     except Exception as e:
         logger.error(f"Failed to send email change verification to {new_email}: {str(e)}")
         return False
+
+
+def send_screening_completed_notification(user, movie_title, screening_date):
+    """Отправка уведомления о прошедшем сеансе (опционально)"""
+    try:
+        subject = f'Сеанс завершён - {movie_title}'
+
+        html_message = render_to_string('ticket/screening_completed_email.html', {
+            'user': user,
+            'movie_title': movie_title,
+            'screening_date': screening_date,
+        })
+
+        plain_message = f"""
+        Кинотеатр Премьера
+
+        Здравствуйте, {user.name}!
+
+        Сеанс фильма "{movie_title}" ({screening_date}) завершён.
+        Спасибо, что выбрали наш кинотеатр!
+
+        Вы можете оставить отзыв о фильме в личном кабинете.
+
+        С уважением,
+        Команда Кинотеатра Премьера
+        """
+
+        send_mail(
+            subject=subject,
+            message=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html_message,
+            fail_silently=True,  # Не прерываем выполнение при ошибке
+        )
+
+        logger.info(f"Screening completed notification sent to {user.email}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send notification to {user.email}: {str(e)}")
+        return False
