@@ -113,3 +113,65 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Контейнер JSON в change_form */
+.field-additional_data .readonly pre {
+    margin: 0;
+    max-height: 500px;
+    overflow: auto;
+    background: #1a1a2e !important;
+    border: 1px solid #333;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.field-additional_data .readonly code {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #d4d4d4;
+    background: transparent !important;
+}
+
+/* Скроллбар для JSON-блока */
+.field-additional_data .readonly pre::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.field-additional_data .readonly pre::-webkit-scrollbar-track {
+    background: #1e1e1e;
+    border-radius: 4px;
+}
+
+.field-additional_data .readonly pre::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 4px;
+}
+
+.field-additional_data .readonly pre::-webkit-scrollbar-thumb:hover {
+    background: #777;
+}
+
+/* Подсветка синтаксиса JSON (если highlight.js не загрузился) */
+.field-additional_data .json-key {
+    color: #9cdcfe;
+}
+
+.field-additional_data .json-string {
+    color: #ce9178;
+}
+
+.field-additional_data .json-number {
+    color: #b5cea8;
+}
+
+.field-additional_data .json-boolean {
+    color: #569cd6;
+}
+
+.field-additional_data .json-null {
+    color: #808080;
+}

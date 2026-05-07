@@ -189,6 +189,7 @@ cinema-management-system/                         # Корень проекта 
 │   │   │       ├── backupmanager/
 │   │   │       │   └── change_list.html
 │   │   │       ├── operationlog/
+│   │   │       │   ├── change_form.js
 │   │   │       │   └── change_list.html
 │   │   │       ├── report/
 │   │   │       │   └── change_form.html

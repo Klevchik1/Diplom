@@ -1286,7 +1286,36 @@ class OperationLogAdmin(admin.ModelAdmin):
     object_repr_short.short_description = 'Объект'
 
     def additional_data_display(self, obj):
-        return obj.get_additional_data_display()
+        """Подсвеченный JSON с форматированием"""
+        if not obj.additional_data:
+            return format_html('<span style="color: #888;">—</span>')
+
+        try:
+            import json
+            formatted_json = json.dumps(obj.additional_data, ensure_ascii=False, indent=2)
+        except (TypeError, ValueError):
+            formatted_json = str(obj.additional_data)
+
+        return format_html(
+            '<pre><code class="language-json" style="max-height:400px; overflow:auto; '
+            'background:#1e1e1e; color:#d4d4d4; padding:15px; border-radius:6px; '
+            'font-size:13px; line-height:1.5; white-space:pre-wrap; word-break:break-word; '
+            'border:1px solid #333;">{}</code></pre>',
+            formatted_json
+        )
+
+    additional_data_display.short_description = 'Дополнительные данные'
+
+    class Media:
+        css = {
+            'all': [
+                'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css',
+            ]
+        }
+        js = [
+            'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js',
+        ]
 
     additional_data_display.short_description = 'Дополнительные данные'
 
