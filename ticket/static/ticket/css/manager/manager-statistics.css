@@ -192,3 +192,48 @@
         justify-content: center;
     }
 }
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+[data-theme="light"] .sales-chart {
+    background: #f9f9f9;
+}
+
+[data-theme="light"] .chart-bar .bar-value,
+[data-theme="light"] .chart-bar .bar-label {
+    color: #b8860b;
+}
+
+[data-theme="light"] .progress-bar {
+    background: #f0f0f0;
+    border-color: #e0e0e0;
+}
+
+[data-theme="light"] .occupancy-value {
+    color: #b8860b;
+}
+
+[data-theme="light"] .report-period {
+    background: rgba(184, 134, 11, 0.08);
+    color: #b8860b;
+    border-color: #b8860b;
+}
+
+[data-theme="light"] .report-period strong {
+    color: #1a1a1a;
+}
+
+[data-theme="light"] .export-btn {
+    color: #fff;
+}
+
+[data-theme="light"] .stats-detail-card {
+    background: #ffffff;
+    border-color: #e0e0e0;
+}
+
+[data-theme="light"] .stats-detail-card .label {
+    color: #b8860b;
+}
+
+[data-theme="light"] .stats-detail-card .number {
+    color: #1a1a1a;
+}

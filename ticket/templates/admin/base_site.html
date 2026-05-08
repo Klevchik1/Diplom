@@ -16,11 +16,10 @@
 <link rel="stylesheet" href="{% static 'ticket/css/admin/admin-base.css' %}">
 {% endblock %}
 
-{% block nav-global %}
-<!-- УБИРАЕМ ВСЕ КНОПКИ ИЗ ШАПКИ -->
-{% endblock %}
+{% block nav-global %}{% endblock %}
 
 {% block footer %}
 {{ block.super }}
 <script src="{% static 'ticket/js/admin/admin-base.js' %}"></script>
+<script src="{% static 'ticket/js/theme-switcher.js' %}"></script>
 {% endblock %}

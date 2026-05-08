@@ -125,27 +125,6 @@
     gap: 10px;
 }
 
-/* ===== TELEGRAM СЕКЦИЯ ===== */
-.telegram-section {
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 2px solid #ffcc00;
-}
-
-.telegram-status {
-    background: rgba(0, 128, 0, 0.2);
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px solid #008000;
-}
-
-.telegram-connect {
-    background: rgba(255, 204, 0, 0.1);
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid #ffcc00;
-}
-
 /* ===== БИЛЕТЫ ===== */
 .ticket-card {
     background: rgba(20, 20, 20, 0.8);
@@ -301,4 +280,140 @@
     border-radius: 8px;
     margin-bottom: 20px;
     border-left: 4px solid #ffcc00;
+}
+
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+[data-theme="light"] .profile-card {
+    background: #ffffff !important;
+    border-color: #e0e0e0 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .profile-card h2 {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .section-title {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .form-group label {
+    color: #555555 !important;
+}
+
+[data-theme="light"] .form-control {
+    background: #f5f5f5 !important;
+    border-color: #cc0000 !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .form-control:focus {
+    border-color: #b8860b !important;
+    box-shadow: 0 0 10px rgba(184, 134, 11, 0.3) !important;
+}
+
+[data-theme="light"] .btn-save {
+    color: #fff !important;
+}
+
+[data-theme="light"] .ticket-card {
+    background: #fafafa !important;
+    border-left-color: #b8860b !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .ticket-card h3 {
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .ticket-card small {
+    color: #666666 !important;
+}
+
+[data-theme="light"] .ticket-header {
+    border-bottom-color: #e0e0e0 !important;
+}
+
+[data-theme="light"] .info-item {
+    background: #f5f5f5 !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .no-tickets {
+    color: #666666 !important;
+}
+
+[data-theme="light"] .no-tickets h3 {
+    color: #444444 !important;
+}
+
+[data-theme="light"] .no-tickets a {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .password-section {
+    border-top-color: #e0e0e0 !important;
+}
+
+[data-theme="light"] .password-form {
+    background: #f9f9f9 !important;
+    border-color: #e0e0e0 !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .password-form label {
+    color: #555555 !important;
+}
+
+[data-theme="light"] .password-form small {
+    color: #666666 !important;
+}
+
+[data-theme="light"] .refund-policy {
+    background: rgba(184, 134, 11, 0.08) !important;
+    border-left-color: #b8860b !important;
+}
+
+[data-theme="light"] .refund-policy p {
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .refund-policy strong {
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .refund-info {
+    background: rgba(255, 152, 0, 0.06) !important;
+    border-left-color: #FF9800 !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .refund-processed {
+    background: rgba(33, 150, 243, 0.06) !important;
+    border-left-color: #2196F3 !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .refund-partial {
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .screening-ended {
+    background: rgba(156, 39, 176, 0.06) !important;
+    border-left-color: #9C27B0 !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .btn-refund,
+[data-theme="light"] .btn-cancel-refund {
+    color: #fff !important;
+}
+
+[data-theme="light"] .password-toggle {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .password-toggle:hover {
+    color: #ff0000 !important;
 }

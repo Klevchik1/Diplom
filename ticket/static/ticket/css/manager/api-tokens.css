@@ -272,3 +272,89 @@
         flex-wrap: wrap;
     }
 }
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+[data-theme="light"] .api-counter-details {
+    color: #555;
+    border-top-color: #e0e0e0;
+}
+
+[data-theme="light"] .api-current-token strong {
+    color: #b8860b;
+}
+
+[data-theme="light"] .btn-manage-tokens {
+    background: rgba(184, 134, 11, 0.08);
+    color: #b8860b;
+    border-color: #b8860b;
+}
+
+[data-theme="light"] .btn-manage-tokens:hover {
+    background: rgba(184, 134, 11, 0.15);
+}
+
+[data-theme="light"] .token-manager-content {
+    background: #ffffff;
+}
+
+[data-theme="light"] .token-add-section {
+    border-bottom-color: #e0e0e0;
+}
+
+[data-theme="light"] .token-add-form input {
+    background: #f5f5f5;
+    border-color: #cc0000;
+    color: #1a1a1a;
+}
+
+[data-theme="light"] .token-add-form input:focus {
+    border-color: #b8860b;
+}
+
+[data-theme="light"] .token-hint {
+    color: #555;
+}
+
+[data-theme="light"] .token-card {
+    background: #f9f9f9;
+    border-color: #e0e0e0;
+}
+
+[data-theme="light"] .token-card.current {
+    border-color: #4CAF50;
+}
+
+[data-theme="light"] .token-card-label {
+    color: #b8860b;
+}
+
+[data-theme="light"] .token-card-key {
+    color: #555;
+}
+
+[data-theme="light"] .token-card-stats {
+    color: #333;
+}
+
+[data-theme="light"] .no-tokens {
+    color: #666;
+}
+
+[data-theme="light"] .request-item {
+    border-bottom-color: #e0e0e0;
+}
+
+[data-theme="light"] .request-endpoint {
+    color: #333;
+}
+
+[data-theme="light"] .request-status {
+    color: #555;
+}
+
+[data-theme="light"] .request-token {
+    color: #b8860b;
+}
+
+[data-theme="light"] .request-time {
+    color: #888;
+}

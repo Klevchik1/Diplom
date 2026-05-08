@@ -162,3 +162,39 @@
 .btn-cancel:hover {
     color: #333;
 }
+
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+[data-theme="light"] .import-container {
+    color: #1a1a1a;
+}
+
+[data-theme="light"] .token-status-card {
+    background: #f0f7ff;
+}
+
+[data-theme="light"] .recommendations-card {
+    background: #fff8e1;
+}
+
+[data-theme="light"] .form-fieldset {
+    border-color: #e0e0e0;
+}
+
+[data-theme="light"] .form-group input,
+[data-theme="light"] .form-group select {
+    background: #ffffff;
+    border-color: #cc0000;
+    color: #1a1a1a;
+}
+
+[data-theme="light"] .help-text {
+    color: #555;
+}
+
+[data-theme="light"] .btn-cancel {
+    color: #555;
+}
+
+[data-theme="light"] .btn-cancel:hover {
+    color: #1a1a1a;
+}

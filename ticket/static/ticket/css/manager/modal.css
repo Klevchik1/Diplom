@@ -190,3 +190,41 @@
         padding: 8px 10px;
     }
 }
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+[data-theme="light"] .modal {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="light"] .modal-content {
+    background: #ffffff;
+    border-color: #e0e0e0;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.15);
+}
+
+[data-theme="light"] .modal-header {
+    border-bottom-color: #e0e0e0;
+}
+
+[data-theme="light"] .modal-header h3 {
+    color: #b8860b;
+}
+
+[data-theme="light"] .modal-close {
+    color: #b8860b;
+}
+
+[data-theme="light"] .modal-close:hover {
+    color: #ff0000;
+}
+
+[data-theme="light"] #quick-add-form input,
+[data-theme="light"] #quick-add-form select,
+[data-theme="light"] #quick-add-form textarea {
+    background: #f5f5f5;
+    border-color: #cc0000;
+    color: #1a1a1a;
+}
+
+[data-theme="light"] .modal-actions {
+    border-top-color: #e0e0e0;
+}

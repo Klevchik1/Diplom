@@ -1,0 +1,70 @@
+/* ===== ПЕРЕКЛЮЧАТЕЛЬ ТЕМ ===== */
+.theme-toggle-btn {
+    background: transparent;
+    border: 1px solid var(--cinema-yellow);
+    color: var(--cinema-yellow);
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 50%;
+    font-size: 20px;
+    line-height: 1;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(255, 204, 0, 0.15);
+    transform: rotate(15deg);
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
+}
+
+.theme-toggle-btn .theme-icon {
+    transition: all 0.3s;
+    position: absolute;
+}
+
+.theme-toggle-btn .icon-light {
+    opacity: 0;
+    transform: scale(0.5);
+}
+
+.theme-toggle-btn .icon-dark {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* В светлой теме показываем солнце */
+[data-theme="light"] .theme-toggle-btn .icon-light {
+    opacity: 1;
+    transform: scale(1);
+}
+
+[data-theme="light"] .theme-toggle-btn .icon-dark {
+    opacity: 0;
+    transform: scale(0.5);
+}
+
+/* Адаптация кнопки в разных шапках */
+.user-panel .theme-toggle-btn,
+.site-user-panel .theme-toggle-btn,
+#header .theme-toggle-btn {
+    border-color: var(--cinema-yellow);
+    color: var(--cinema-yellow);
+    margin-left: 5px;
+}
+
+[data-theme="light"] .theme-toggle-btn {
+    border-color: #b8860b;
+    color: #b8860b;
+}
+
+[data-theme="light"] .theme-toggle-btn:hover {
+    background: rgba(184, 134, 11, 0.1);
+    box-shadow: 0 0 10px rgba(184, 134, 11, 0.3);
+}

@@ -203,3 +203,71 @@ body {
         font-size: 28px;
     }
 }
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+[data-theme="light"] {
+    --cinema-black: #f0f2f5;
+    --cinema-dark-gray: #ffffff;
+    --cinema-card: rgba(255, 255, 255, 0.97);
+    --cinema-white: #1a1a1a;
+    --cinema-gray: #555555;
+    --cinema-yellow: #b8860b;
+}
+
+[data-theme="light"] body {
+    background: #e8ecf1;
+    background-image: none;
+    color: #1a1a1a;
+}
+
+[data-theme="light"] .header {
+    background: rgba(255, 255, 255, 0.97);
+    border-bottom-color: #b8860b;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+[data-theme="light"] .logo {
+    color: #b8860b;
+    text-shadow: none;
+}
+
+[data-theme="light"] .card {
+    background: #ffffff;
+    border-color: #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    color: #1a1a1a;
+}
+
+[data-theme="light"] .page-title {
+    color: #b8860b;
+    text-shadow: none;
+}
+
+[data-theme="light"] .user-panel a,
+[data-theme="light"] .btn {
+    color: #b8860b;
+    border-color: #ff0000;
+}
+
+[data-theme="light"] .user-panel a:hover,
+[data-theme="light"] .btn:hover {
+    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+    color: #fff;
+}
+
+[data-theme="light"] .btn-buy {
+    color: #fff;
+}
+
+[data-theme="light"] .btn-back {
+    color: #fff;
+}
+
+[data-theme="light"] .btn-admin {
+    color: #fff;
+}
+
+[data-theme="light"] .alert {
+    background: rgba(255, 0, 0, 0.08);
+    border-color: #ff0000;
+    color: #1a1a1a;
+}

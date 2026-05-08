@@ -437,3 +437,300 @@ select option {
         margin: 0 0 20px 0 !important;
     }
 }
+
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+[data-theme="light"] {
+    --primary: #cc0000 !important;
+    --secondary: #4a00e0 !important;
+    --accent: #b8860b !important;
+    --body-bg: #f0f2f5 !important;
+    --body-fg: #1a1a1a !important;
+    --header-bg: rgba(30, 30, 30, 0.98) !important;
+    --header-color: #ffcc00 !important;
+    --header-link-color: #ffcc00 !important;
+    --breadcrumbs-bg: rgba(255, 255, 255, 0.95) !important;
+    --darkened-bg: rgba(245, 245, 245, 0.95) !important;
+    --border-color: #cc0000 !important;
+    --button-bg: #cc0000 !important;
+    --button-hover-bg: #990000 !important;
+    --default-button-bg: #4a00e0 !important;
+    --default-button-hover-bg: #6c2fd6 !important;
+    --link-fg: #b8860b !important;
+    --link-hover-color: #cc0000 !important;
+    --link-selected-fg: #1a1a1a !important;
+}
+
+[data-theme="light"] body {
+    background: #e8ecf1 !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] #header {
+    background: rgba(30, 30, 30, 0.98) !important;
+    border-bottom: 2px solid #ffcc00 !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3) !important;
+}
+
+[data-theme="light"] #branding h1 {
+    color: #ffcc00 !important;
+}
+
+[data-theme="light"] #site-name a {
+    color: #ffcc00 !important;
+    background: rgba(255, 0, 0, 0.2) !important;
+    border-color: #ffcc00 !important;
+}
+
+[data-theme="light"] #site-name a:hover {
+    background: rgba(255, 0, 0, 0.4) !important;
+}
+
+[data-theme="light"] #header #user-tools,
+[data-theme="light"] #header #user-tools a {
+    color: #ffcc00 !important;
+}
+
+[data-theme="light"] #header #user-tools a:hover {
+    background: rgba(255, 0, 0, 0.3) !important;
+}
+
+[data-theme="light"] #nav-sidebar {
+    background: #ffffff !important;
+    border-right-color: #cc0000 !important;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.05) !important;
+}
+
+[data-theme="light"] #nav-sidebar .module h2 {
+    background: linear-gradient(135deg, #cc0000 0%, #ff0000 100%) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="light"] #nav-sidebar .module li a {
+    color: #555555 !important;
+}
+
+[data-theme="light"] #nav-sidebar .module li a:hover {
+    color: #b8860b !important;
+    background: rgba(255, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] #nav-sidebar .module li.selected a {
+    color: #b8860b !important;
+    background: rgba(255, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] #content {
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] #content-main {
+    background: #ffffff !important;
+    border-color: #e0e0e0 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+}
+
+[data-theme="light"] #content-main h1,
+[data-theme="light"] #content-main h2,
+[data-theme="light"] #content-main h3 {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] label {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] input[type="text"],
+[data-theme="light"] input[type="password"],
+[data-theme="light"] input[type="email"],
+[data-theme="light"] input[type="number"],
+[data-theme="light"] input[type="date"],
+[data-theme="light"] input[type="time"],
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+    background: #f5f5f5 !important;
+    border-color: #cc0000 !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] input:focus,
+[data-theme="light"] select:focus,
+[data-theme="light"] textarea:focus {
+    border-color: #b8860b !important;
+    box-shadow: 0 0 8px rgba(184, 134, 11, 0.3) !important;
+}
+
+[data-theme="light"] .button,
+[data-theme="light"] input[type="submit"],
+[data-theme="light"] input[type="button"],
+[data-theme="light"] .submit-row input,
+[data-theme="light"] a.button,
+[data-theme="light"] .btn {
+    background: linear-gradient(135deg, #cc0000 0%, #ff0000 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 5px rgba(204, 0, 0, 0.3) !important;
+}
+
+[data-theme="light"] .button:hover,
+[data-theme="light"] input[type="submit"]:hover,
+[data-theme="light"] input[type="button"]:hover,
+[data-theme="light"] a.button:hover,
+[data-theme="light"] .submit-row input:hover {
+    background: linear-gradient(135deg, #990000 0%, #cc0000 100%) !important;
+    box-shadow: 0 4px 10px rgba(204, 0, 0, 0.4) !important;
+}
+
+[data-theme="light"] .button.default,
+[data-theme="light"] input[type="submit"].default {
+    background: linear-gradient(135deg, #4a00e0 0%, #6c2fd6 100%) !important;
+}
+
+[data-theme="light"] #result_list thead th {
+    background: #f0f0f0 !important;
+    color: #b8860b !important;
+    border-bottom-color: #cc0000 !important;
+}
+
+[data-theme="light"] #result_list tbody td,
+[data-theme="light"] #result_list tbody th {
+    color: #1a1a1a !important;
+    border-bottom-color: rgba(0,0,0,0.06) !important;
+}
+
+[data-theme="light"] #result_list tbody tr:hover {
+    background: rgba(255, 0, 0, 0.03) !important;
+}
+
+[data-theme="light"] #changelist .results {
+    background: #ffffff !important;
+    border-color: #cc0000 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+}
+
+[data-theme="light"] #changelist-filter {
+    background: #ffffff !important;
+    border-color: #cc0000 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+}
+
+[data-theme="light"] #changelist-filter h2 {
+    background: linear-gradient(135deg, #cc0000 0%, #ff0000 100%) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="light"] #changelist-filter h3 {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] #changelist-filter li,
+[data-theme="light"] #changelist-filter a {
+    color: #555555 !important;
+}
+
+[data-theme="light"] #changelist-filter .selected a {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] #searchbar {
+    background: #f5f5f5 !important;
+    border-color: #cc0000 !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] select {
+    background-color: #f5f5f5 !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] select option {
+    background-color: #ffffff !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .breadcrumbs {
+    background: #ffffff !important;
+    border-color: #cc0000 !important;
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .breadcrumbs a {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .messagelist li {
+    background: rgba(255, 0, 0, 0.08) !important;
+    border-color: #cc0000 !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .messagelist li.success {
+    background: rgba(76, 175, 80, 0.1) !important;
+    border-color: #4CAF50 !important;
+}
+
+[data-theme="light"] .messagelist li.warning {
+    background: rgba(255, 152, 0, 0.1) !important;
+    border-color: #FF9800 !important;
+}
+
+[data-theme="light"] .messagelist li.error {
+    background: rgba(244, 67, 54, 0.1) !important;
+    border-color: #F44336 !important;
+}
+
+[data-theme="light"] .module h2,
+[data-theme="light"] .module caption {
+    background: linear-gradient(135deg, #cc0000 0%, #ff0000 100%) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="light"] .module {
+    background: #ffffff !important;
+    border-color: #cc0000 !important;
+}
+
+[data-theme="light"] .form-row {
+    border-bottom-color: rgba(0,0,0,0.06) !important;
+}
+
+[data-theme="light"] .submit-row {
+    background: #f9f9f9 !important;
+    border-color: #e0e0e0 !important;
+}
+
+[data-theme="light"] .help {
+    color: #666666 !important;
+}
+
+[data-theme="light"] a:link,
+[data-theme="light"] a:visited {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] a:hover {
+    color: #cc0000 !important;
+}
+
+[data-theme="light"] .object-tools a {
+    background: linear-gradient(135deg, #cc0000 0%, #ff0000 100%) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="light"] .object-tools a:hover {
+    background: linear-gradient(135deg, #990000 0%, #cc0000 100%) !important;
+}
+
+[data-theme="light"] .addlink,
+[data-theme="light"] .changelink,
+[data-theme="light"] .deletelink {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .inline-group {
+    background: #ffffff !important;
+    border-color: #cc0000 !important;
+}
+
+[data-theme="light"] .inline-group h2 {
+    background: linear-gradient(135deg, #cc0000 0%, #ff0000 100%) !important;
+    color: #ffffff !important;
+}

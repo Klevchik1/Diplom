@@ -138,3 +138,95 @@
     text-align: center;
     margin: 30px 0;
 }
+
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+[data-theme="light"] .about-section {
+    background: #ffffff !important;
+    border-color: #e0e0e0 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .about-title {
+    color: #b8860b !important;
+    border-bottom-color: #ff0000 !important;
+}
+
+[data-theme="light"] .stat-card {
+    background: #f9f9f9 !important;
+    border-color: #e0e0e0 !important;
+}
+
+[data-theme="light"] .stat-card-value {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .stat-card-label {
+    color: #666666 !important;
+}
+
+[data-theme="light"] .hall-card {
+    background: #f9f9f9 !important;
+    border-color: #b8860b !important;
+}
+
+[data-theme="light"] .hall-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+
+[data-theme="light"] .hall-name {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .hall-info {
+    color: #444444 !important;
+}
+
+[data-theme="light"] .hall-stats {
+    border-top-color: #e0e0e0 !important;
+}
+
+[data-theme="light"] .hall-stat-value {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .hall-stat-label {
+    color: #666666 !important;
+}
+
+[data-theme="light"] .features-list li {
+    border-bottom-color: #e0e0e0 !important;
+    color: #444444 !important;
+}
+
+[data-theme="light"] .features-list li:before {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .user-role-section {
+    background: #f9f9f9 !important;
+    border-left-color: #b8860b !important;
+    color: #444444 !important;
+}
+
+[data-theme="light"] .admin-only {
+    background: rgba(74, 0, 224, 0.04) !important;
+    border-left-color: #8e2de2 !important;
+    color: #444444 !important;
+}
+
+[data-theme="light"] .navigation {
+    /* без изменений */
+}
+
+[data-theme="light"] .about-section p,
+[data-theme="light"] .about-section li,
+[data-theme="light"] .about-section span,
+[data-theme="light"] .about-section div {
+    color: #444444 !important;
+}
+
+[data-theme="light"] .about-section ul,
+[data-theme="light"] .about-section ol {
+    color: #444444 !important;
+}

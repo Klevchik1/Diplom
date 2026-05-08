@@ -180,3 +180,111 @@
         margin-bottom: 5px;
     }
 }
+
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+[data-theme="light"] .screening-info-section {
+    background: #ffffff !important;
+    border-color: #e0e0e0 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .screening-movie-info {
+    background: #f9f9f9 !important;
+    border-left-color: #b8860b !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .info-grid {
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .info-item {
+    background: #f5f5f5 !important;
+    border-color: #e0e0e0 !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .info-item strong,
+[data-theme="light"] .info-item span,
+[data-theme="light"] .info-item div,
+[data-theme="light"] .info-item p {
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .screen {
+    background: #e0e0e0 !important;
+    color: #1a1a1a !important;
+    box-shadow: 0 0 10px rgba(184, 134, 11, 0.3) !important;
+}
+
+[data-theme="light"] .cinema-hall {
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .row-label {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .seat {
+    background-color: #4CAF50 !important;
+    color: #fff !important;
+}
+
+[data-theme="light"] .seat.booked {
+    background-color: #f44336 !important;
+}
+
+[data-theme="light"] .seat.selected {
+    background-color: #2196F3 !important;
+}
+
+[data-theme="light"] .selected-seats-info {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .guest-notification {
+    background: rgba(184, 134, 11, 0.08) !important;
+    border-color: #b8860b !important;
+}
+
+[data-theme="light"] .guest-notification h3 {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .guest-notification p {
+    color: #444444 !important;
+}
+
+[data-theme="light"] .purchase-success {
+    background: rgba(0, 128, 0, 0.06) !important;
+    border-color: #00cc00 !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .purchase-success h3 {
+    color: #008000 !important;
+}
+
+[data-theme="light"] .screening-info-section h2,
+[data-theme="light"] .screening-info-section h3,
+[data-theme="light"] .screening-info-section h4 {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .screening-info-section p,
+[data-theme="light"] .screening-info-section span,
+[data-theme="light"] .screening-info-section div,
+[data-theme="light"] .screening-info-section li {
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .guest-buttons a,
+[data-theme="light"] .guest-buttons .btn {
+    color: #fff !important;
+}
+
+[data-theme="light"] .purchase-actions a,
+[data-theme="light"] .purchase-actions .btn {
+    color: #fff !important;
+}

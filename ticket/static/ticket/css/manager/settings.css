@@ -118,3 +118,55 @@
         grid-template-columns: 1fr;
     }
 }
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+[data-theme="light"] .settings-section {
+    background: #ffffff;
+    border-color: #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .settings-section:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+}
+
+[data-theme="light"] .settings-section h3 {
+    color: #b8860b;
+    border-bottom-color: #e0e0e0;
+}
+
+[data-theme="light"] .settings-link {
+    background: #f9f9f9;
+    border-color: #e0e0e0;
+    color: #1a1a1a;
+}
+
+[data-theme="light"] .settings-link:hover {
+    background: rgba(255, 0, 0, 0.03);
+    border-color: #b8860b;
+    color: #b8860b;
+}
+
+[data-theme="light"] .settings-link-desc {
+    color: #555;
+}
+
+[data-theme="light"] .settings-link-arrow {
+    color: #b8860b;
+}
+
+[data-theme="light"] .page-header {
+    background: #ffffff;
+    border-color: #e0e0e0;
+}
+
+[data-theme="light"] .page-header h2 {
+    color: #b8860b;
+}
+
+[data-theme="light"] .page-header p {
+    color: #555;
+}
+
+[data-theme="light"] .btn-admin-link {
+    color: #fff;
+}

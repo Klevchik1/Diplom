@@ -480,3 +480,66 @@ select:-ms-expand {
         color: white !important;
     }
 }
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+[data-theme="light"] .form-container {
+    background: #ffffff;
+    border-color: #e0e0e0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .form-container h2 {
+    color: #b8860b;
+    border-bottom-color: #e0e0e0;
+}
+
+[data-theme="light"] .form-group label {
+    color: #b8860b;
+}
+
+[data-theme="light"] .form-group input,
+[data-theme="light"] .form-group select,
+[data-theme="light"] .form-group textarea {
+    background: #f5f5f5;
+    border-color: #cc0000;
+    color: #1a1a1a;
+}
+
+[data-theme="light"] .select-wrapper select {
+    background: #f5f5f5;
+}
+
+[data-theme="light"] .select-wrapper select option {
+    background: #ffffff;
+    color: #1a1a1a;
+}
+
+[data-theme="light"] .select2-container--default .select2-selection--multiple {
+    background-color: #f5f5f5;
+    border-color: #cc0000;
+}
+
+[data-theme="light"] .select2-dropdown {
+    background-color: #ffffff;
+    border-color: #cc0000;
+}
+
+[data-theme="light"] .select2-results__option {
+    color: #1a1a1a;
+    border-bottom-color: #e0e0e0;
+}
+
+[data-theme="light"] .btn-quick-add {
+    color: #fff;
+}
+
+[data-theme="light"] .help-text-small {
+    color: #555;
+}
+
+[data-theme="light"] .form-actions {
+    border-top-color: #e0e0e0;
+}
+
+[data-theme="light"] #image-preview h4 {
+    color: #b8860b;
+}

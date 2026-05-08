@@ -340,3 +340,106 @@
         grid-template-columns: 1fr;
     }
 }
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+[data-theme="light"] {
+    --report-bg: #ffffff;
+    --report-card-bg: #f9f9f9;
+    --report-border: #e0e0e0;
+    --report-text: #1a1a1a;
+    --report-muted: #555;
+}
+
+[data-theme="light"] .report-container {
+    background: #ffffff;
+    border-color: #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .report-header {
+    border-bottom-color: #b8860b;
+}
+
+[data-theme="light"] .report-title {
+    color: #b8860b;
+    text-shadow: none;
+}
+
+[data-theme="light"] .report-subtitle {
+    color: #555;
+}
+
+[data-theme="light"] .filter-form {
+    background: #f9f9f9;
+    border-color: #e0e0e0;
+}
+
+[data-theme="light"] .filter-form label {
+    color: #b8860b;
+}
+
+[data-theme="light"] .filter-form select,
+[data-theme="light"] .filter-form input[type="date"] {
+    background: #ffffff;
+    border-color: #cc0000;
+    color: #1a1a1a;
+}
+
+[data-theme="light"] .report-table {
+    background: #ffffff;
+    border-color: #e0e0e0;
+}
+
+[data-theme="light"] .report-table th {
+    background: #f0f0f0;
+    color: #b8860b;
+}
+
+[data-theme="light"] .report-table td {
+    color: #1a1a1a;
+    border-bottom-color: rgba(0,0,0,0.06);
+}
+
+[data-theme="light"] .report-table tr:hover {
+    background: rgba(255, 0, 0, 0.03);
+}
+
+[data-theme="light"] .stat-card {
+    background: #ffffff;
+    border-color: #e0e0e0;
+}
+
+[data-theme="light"] .stat-number {
+    color: #b8860b;
+    text-shadow: none;
+}
+
+[data-theme="light"] .stat-label {
+    color: #555;
+}
+
+[data-theme="light"] .hall-card {
+    background: #ffffff;
+    border-color: #e0e0e0;
+}
+
+[data-theme="light"] .hall-card h4 {
+    color: #b8860b;
+    border-bottom-color: rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .metric-item {
+    background: #ffffff;
+    border-color: #e0e0e0;
+}
+
+[data-theme="light"] .metric-value {
+    color: #b8860b;
+}
+
+[data-theme="light"] .metric-label {
+    color: #555;
+}
+
+[data-theme="light"] .btn-export {
+    color: #fff;
+}

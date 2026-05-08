@@ -296,3 +296,74 @@
     margin-bottom: 20px;
     animation: pulse 2s infinite;
 }
+
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+[data-theme="light"] .payment-header {
+    background: #ffffff;
+    border-color: #e0e0e0;
+}
+
+[data-theme="light"] .payment-header .logo {
+    color: #b8860b;
+}
+
+[data-theme="light"] .payment-header .amount {
+    color: #b8860b;
+}
+
+[data-theme="light"] .payment-header .description {
+    color: #555;
+}
+
+[data-theme="light"] .payment-form {
+    background: #ffffff;
+    border-color: #e0e0e0;
+}
+
+[data-theme="light"] .form-group label {
+    color: #555;
+}
+
+[data-theme="light"] .form-group input {
+    background: #f5f5f5;
+    border-color: #cc0000;
+    color: #1a1a1a;
+}
+
+[data-theme="light"] .form-group input:focus {
+    border-color: #b8860b;
+    box-shadow: 0 0 10px rgba(184, 134, 11, 0.3);
+}
+
+[data-theme="light"] .order-summary {
+    background: #f9f9f9;
+}
+
+[data-theme="light"] .order-summary h3 {
+    color: #b8860b;
+}
+
+[data-theme="light"] .summary-row {
+    color: #555;
+    border-bottom-color: rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .summary-row.total {
+    color: #b8860b;
+}
+
+[data-theme="light"] .pay-button {
+    color: #fff;
+}
+
+[data-theme="light"] .pay-button:disabled {
+    background: #999;
+}
+
+[data-theme="light"] .cancel-link {
+    color: #666;
+}
+
+[data-theme="light"] .cancel-link:hover {
+    color: #e74c3c;
+}

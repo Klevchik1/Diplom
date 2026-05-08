@@ -190,3 +190,65 @@ body.login #container:after {
         transform: translateY(0);
     }
 }
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+[data-theme="light"] body.login {
+    background: linear-gradient(135deg, #e8ecf1 0%, #f0f2f5 100%);
+}
+
+[data-theme="light"] body.login #container {
+    background: #ffffff;
+    border-color: #cc0000;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+}
+
+[data-theme="light"] body.login #container:before,
+[data-theme="light"] body.login #container:after {
+    background: repeating-linear-gradient(
+        90deg,
+        #b8860b,
+        #b8860b 20px,
+        #ffffff 20px,
+        #ffffff 40px
+    );
+}
+
+[data-theme="light"] .login-title h1 {
+    color: #b8860b;
+    text-shadow: none;
+}
+
+[data-theme="light"] .login-title p {
+    color: #555;
+}
+
+[data-theme="light"] .form-row label {
+    color: #b8860b;
+}
+
+[data-theme="light"] .form-row input[type="text"],
+[data-theme="light"] .form-row input[type="password"] {
+    background: #f5f5f5;
+    border-color: #cc0000;
+    color: #1a1a1a;
+}
+
+[data-theme="light"] .form-row input:focus {
+    border-color: #b8860b;
+    box-shadow: 0 0 10px rgba(184, 134, 11, 0.3);
+}
+
+[data-theme="light"] .submit-row input[type="submit"] {
+    color: #fff;
+}
+
+[data-theme="light"] .login-footer {
+    border-top-color: rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .login-footer a {
+    color: #b8860b;
+}
+
+[data-theme="light"] .login-footer a:hover {
+    color: #ff0000;
+}

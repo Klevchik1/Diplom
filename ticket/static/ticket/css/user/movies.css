@@ -201,3 +201,89 @@
         justify-content: center;
     }
 }
+
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+[data-theme="light"] .movie-header {
+    color: #1a1a1a;
+}
+
+[data-theme="light"] .movie-poster-large {
+    border-color: #b8860b;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+}
+
+[data-theme="light"] .movie-info-large h1 {
+    color: #b8860b;
+    text-shadow: none;
+}
+
+[data-theme="light"] .movie-meta-large {
+    color: #555;
+}
+
+[data-theme="light"] .movie-description-large {
+    color: #333;
+    background: #f9f9f9;
+    border-left-color: #b8860b;
+}
+
+[data-theme="light"] .tabs-header {
+    border-bottom-color: #ff0000;
+}
+
+[data-theme="light"] .tab-button {
+    background: #f0f0f0;
+    border-color: #ff0000;
+    color: #b8860b;
+}
+
+[data-theme="light"] .tab-button.active {
+    background: #ff0000;
+    color: #fff;
+}
+
+[data-theme="light"] .tab-button:hover {
+    background: rgba(255, 0, 0, 0.1);
+}
+
+[data-theme="light"] .screening-card {
+    background: #ffffff;
+    border-color: #e0e0e0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+[data-theme="light"] .screening-card:hover {
+    background: rgba(255, 0, 0, 0.03);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+[data-theme="light"] .screening-card.active {
+    border-color: #b8860b;
+    background: rgba(184, 134, 11, 0.06);
+    box-shadow: 0 2px 10px rgba(184, 134, 11, 0.15);
+}
+
+[data-theme="light"] .screening-time {
+    color: #b8860b;
+}
+
+[data-theme="light"] .screening-date {
+    color: #555;
+}
+
+[data-theme="light"] .screening-price {
+    color: #b8860b;
+}
+
+[data-theme="light"] .selected-screening {
+    background: #ffffff;
+    border-color: #b8860b;
+    box-shadow: 0 2px 10px rgba(184, 134, 11, 0.15);
+}
+
+[data-theme="light"] .no-screening-selected,
+[data-theme="light"] .no-screenings {
+    background: #f9f9f9;
+    border-color: #e0e0e0;
+    color: #666;
+}

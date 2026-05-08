@@ -9,10 +9,10 @@
     <link rel="stylesheet" href="{% static 'ticket/css/manager/api-tokens.css' %}">
     <link rel="stylesheet" href="{% static 'ticket/css/manager/modal.css' %}">
     <link rel="stylesheet" href="{% static 'ticket/css/manager/settings.css' %}">
+    <link rel="stylesheet" href="{% static 'ticket/css/theme-switcher.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Шапка -->
     <div class="site-header">
         <div class="site-logo">КИНОТЕАТР ПРЕМЬЕРА</div>
         <div class="site-user-panel">
@@ -21,6 +21,12 @@
             <a href="{% url 'profile' %}">Личный кабинет</a>
             <span>Привет, {{ user.name }}!</span>
             <a href="{% url 'logout' %}">Выйти</a>
+
+            <!-- Кнопка переключения темы -->
+            <button class="theme-toggle-btn" onclick="toggleTheme()" title="Переключить тему">
+                <span class="theme-icon icon-dark">🌙</span>
+                <span class="theme-icon icon-light">☀️</span>
+            </button>
         </div>
     </div>
 
@@ -160,6 +166,7 @@
         }
         document.addEventListener('DOMContentLoaded', () => { updateApiCounter(); setInterval(updateApiCounter, 30000); });
     </script>
+    <script src="{% static 'ticket/js/theme-switcher.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

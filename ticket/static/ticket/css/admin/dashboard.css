@@ -175,3 +175,49 @@
 .field-additional_data .json-null {
     color: #808080;
 }
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+[data-theme="light"] .dashboard-title {
+    color: #b8860b;
+    text-shadow: none;
+}
+
+[data-theme="light"] .dashboard-card {
+    background: #ffffff;
+    border-color: #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .dashboard-card h2 {
+    color: #b8860b;
+    border-bottom-color: #ff0000;
+}
+
+[data-theme="light"] .dashboard-card li {
+    background: #f9f9f9;
+    border-left-color: #b8860b;
+}
+
+[data-theme="light"] .dashboard-card li span {
+    color: #1a1a1a;
+}
+
+[data-theme="light"] .dashboard-card li small {
+    color: #555;
+}
+
+[data-theme="light"] .dashboard-actions a {
+    color: #fff;
+}
+
+[data-theme="light"] .dashboard-actions a.secondary {
+    color: #fff;
+}
+
+[data-theme="light"] .empty-message {
+    color: #666;
+}
+
+[data-theme="light"] .count-badge {
+    background: #b8860b;
+    color: #fff;
+}

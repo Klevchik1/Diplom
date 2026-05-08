@@ -93,55 +93,6 @@
                 </button>
             </form>
         </div>
-
-        <!-- Telegram секция -->
-        <div class="telegram-section">
-            <h3 class="section-title">🤖 Telegram Уведомления</h3>
-
-            {% if telegram_connected %}
-            <div class="telegram-status">
-                <p style="color: #00ff00; margin-bottom: 10px;">
-                    ✅ Telegram аккаунт привязан: @{{ telegram_username }}
-                </p>
-                <p style="color: #ccc; margin-bottom: 15px;">
-                    Вы будете получать уведомления о покупках билетов и напоминания о сеансах.
-                </p>
-
-                <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="form_type" value="telegram_unlink">
-                    <button type="submit" class="btn-refund"
-                            onclick="return confirm('Вы уверены, что хотите отвязать Telegram?')">
-                        🔗 Отвязать Telegram
-                    </button>
-                </form>
-            </div>
-            {% else %}
-            <div class="telegram-connect">
-                <h4 style="color: #ffcc00; margin-bottom: 15px;">Привязать Telegram аккаунт</h4>
-                <p style="color: #ccc; margin-bottom: 15px;">
-                    Получайте уведомления о покупках билетов прямо в Telegram!
-                </p>
-
-                <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="form_type" value="telegram_connect">
-                    <button type="submit" class="btn-save" style="background: linear-gradient(135deg, #0088cc 0%, #005599 100%);">
-                        Получить код привязки
-                    </button>
-                </form>
-
-                <div style="margin-top: 15px; font-size: 14px; color: #aaa;">
-                    <p><strong>После получения кода:</strong></p>
-                    <ol style="padding-left: 20px; margin-top: 10px;">
-                        <li>Перейдите к <a href="https://t.me/CinemaaPremierBot" target="_blank" style="color: #ffcc00;">@CinemaaPremierBot</a></li>
-                        <li>Отправьте полученный код как обычное сообщение</li>
-                        <li>Бот автоматически привяжет ваш аккаунт</li>
-                    </ol>
-                </div>
-            </div>
-            {% endif %}
-        </div>
     </div>
 
     <!-- Правая колонка - история билетов -->
@@ -174,15 +125,12 @@
                         <small style="color: #aaa;">{{ group.ticket_count }} билет(а)</small>
                     </div>
 
-                    <!-- Кнопки скачивания -->
                     {% if group.group_uuid %}
-                        <!-- Для билетов с группой -->
                         <a href="{% url 'download_ticket_group' group.group_uuid %}" class="btn-save"
                            style="padding: 8px 15px; font-size: 14px;">
                             📥 Скачать билеты
                         </a>
                     {% else %}
-                        <!-- Для одиночных билетов -->
                         {% for seat in group.seats %}
                             <a href="{% url 'download_ticket_single' seat.ticket_id %}" class="btn-save"
                                style="padding: 8px 15px; font-size: 14px; margin-left: 5px;">
@@ -233,12 +181,9 @@
                     </div>
                 </div>
 
-                <!-- Блок с действиями (возврат) -->
                 <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #444;">
                     {% if group.group_status == 'active' and group.is_future_screening %}
-                        <!-- Если группа активна и сеанс в будущем -->
                         {% if group.group_uuid %}
-                            <!-- Для группы билетов - возвращаем всю группу -->
                             <form method="post" action="{% url 'request_group_refund' group.group_uuid %}"
                                   onsubmit="return confirm('Вы уверены, что хотите вернуть ВСЕ билеты из этой группы ({{ group.ticket_count }} шт.)? Возврат возможен только за 30 минут до сеанса.')">
                                 {% csrf_token %}
@@ -250,7 +195,6 @@
                                 </small>
                             </form>
                         {% else %}
-                            <!-- Для одиночного билета - старая логика -->
                             <form method="post" action="{% url 'request_ticket_refund' group.first_ticket_id %}"
                                   onsubmit="return confirm('Вы уверены, что хотите вернуть билет? Возврат возможен только за 30 минут до сеанса.')">
                                 {% csrf_token %}
@@ -263,7 +207,6 @@
                             </form>
                         {% endif %}
                     {% elif group.group_status == 'refunded' %}
-                        <!-- Если группа полностью возвращена -->
                         <div class="refund-processed">
                             <p style="color: #2196F3; margin: 0;">
                                 ✅ Билеты возвращены
@@ -273,7 +216,6 @@
                             </p>
                         </div>
                     {% elif group.group_status == 'partially_refunded' %}
-                        <!-- Если группа возвращена частично -->
                         <div class="refund-partial">
                             <p style="color: #FF9800; margin: 0;">
                                 ⚠️ Часть билетов возвращена
@@ -283,7 +225,6 @@
                             </small>
                         </div>
                     {% elif group.group_status == 'active' and not group.is_future_screening %}
-                        <!-- Если билет активен, но сеанс прошёл -->
                         <div class="screening-ended">
                             <p style="color: #F44336; margin: 0;">
                                 ⚠️ Возврат невозможен (сеанс уже прошёл)
@@ -296,7 +237,7 @@
         {% else %}
             <div class="no-tickets">
                 <h3>У вас еще нет купленных билетов</h3>
-                <p>Перейдите на <a href="{% url 'home' %}" style="color: #ffcc00;">главную страницу</a>, чтобы выбрать сеанс</p>
+                <p>Перейдите на <a href="{% url 'home' %}">главную страницу</a>, чтобы выбрать сеанс</p>
             </div>
         {% endif %}
     </div>

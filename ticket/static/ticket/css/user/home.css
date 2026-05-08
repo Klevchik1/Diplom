@@ -320,3 +320,165 @@
         margin: 0 auto;
     }
 }
+
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+[data-theme="light"] .date-filters {
+    /* контейнер без изменений */
+}
+
+[data-theme="light"] .date-filter-item {
+    background: #ffffff !important;
+    border: 2px solid #cc0000 !important;
+    color: #b8860b !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08) !important;
+}
+
+[data-theme="light"] .date-filter-item .date-label {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .date-filter-item .date-display {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .date-filter-item:hover {
+    background: #fff5f5 !important;
+    box-shadow: 0 3px 10px rgba(255, 0, 0, 0.12) !important;
+}
+
+[data-theme="light"] .date-filter-item.active {
+    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%) !important;
+    color: #ffffff !important;
+    border-color: #b8860b !important;
+}
+
+[data-theme="light"] .date-filter-item.active .date-label,
+[data-theme="light"] .date-filter-item.active .date-display {
+    color: #ffffff !important;
+}
+
+[data-theme="light"] .movie-card {
+    background: #ffffff !important;
+    border: 1px solid #e0e0e0 !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
+}
+
+[data-theme="light"] .movie-card:hover {
+    box-shadow: 0 3px 12px rgba(0,0,0,0.1) !important;
+    border-color: #cc0000 !important;
+}
+
+[data-theme="light"] .movie-header {
+    /* без изменений */
+}
+
+[data-theme="light"] .movie-poster-placeholder {
+    background: #f0f0f0 !important;
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .movie-info h2 {
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .movie-meta {
+    color: #666666 !important;
+}
+
+[data-theme="light"] .movie-description {
+    color: #444444 !important;
+}
+
+[data-theme="light"] .screening-counter {
+    background: #fff3cd !important;
+    color: #856404 !important;
+}
+
+[data-theme="light"] .screenings-section {
+    border-top-color: #e0e0e0 !important;
+}
+
+[data-theme="light"] .screenings-title {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .screenings-list {
+    /* без изменений */
+}
+
+[data-theme="light"] .screening-item {
+    background: #fafafa !important;
+    border: 1px solid #e0e0e0 !important;
+}
+
+[data-theme="light"] .screening-item:hover {
+    background: #fff5f5 !important;
+    border-color: #cc0000 !important;
+}
+
+[data-theme="light"] .screening-time {
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .screening-hall {
+    color: #666666 !important;
+}
+
+[data-theme="light"] .screening-price {
+    color: #2e7d32 !important;
+}
+
+[data-theme="light"] .form-group label {
+    color: #555555 !important;
+}
+
+[data-theme="light"] .form-group select,
+[data-theme="light"] .form-group input {
+    background: #ffffff !important;
+    border: 1px solid #cc0000 !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .form-group select:focus,
+[data-theme="light"] .form-group input:focus {
+    border-color: #b8860b !important;
+    box-shadow: 0 0 8px rgba(184, 134, 11, 0.2) !important;
+}
+
+[data-theme="light"] .btn-apply {
+    color: #ffffff !important;
+}
+
+[data-theme="light"] .btn-reset {
+    background: #f5f5f5 !important;
+    color: #b8860b !important;
+    border-color: #cc0000 !important;
+}
+
+[data-theme="light"] .btn-reset:hover {
+    background: #e8e8e8 !important;
+}
+
+[data-theme="light"] .btn-movie-details {
+    color: #ffffff !important;
+}
+
+[data-theme="light"] .no-screenings,
+[data-theme="light"] .no-screenings-today {
+    color: #888888 !important;
+    background: #fafafa !important;
+}
+
+[data-theme="light"] .filters-container .card {
+    background: #ffffff !important;
+    border: 1px solid #e0e0e0 !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
+}
+
+[data-theme="light"] .main-content {
+    /* без изменений */
+}
+
+[data-theme="light"] .filter-buttons {
+    /* без изменений */
+}

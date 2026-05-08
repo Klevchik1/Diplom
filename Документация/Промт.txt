@@ -148,16 +148,17 @@ cinema-management-system/                         # Корень проекта 
 │   │       │   │   ├── modal.css
 │   │       │   │   └── movie-form.css
 │   │       │   │   └── settings.css
-│   │       │   └── user/                         # Пользовательская часть
-│   │       │       ├── about.css
-│   │       │       ├── auth.css
-│   │       │       ├── base.css
-│   │       │       ├── home.css
-│   │       │       ├── movies.css
-│   │       │       ├── payment.css
-│   │       │       ├── payment_result.css
-│   │       │       ├── profile.css
-│   │       │       └── screenings.css
+│   │       │   ├── user/                         # Пользовательская часть
+│   │       │   │   ├── about.css
+│   │       │   │   ├── auth.css
+│   │       │   │   ├── base.css
+│   │       │   │   ├── home.css
+│   │       │   │   ├── movies.css
+│   │       │   │   ├── payment.css
+│   │       │   │   ├── payment_result.css
+│   │       │   │   ├── profile.css
+│   │       │   │   └── screenings.css
+│   │       │   └── theme-switcher.css
 │   │       └── js/                               # JavaScript
 │   │           ├── admin/                        # Админ-панель
 │   │           │   ├── admin-base.js
@@ -169,14 +170,14 @@ cinema-management-system/                         # Корень проекта 
 │   │           │   ├── manager-forms.js
 │   │           │   ├── manager-statistics.js
 │   │           │   └── movie-form.js
-│   │           └── user/                         # Пользовательская часть
-│   │               ├── auth.js
-│   │               ├── base.js
-│   │               ├── home.js
-│   │               ├── payment.js
-│   │               ├── profile.js
-│   │               └── screenings.js
-│   │
+│   │           ├── user/                         # Пользовательская часть
+│   │           │   ├── auth.js
+│   │           │   ├── base.js
+│   │           │   ├── home.js
+│   │           │   ├── payment.js
+│   │           │   ├── profile.js
+│   │           │   └── screenings.js
+│   │           └── theme-switcher.js
 │   ├── templates/                                # HTML-шаблоны
 │   │   ├── __init__.py
 │   │   ├── admin/                                # Админ-панель
