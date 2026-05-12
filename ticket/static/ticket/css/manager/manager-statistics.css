@@ -1,239 +1,367 @@
-/* ===== ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ СТАТИСТИКИ ===== */
+/* ===== СТАТИСТИКА — СОВРЕМЕННЫЙ ДИЗАЙН ===== */
 
-/* График продаж по дням */
-.sales-chart {
-    display: flex;
-    align-items: flex-end;
-    gap: 10px;
-    height: 200px;
-    margin: 20px 0;
-    padding: 20px 0;
-    background: rgba(20, 20, 20, 0.5);
-    border-radius: 8px;
-}
-
-.chart-bar {
-    flex: 1;
-    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
-    border-radius: 5px 5px 0 0;
-    transition: height 0.3s ease;
-    position: relative;
-    min-width: 30px;
-    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-}
-
-.chart-bar:hover {
-    opacity: 0.9;
-    transform: scaleX(1.05);
-}
-
-.chart-bar .bar-value {
-    position: absolute;
-    top: -25px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 12px;
-    color: #ffcc00;
-    white-space: nowrap;
-    font-weight: bold;
-}
-
-.chart-bar .bar-label {
-    position: absolute;
-    bottom: -25px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 12px;
-    color: #ffcc00;
-    white-space: nowrap;
-}
-
-/* Прогресс-бар */
-.progress-bar {
-    width: 100%;
-    height: 20px;
-    background: rgba(30, 30, 30, 0.8);
-    border-radius: 10px;
-    overflow: hidden;
-    border: 1px solid #ff0000;
-}
-
-.progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
-    transition: width 0.3s ease;
-    box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
-}
-
-.occupancy-cell {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.occupancy-value {
-    min-width: 50px;
-    font-weight: bold;
-    color: #ffcc00;
-}
-
-/* Период отчета */
-.report-period {
-    background: rgba(255, 204, 0, 0.1);
-    padding: 12px 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    color: #ffcc00;
-    font-size: 14px;
-    border: 1px solid #ffcc00;
-    display: inline-block;
-}
-
-.report-period strong {
-    font-weight: bold;
-    color: #fff;
-}
-
-/* Экспорт отчетов */
-.export-actions {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
-
-.export-btn {
-    padding: 10px 20px;
-    background: linear-gradient(135deg, #4a00e0 0%, #8e2de2 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: all 0.3s;
-    font-weight: bold;
-}
-
-.export-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(74, 0, 224, 0.4);
-}
-
-/* Карточки детальной статистики */
-.stats-detail-grid {
+/* Карточки метрик */
+.metrics-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 20px;
     margin-bottom: 30px;
 }
 
-.stats-detail-card {
+.metric-card {
     background: rgba(30, 30, 30, 0.95);
-    padding: 20px;
-    border-radius: 10px;
     border: 2px solid #ff0000;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
     box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+    transition: transform 0.3s, box-shadow 0.3s;
 }
 
-.stats-detail-card .label {
-    color: #ffcc00;
-    font-size: 13px;
+.metric-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 25px rgba(255, 0, 0, 0.5);
+}
+
+.metric-card .metric-icon {
+    font-size: 32px;
     margin-bottom: 8px;
+}
+
+.metric-card .metric-value {
+    font-size: 28px;
+    font-weight: bold;
+    color: #ffcc00;
+    text-shadow: 0 0 8px rgba(255, 204, 0, 0.4);
+    margin: 5px 0;
+}
+
+.metric-card .metric-label {
+    color: #aaa;
+    font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
-.stats-detail-card .number {
-    font-size: 28px;
-    font-weight: bold;
-    color: #fff;
-    margin-bottom: 5px;
-}
-
-.stats-detail-card .trend {
+.metric-card .metric-trend {
     font-size: 12px;
-    padding: 4px 8px;
-    border-radius: 20px;
-    display: inline-block;
+    margin-top: 5px;
 }
 
-.trend-up {
-    background: rgba(76, 175, 80, 0.2);
+.metric-card .metric-trend.up {
     color: #4CAF50;
-    border: 1px solid #4CAF50;
 }
 
-.trend-down {
-    background: rgba(244, 67, 54, 0.2);
+.metric-card .metric-trend.down {
     color: #f44336;
-    border: 1px solid #f44336;
+}
+
+/* Быстрые периоды */
+.quick-periods {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.quick-periods .period-pill {
+    padding: 8px 20px;
+    border: 2px solid #ff0000;
+    border-radius: 25px;
+    color: #ffcc00;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    background: rgba(30, 30, 30, 0.8);
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.quick-periods .period-pill:hover,
+.quick-periods .period-pill.active {
+    background: linear-gradient(135deg, #ff0000, #cc0000);
+    color: #fff;
+    border-color: #ffcc00;
+}
+
+/* Секция графика */
+.chart-section {
+    background: rgba(30, 30, 30, 0.95);
+    border: 2px solid #ff0000;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+}
+
+.chart-section h3 {
+    color: #ffcc00;
+    font-size: 18px;
+    margin: 0 0 20px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ff0000;
+}
+
+.chart-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 220px;
+    padding: 0 10px;
+}
+
+.chart-bar-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+.chart-bar {
+    width: 100%;
+    max-width: 50px;
+    background: linear-gradient(to top, #ff0000, #ff4444);
+    border-radius: 6px 6px 0 0;
+    transition: height 0.6s ease;
+    position: relative;
+    min-height: 4px;
+}
+
+.chart-bar:hover {
+    background: linear-gradient(to top, #ffcc00, #ffdd44);
+    box-shadow: 0 0 15px rgba(255, 204, 0, 0.6);
+}
+
+.chart-bar-value {
+    color: #ffcc00;
+    font-size: 11px;
+    font-weight: bold;
+    margin-bottom: 4px;
+    text-align: center;
+    min-height: 16px;
+}
+
+.chart-bar-label {
+    color: #aaa;
+    font-size: 11px;
+    margin-top: 6px;
+    text-align: center;
+}
+
+/* Две колонки */
+.two-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+/* Топ фильмов */
+.top-movies {
+    background: rgba(30, 30, 30, 0.95);
+    border: 2px solid #ff0000;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+}
+
+.top-movies h3 {
+    color: #ffcc00;
+    font-size: 18px;
+    margin: 0 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ff0000;
+}
+
+.movie-rank-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 0, 0, 0.2);
+}
+
+.movie-rank-item:last-child {
+    border-bottom: none;
+}
+
+.movie-rank-num {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffcc00;
+    min-width: 30px;
+    text-align: center;
+}
+
+.movie-rank-info {
+    flex: 1;
+}
+
+.movie-rank-title {
+    color: #fff;
+    font-weight: bold;
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.movie-rank-stats {
+    color: #aaa;
+    font-size: 12px;
+}
+
+.movie-rank-revenue {
+    color: #ffcc00;
+    font-weight: bold;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+/* Загруженность залов */
+.halls-occupancy {
+    background: rgba(30, 30, 30, 0.95);
+    border: 2px solid #ff0000;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+}
+
+.halls-occupancy h3 {
+    color: #ffcc00;
+    font-size: 18px;
+    margin: 0 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ff0000;
+}
+
+.hall-occupancy-item {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 0, 0, 0.2);
+}
+
+.hall-occupancy-item:last-child {
+    border-bottom: none;
+}
+
+.hall-occupancy-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.hall-occupancy-name {
+    color: #fff;
+    font-weight: bold;
+}
+
+.hall-occupancy-percent {
+    color: #ffcc00;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.hall-occupancy-details {
+    color: #aaa;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* ===== СВЕТЛАЯ ТЕМА ===== */
+[data-theme="light"] .metric-card {
+    background: #ffffff;
+    border-color: #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .hall-occupancy-details {
+    color: #666;
+}
+
+[data-theme="light"] .metric-card:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+}
+
+[data-theme="light"] .metric-card .metric-value {
+    color: #b8860b;
+    text-shadow: none;
+}
+
+[data-theme="light"] .metric-card .metric-label {
+    color: #555;
+}
+
+[data-theme="light"] .quick-periods .period-pill {
+    background: #ffffff;
+    color: #b8860b;
+    border-color: #cc0000;
+}
+
+[data-theme="light"] .quick-periods .period-pill:hover,
+[data-theme="light"] .quick-periods .period-pill.active {
+    background: linear-gradient(135deg, #ff0000, #cc0000);
+    color: #fff;
+}
+
+[data-theme="light"] .chart-section,
+[data-theme="light"] .top-movies,
+[data-theme="light"] .halls-occupancy {
+    background: #ffffff;
+    border-color: #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .chart-section h3,
+[data-theme="light"] .top-movies h3,
+[data-theme="light"] .halls-occupancy h3 {
+    color: #b8860b;
+    border-bottom-color: #e0e0e0;
+}
+
+[data-theme="light"] .movie-rank-title,
+[data-theme="light"] .hall-occupancy-name {
+    color: #1a1a1a;
+}
+
+[data-theme="light"] .movie-rank-stats,
+[data-theme="light"] .hall-occupancy-details {
+    color: #666;
+}
+
+[data-theme="light"] .movie-rank-revenue,
+[data-theme="light"] .hall-occupancy-percent {
+    color: #b8860b;
+}
+
+[data-theme="light"] .chart-bar-value {
+    color: #b8860b;
+}
+
+[data-theme="light"] .chart-bar-label {
+    color: #666;
+}
+
+[data-theme="light"] .movie-rank-item,
+[data-theme="light"] .hall-occupancy-item {
+    border-bottom-color: #e0e0e0;
 }
 
 /* Адаптивность */
 @media (max-width: 768px) {
-    .sales-chart {
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .two-cols {
+        grid-template-columns: 1fr;
+    }
+    .chart-bars {
         height: 150px;
     }
+}
 
-    .chart-bar .bar-label {
-        font-size: 10px;
-        bottom: -20px;
+@media (max-width: 480px) {
+    .metrics-grid {
+        grid-template-columns: 1fr;
     }
-
-    .export-actions {
-        flex-direction: column;
-    }
-
-    .export-btn {
-        width: 100%;
-        justify-content: center;
-    }
-}
-/* ===== СВЕТЛАЯ ТЕМА ===== */
-[data-theme="light"] .sales-chart {
-    background: #f9f9f9;
-}
-
-[data-theme="light"] .chart-bar .bar-value,
-[data-theme="light"] .chart-bar .bar-label {
-    color: #b8860b;
-}
-
-[data-theme="light"] .progress-bar {
-    background: #f0f0f0;
-    border-color: #e0e0e0;
-}
-
-[data-theme="light"] .occupancy-value {
-    color: #b8860b;
-}
-
-[data-theme="light"] .report-period {
-    background: rgba(184, 134, 11, 0.08);
-    color: #b8860b;
-    border-color: #b8860b;
-}
-
-[data-theme="light"] .report-period strong {
-    color: #1a1a1a;
-}
-
-[data-theme="light"] .export-btn {
-    color: #fff;
-}
-
-[data-theme="light"] .stats-detail-card {
-    background: #ffffff;
-    border-color: #e0e0e0;
-}
-
-[data-theme="light"] .stats-detail-card .label {
-    color: #b8860b;
-}
-
-[data-theme="light"] .stats-detail-card .number {
-    color: #1a1a1a;
 }

@@ -2564,23 +2564,26 @@ def manager_screening_delete(request, screening_id):
 def manager_statistics(request):
     """Статистика и отчеты для менеджера"""
     period = request.GET.get('period', 'week')
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
+    start_date_str = request.GET.get('start_date')
+    end_date_str = request.GET.get('end_date')
 
     today = timezone.now().date()
 
     # Определяем диапазон дат
-    if start_date and end_date:
+    if start_date_str and end_date_str:
         try:
-            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
-            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
         except ValueError:
-            start_date = today - timedelta(days=30)
+            start_date = today - timedelta(days=7)
             end_date = today
     else:
         if period == 'day':
             start_date = today
             end_date = today
+        elif period == 'yesterday':
+            start_date = today - timedelta(days=1)
+            end_date = today - timedelta(days=1)
         elif period == 'week':
             start_date = today - timedelta(days=7)
             end_date = today
@@ -2588,7 +2591,7 @@ def manager_statistics(request):
             start_date = today - timedelta(days=30)
             end_date = today
         else:
-            start_date = today - timedelta(days=30)
+            start_date = today - timedelta(days=7)
             end_date = today
 
     # Фильтр по датам для билетов
@@ -2606,7 +2609,7 @@ def manager_statistics(request):
     ).count()
 
     # Продажи по дням
-    sales_by_day = Ticket.objects.filter(
+    sales_by_day = list(Ticket.objects.filter(
         date_filter,
         status__code='active'
     ).annotate(
@@ -2614,7 +2617,10 @@ def manager_statistics(request):
     ).values('day').annotate(
         tickets=Count('id'),
         revenue=Sum('price')
-    ).order_by('day')
+    ).order_by('day'))
+
+    # Максимальная выручка для графика
+    max_revenue = max((day['revenue'] for day in sales_by_day), default=1)
 
     # Популярные фильмы
     popular_movies = Movie.objects.filter(
@@ -2624,7 +2630,9 @@ def manager_statistics(request):
     ).annotate(
         tickets_sold=Count('screenings__tickets'),
         revenue=Sum('screenings__tickets__price')
-    ).order_by('-tickets_sold')[:10]
+    ).order_by('-tickets_sold')[:5]
+
+    max_popular_tickets = max((m.tickets_sold for m in popular_movies), default=1)
 
     # Загруженность залов
     hall_occupancy = []
@@ -2643,19 +2651,16 @@ def manager_statistics(request):
             status__code='active'
         ).count()
 
-        total_possible_tickets = screenings_in_period.count() * total_seats
-
-        if total_possible_tickets > 0:
-            occupancy_percent = (total_tickets_sold / total_possible_tickets) * 100
-        else:
-            occupancy_percent = 0
+        total_possible = screenings_in_period.count() * total_seats
+        occupancy_percent = round((total_tickets_sold / total_possible * 100), 1) if total_possible > 0 else 0
 
         hall_occupancy.append({
             'hall': hall,
             'total_seats': total_seats,
             'screenings_count': screenings_in_period.count(),
             'tickets_sold': total_tickets_sold,
-            'occupancy_percent': round(occupancy_percent, 1)
+            'total_possible': total_possible,
+            'occupancy_percent': occupancy_percent,
         })
 
     context = {
@@ -2666,7 +2671,9 @@ def manager_statistics(request):
         'total_revenue': total_revenue,
         'refunded_tickets': refunded_tickets,
         'sales_by_day': sales_by_day,
+        'max_revenue': max_revenue,
         'popular_movies': popular_movies,
+        'max_popular_tickets': max_popular_tickets,
         'hall_occupancy': hall_occupancy,
     }
 

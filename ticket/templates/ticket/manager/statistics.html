@@ -1,6 +1,6 @@
 {% extends 'ticket/manager/base_manager.html' %}
 {% load static %}
-{% load custom_filters %}  {# Добавьте эту строку для загрузки фильтров #}
+{% load custom_filters %}
 
 {% block title %}Статистика{% endblock %}
 
@@ -10,125 +10,112 @@
 
 {% block content %}
 <div class="section-header">
-    <h2>📈 Статистика и отчеты</h2>
+    <h2>📈 Статистика и отчёты</h2>
 </div>
 
-<div class="filter-form">
+<!-- Быстрые периоды -->
+<div class="quick-periods">
+    <a href="?period=day" class="period-pill {% if period == 'day' %}active{% endif %}">📅 Сегодня</a>
+    <a href="?period=yesterday" class="period-pill {% if period == 'yesterday' %}active{% endif %}">⬅️ Вчера</a>
+    <a href="?period=week" class="period-pill {% if period == 'week' %}active{% endif %}">📊 Неделя</a>
+    <a href="?period=month" class="period-pill {% if period == 'month' %}active{% endif %}">📆 Месяц</a>
+</div>
+
+<!-- Фильтр дат -->
+<div class="filter-form" style="margin-bottom: 20px;">
     <form method="get">
-        <select name="period">
-            <option value="day" {% if period == 'day' %}selected{% endif %}>За день</option>
-            <option value="week" {% if period == 'week' %}selected{% endif %}>За неделю</option>
-            <option value="month" {% if period == 'month' %}selected{% endif %}>За месяц</option>
-        </select>
-        <input type="date" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
-        <input type="date" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
+        <input type="date" name="start_date" value="{{ start_date|date:'Y-m-d' }}" style="min-width: 160px;">
+        <span style="color: #aaa; margin: 0 5px;">—</span>
+        <input type="date" name="end_date" value="{{ end_date|date:'Y-m-d' }}" style="min-width: 160px;">
         <button type="submit" class="btn">Применить</button>
+        <a href="?period=week" class="btn btn-secondary">Сбросить</a>
     </form>
 </div>
 
-<div class="report-period">
-    <strong>Период:</strong> {{ start_date|date:"d.m.Y" }} - {{ end_date|date:"d.m.Y" }}
+<div class="report-period" style="margin-bottom: 20px; color: #ffcc00; font-weight: bold;">
+    📅 {{ start_date|date:"d.m.Y" }} — {{ end_date|date:"d.m.Y" }}
 </div>
 
-<div class="stats-grid">
-    <div class="stat-card">
-        <h3>Продано билетов</h3>
-        <div class="value">{{ total_tickets }}</div>
+<!-- Карточки метрик -->
+<div class="metrics-grid">
+    <div class="metric-card">
+        <div class="metric-icon">🎫</div>
+        <div class="metric-value">{{ total_tickets }}</div>
+        <div class="metric-label">Продано билетов</div>
     </div>
-    <div class="stat-card">
-        <h3>Выручка</h3>
-        <div class="value">{{ total_revenue }} ₽</div>
+    <div class="metric-card">
+        <div class="metric-icon">💰</div>
+        <div class="metric-value">{{ total_revenue|floatformat:0 }} ₽</div>
+        <div class="metric-label">Выручка</div>
     </div>
-    <div class="stat-card">
-        <h3>Средний чек</h3>
-        <div class="value">
+    <div class="metric-card">
+        <div class="metric-icon">📊</div>
+        <div class="metric-value">
             {% if total_tickets > 0 %}
                 {{ total_revenue|div:total_tickets|floatformat:0 }} ₽
             {% else %}
                 0 ₽
             {% endif %}
         </div>
+        <div class="metric-label">Средний чек</div>
     </div>
-    <div class="stat-card">
-        <h3>Возвраты</h3>
-        <div class="value">{{ refunded_tickets }}</div>
+    <div class="metric-card">
+        <div class="metric-icon">↩️</div>
+        <div class="metric-value">{{ refunded_tickets }}</div>
+        <div class="metric-label">Возвраты</div>
     </div>
 </div>
 
-<div id="sales-chart" data-sales='{{ sales_by_day|safe }}' style="display: none;"></div>
-
-<div class="table-container">
-    <h3>Популярные фильмы</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Фильм</th>
-                <th>Продано билетов</th>
-                <th>Выручка</th>
-                <th>Доля</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for movie in popular_movies %}
-            <tr>
-                <td>{{ movie.title }}</td>
-                <td>{{ movie.tickets_sold }}</td>
-                <td>{{ movie.revenue|default:0 }} ₽</td>
-                <td>
-                    {% if total_tickets > 0 %}
-                        {{ movie.tickets_sold|div:total_tickets|mul:100|floatformat:1 }}%
-                    {% else %}
-                        0%
-                    {% endif %}
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="4" class="text-center">Нет данных</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<!-- График выручки по дням -->
+<div class="chart-section">
+    <h3>📈 Выручка по дням</h3>
+    <div class="chart-bars" id="revenue-chart">
+        {% for day in sales_by_day %}
+        <div class="chart-bar-wrapper">
+            <div class="chart-bar-value">{{ day.revenue|default:0 }} ₽</div>
+            <div class="chart-bar" style="height: {% widthratio day.revenue max_revenue 100 %}%;" title="{{ day.day|date:'d.m.Y' }}: {{ day.revenue }} ₽"></div>
+            <div class="chart-bar-label">{{ day.day|date:"d.m" }}</div>
+        </div>
+        {% empty %}
+        <div style="color: #666; text-align: center; width: 100%; padding: 40px;">Нет данных для отображения</div>
+        {% endfor %}
+    </div>
 </div>
 
-<div class="table-container">
-    <h3>Загруженность залов</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Зал</th>
-                <th>Всего мест</th>
-                <th>Сеансов</th>
-                <th>Продано билетов</th>
-                <th>Загруженность</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for hall in hall_occupancy %}
-            <tr>
-                <td>{{ hall.hall.name }}</td>
-                <td>{{ hall.total_seats }}</td>
-                <td>{{ hall.screenings_count }}</td>
-                <td>{{ hall.tickets_sold }}</td>
-                <td>
-                    <div class="occupancy-cell">
-                        <span class="occupancy-value">{{ hall.occupancy_percent }}%</span>
-                        <div class="progress-bar">
-                            <div class="progress-bar-fill" style="width: {{ hall.occupancy_percent }}%;"></div>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5" class="text-center">Нет данных</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<!-- Две колонки -->
+<div class="two-cols">
+    <!-- Топ фильмов -->
+    <div class="top-movies">
+        <h3>🎬 Популярные фильмы</h3>
+        {% for movie in popular_movies %}
+        <div class="movie-rank-item">
+            <div class="movie-rank-num">#{{ forloop.counter }}</div>
+            <div class="movie-rank-info">
+                <div class="movie-rank-title">{{ movie.title }}</div>
+                <div class="movie-rank-stats">{{ movie.tickets_sold }} билетов</div>
+            </div>
+            <div class="movie-rank-revenue">{{ movie.revenue|default:0|floatformat:0 }} ₽</div>
+        </div>
+        {% empty %}
+        <div style="color: #666; text-align: center; padding: 20px;">Нет данных</div>
+        {% endfor %}
+    </div>
+    <!-- Загруженность залов -->
+    <div class="halls-occupancy">
+        <h3>🏛️ Загруженность залов</h3>
+        {% for hall in hall_occupancy %}
+        <div class="hall-occupancy-item">
+            <div class="hall-occupancy-header">
+                <span class="hall-occupancy-name">{{ hall.hall.name }}</span>
+                <span class="hall-occupancy-percent">{{ hall.occupancy_percent }}%</span>
+            </div>
+            <div class="hall-occupancy-details">
+                {{ hall.tickets_sold }} билетов / {{ hall.total_possible }} мест / {{ hall.screenings_count }} сеансов
+            </div>
+        </div>
+        {% empty %}
+        <div style="color: #666; text-align: center; padding: 20px;">Нет данных</div>
+        {% endfor %}
+    </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'ticket/js/manager/manager-statistics.js' %}"></script>
 {% endblock %}
