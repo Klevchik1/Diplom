@@ -198,6 +198,19 @@ class Hall(models.Model):
     def __str__(self):
         return f"{self.name} ({self.hall_type.name})"
 
+    @property
+    def total_seats(self):
+        return self.rows * self.seats_per_row
+
+    @property
+    def total_seats(self):
+        """Общее количество мест в зале"""
+        return self.rows * self.seats_per_row
+
+    def get_total_seats(self):
+        """Совместимость с шаблоном — вызывает total_seats"""
+        return self.total_seats
+
     def delete(self, *args, **kwargs):
         """Каскадное удаление всех связанных объектов"""
         try:

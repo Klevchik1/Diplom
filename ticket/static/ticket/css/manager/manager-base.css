@@ -552,6 +552,7 @@ tr:hover td {
     box-shadow: 0 5px 15px rgba(74, 0, 224, 0.4);
     color: white;
 }
+
 /* ===== СВЕТЛАЯ ТЕМА ===== */
 [data-theme="light"] body {
     background: #e8ecf1;
@@ -734,4 +735,63 @@ tr:hover td {
 
 [data-theme="light"] .api-progress-bar {
     background: #e0e0e0;
+}
+[data-theme="light"] .filter-form input[type="date"] {
+    color-scheme: light;
+}
+
+[data-theme="light"] .filter-form input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0);
+}
+
+/* ===== ВКЛАДКИ ДЛЯ СЕАНСОВ ===== */
+.screenings-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.screenings-tabs .tab-btn {
+    padding: 12px 25px;
+    border: 2px solid #ff0000;
+    border-radius: 8px;
+    color: #ffcc00;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    background: rgba(30, 30, 30, 0.95);
+    transition: all 0.3s;
+    display: inline-block;
+}
+
+.screenings-tabs .tab-btn:hover {
+    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 10px rgba(255, 0, 0, 0.4);
+}
+
+.screenings-tabs .tab-btn.active {
+    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+    color: #ffffff;
+    border-color: #ffcc00;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+}
+
+/* Светлая тема */
+[data-theme="light"] .screenings-tabs .tab-btn {
+    background: #ffffff;
+    color: #b8860b;
+    border-color: #cc0000;
+}
+
+[data-theme="light"] .screenings-tabs .tab-btn:hover {
+    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+    color: #fff;
+}
+
+[data-theme="light"] .screenings-tabs .tab-btn.active {
+    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+    color: #fff;
+    border-color: #b8860b;
 }

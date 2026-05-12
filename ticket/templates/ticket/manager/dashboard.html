@@ -31,7 +31,6 @@
                 <th>ЗАЛ</th>
                 <th>ДАТА И ВРЕМЯ</th>
                 <th>ЦЕНА</th>
-                <th>СТАТУС</th>
             </tr>
         </thead>
         <tbody>
@@ -41,17 +40,10 @@
                 <td>{{ screening.hall.name }}</td>
                 <td>{{ screening.start_time|date:"d.m.Y H:i" }}</td>
                 <td>{{ screening.ticket_price }} ₽</td>
-                <td>
-                    {% if screening.start_time > now %}
-                        <span class="badge badge-success">Предстоит</span>
-                    {% else %}
-                        <span class="badge badge-warning">Идет</span>
-                    {% endif %}
-                </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="5" style="text-align: center; color: #666;">Нет ближайших сеансов</td>
+                <td colspan="4" style="text-align: center; color: #666;">Нет ближайших сеансов</td>
             </tr>
             {% endfor %}
         </tbody>

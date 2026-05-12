@@ -278,7 +278,7 @@ class MovieForm(forms.ModelForm):
     )
     release_year = forms.IntegerField(
         min_value=1900,
-        max_value=date.today().year + 1,
+        max_value=date.today().year,
         label='Год выпуска',
         widget=forms.NumberInput(attrs={'class': 'form-control'})
     )
@@ -333,6 +333,15 @@ class MovieForm(forms.ModelForm):
             self.fields['genres'].initial = self.instance.genres.all()
             self.fields['directors'].initial = self.instance.directors.all()
             self.fields['actors'].initial = self.instance.actors.all()
+
+    def clean_release_year(self):
+        year = self.cleaned_data.get('release_year')
+        current_year = date.today().year
+        if year and year > current_year:
+            raise ValidationError(
+                f'Год выпуска не может быть больше текущего ({current_year})'
+            )
+        return year
 
     def save(self, commit=True):
         movie = super().save(commit=False)

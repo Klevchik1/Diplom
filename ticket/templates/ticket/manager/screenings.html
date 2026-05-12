@@ -3,16 +3,33 @@
 
 {% block title %}Управление сеансами{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ticket/css/manager/manager-forms.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="section-header">
     <h2>🎫 Управление сеансами</h2>
     <a href="{% url 'manager_screening_add' %}" class="btn">➕ Добавить сеанс</a>
 </div>
 
+<!-- Вкладки -->
+<div class="screenings-tabs">
+    <a href="?view=upcoming{% if filters.date %}&date={{ filters.date }}{% endif %}{% if filters.movie %}&movie={{ filters.movie }}{% endif %}{% if filters.hall %}&hall={{ filters.hall }}{% endif %}"
+       class="tab-btn {% if view_mode == 'upcoming' %}active{% endif %}">
+        🔜 Предстоящие
+    </a>
+    <a href="?view=all{% if filters.date %}&date={{ filters.date }}{% endif %}{% if filters.movie %}&movie={{ filters.movie }}{% endif %}{% if filters.hall %}&hall={{ filters.hall }}{% endif %}"
+       class="tab-btn {% if view_mode == 'all' %}active{% endif %}">
+        📋 Все сеансы
+    </a>
+</div>
+
 <div class="filter-form">
     <form method="get">
+        <input type="hidden" name="view" value="{{ view_mode }}">
         <input type="date" name="date" value="{{ filters.date }}" placeholder="Дата">
-        <select name="movie">
+        <select name="movie" id="movie-filter" style="width: 250px;">
             <option value="">Все фильмы</option>
             {% for movie in movies %}
                 <option value="{{ movie.id }}" {% if filters.movie == movie.id|stringformat:"i" %}selected{% endif %}>
@@ -29,7 +46,7 @@
             {% endfor %}
         </select>
         <button type="submit" class="btn">Применить</button>
-        <a href="{% url 'manager_screenings' %}" class="btn btn-secondary">Сбросить</a>
+        <a href="?view={{ view_mode }}" class="btn btn-secondary">Сбросить</a>
     </form>
 </div>
 
@@ -62,10 +79,38 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6" class="text-center">Нет сеансов</td>
+                <td colspan="6" class="text-center">
+                    {% if view_mode == 'upcoming' %}
+                        Нет предстоящих сеансов
+                    {% else %}
+                        Нет сеансов
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Select2 для поиска по фильмам -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
+        $('#movie-filter').select2({
+            width: '100%',
+            placeholder: '🔍 Поиск фильма...',
+            allowClear: true,
+            language: {
+                noResults: function() { return "Ничего не найдено"; },
+                searching: function() { return "Поиск..."; }
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

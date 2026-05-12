@@ -449,15 +449,6 @@
     }
 }
 
-/* Принудительное исправление для всех браузеров */
-select,
-select option,
-.select-wrapper select,
-.select-wrapper select option {
-    background-color: #1e1e1e !important;
-    color: white !important;
-}
-
 /* Для Internet Explorer */
 select::-ms-expand {
     display: none;
@@ -467,19 +458,6 @@ select:-ms-expand {
     display: none;
 }
 
-/* Убираем стандартные стили Firefox */
-@-moz-document url-prefix() {
-    .select-wrapper select {
-        background-color: #1e1e1e !important;
-        color: white !important;
-        text-shadow: none !important;
-    }
-
-    .select-wrapper select option {
-        background-color: #1e1e1e !important;
-        color: white !important;
-    }
-}
 /* ===== СВЕТЛАЯ ТЕМА ===== */
 [data-theme="light"] .form-container {
     background: #ffffff;
@@ -505,27 +483,70 @@ select:-ms-expand {
 }
 
 [data-theme="light"] .select-wrapper select {
-    background: #f5f5f5;
+    background: #f5f5f5 !important;
+    color: #1a1a1a !important;
 }
 
 [data-theme="light"] .select-wrapper select option {
-    background: #ffffff;
-    color: #1a1a1a;
+    background: #ffffff !important;
+    color: #1a1a1a !important;
 }
 
+[data-theme="light"] .select-wrapper select option:checked {
+    background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%) !important;
+    color: white !important;
+}
+
+/* Select2 светлая тема */
 [data-theme="light"] .select2-container--default .select2-selection--multiple {
-    background-color: #f5f5f5;
-    border-color: #cc0000;
+    background-color: #f5f5f5 !important;
+    border-color: #cc0000 !important;
+}
+
+[data-theme="light"] .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background: linear-gradient(135deg, #ff0000, #cc0000) !important;
+    color: white !important;
+}
+
+[data-theme="light"] .select2-container--default .select2-search--inline .select2-search__field {
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .select2-container--default .select2-search--inline .select2-search__field::placeholder {
+    color: #888 !important;
 }
 
 [data-theme="light"] .select2-dropdown {
-    background-color: #ffffff;
-    border-color: #cc0000;
+    background-color: #ffffff !important;
+    border-color: #cc0000 !important;
 }
 
 [data-theme="light"] .select2-results__option {
-    color: #1a1a1a;
-    border-bottom-color: #e0e0e0;
+    color: #1a1a1a !important;
+    border-bottom-color: #e0e0e0 !important;
+}
+
+[data-theme="light"] .select2-results__option--highlighted {
+    background: linear-gradient(135deg, #ff0000, #cc0000) !important;
+    color: white !important;
+}
+
+[data-theme="light"] .select2-results__option[aria-selected="true"] {
+    background: rgba(255, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .select2-search--dropdown .select2-search__field {
+    background-color: #f5f5f5 !important;
+    color: #1a1a1a !important;
+    border-color: #cc0000 !important;
+}
+
+[data-theme="light"] .select2-search--dropdown .select2-search__field::placeholder {
+    color: #999 !important;
+}
+
+[data-theme="light"] .select2-results__message {
+    color: #666 !important;
 }
 
 [data-theme="light"] .btn-quick-add {
@@ -536,10 +557,20 @@ select:-ms-expand {
     color: #555;
 }
 
+[data-theme="light"] .help-text {
+    color: #555;
+}
+
 [data-theme="light"] .form-actions {
     border-top-color: #e0e0e0;
 }
 
 [data-theme="light"] #image-preview h4 {
     color: #b8860b;
+}
+
+[data-theme="light"] .errorlist {
+    background: rgba(244, 67, 54, 0.06);
+    border-color: #f44336;
+    color: #d32f2f;
 }

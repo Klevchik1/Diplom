@@ -13,11 +13,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function initSelect2() {
     if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
-        // Принудительно инициализируем с тёмной темой
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        const textColor = isLight ? '#1a1a1a' : 'white';
+        const placeholderColor = isLight ? '#888' : '#888';
+        const bgColor = isLight ? '#f5f5f5' : 'rgba(20, 20, 20, 0.8)';
+
         $('#id_directors, #id_actors, #id_genres').each(function() {
+            // Определяем placeholder в зависимости от поля
+            let placeholder = 'Выберите из списка';
+            if (this.id === 'id_genres') placeholder = 'Выберите жанры';
+            else if (this.id === 'id_directors') placeholder = 'Выберите режиссёров';
+            else if (this.id === 'id_actors') placeholder = 'Выберите актёров';
+
             $(this).select2({
                 width: '100%',
-                placeholder: 'Выберите из списка',
+                placeholder: placeholder,
                 allowClear: true,
                 dropdownAutoWidth: false,
                 theme: 'default',
@@ -28,14 +38,18 @@ function initSelect2() {
             });
         });
     } else {
-        // Fallback — просто делаем поля больше
+        // Fallback
         const fields = ['id_directors', 'id_actors', 'id_genres'];
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        const bg = isLight ? '#f5f5f5' : 'rgba(20, 20, 20, 0.8)';
+        const color = isLight ? '#1a1a1a' : 'white';
+
         fields.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
                 el.size = 8;
-                el.style.background = 'rgba(20, 20, 20, 0.8)';
-                el.style.color = 'white';
+                el.style.background = bg;
+                el.style.color = color;
                 el.style.border = '2px solid #ff0000';
             }
         });

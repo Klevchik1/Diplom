@@ -2389,14 +2389,18 @@ def manager_movie_delete(request, movie_id):
 @user_passes_test(is_manager, login_url='login')
 def manager_screenings(request):
     """Управление сеансами для менеджера"""
-    screenings = Screening.objects.all().select_related(
-        'movie', 'hall', 'hall__hall_type'
-    ).order_by('start_time')
-
-    # Фильтры
+    view_mode = request.GET.get('view', 'upcoming')
     date_filter = request.GET.get('date', '')
     movie_filter = request.GET.get('movie', '')
     hall_filter = request.GET.get('hall', '')
+
+    screenings = Screening.objects.all().select_related(
+        'movie', 'hall', 'hall__hall_type'
+    ).prefetch_related('tickets').order_by('start_time')
+
+    # Режим отображения
+    if view_mode == 'upcoming':
+        screenings = screenings.filter(start_time__gte=timezone.now())
 
     if date_filter:
         try:
@@ -2418,6 +2422,7 @@ def manager_screenings(request):
         'screenings': screenings,
         'movies': movies,
         'halls': halls,
+        'view_mode': view_mode,
         'filters': {
             'date': date_filter,
             'movie': movie_filter,
