@@ -3,7 +3,13 @@
 
 {% block extrastyle %}
 {{ block.super }}
+<link rel="stylesheet" href="{% static 'ticket/css/theme-switcher.css' %}">
 <link rel="stylesheet" href="{% static 'ticket/css/admin/admin-login.css' %}">
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<script src="{% static 'ticket/js/theme-switcher.js' %}"></script>
 {% endblock %}
 
 {% block bodyclass %}login{% endblock %}
@@ -17,6 +23,14 @@
     <div class="login-title">
         <h1>🎬 КИНОТЕАТР ПРЕМЬЕРА</h1>
         <p>Панель администратора</p>
+    </div>
+
+    <!-- Кнопка переключения темы -->
+    <div style="text-align: center; margin-bottom: 20px;">
+        <button class="theme-toggle-btn" onclick="toggleTheme()" title="Переключить тему">
+            <span class="theme-icon icon-light">☀️</span>
+            <span class="theme-icon icon-dark">🌙</span>
+        </button>
     </div>
 
     {% if form.errors and not form.non_field_errors %}
@@ -33,32 +47,30 @@
     {% endfor %}
     {% endif %}
 
-    <div id="content-main">
-        <form action="{{ app_path }}" method="post" id="login-form">
-            {% csrf_token %}
+    <form action="{{ app_path }}" method="post" id="login-form">
+        {% csrf_token %}
 
-            <div class="form-row">
-                <label for="id_username">{% translate 'Email:' %}</label>
-                {{ form.username }}
-            </div>
+        <div class="form-row">
+            <label for="id_username">{% translate 'Email:' %}</label>
+            {{ form.username }}
+        </div>
 
-            <div class="form-row">
-                <label for="id_password">{% translate 'Password:' %}</label>
-                {{ form.password }}
-            </div>
+        <div class="form-row">
+            <label for="id_password">{% translate 'Password:' %}</label>
+            {{ form.password }}
+        </div>
 
-            {% url 'admin_password_reset' as password_reset_url %}
-            {% if password_reset_url %}
-            <div class="password-reset-link">
-                <a href="{{ password_reset_url }}">{% translate 'Forgotten your password or username?' %}</a>
-            </div>
-            {% endif %}
+        {% url 'admin_password_reset' as password_reset_url %}
+        {% if password_reset_url %}
+        <div class="password-reset-link">
+            <a href="{{ password_reset_url }}">{% translate 'Forgotten your password or username?' %}</a>
+        </div>
+        {% endif %}
 
-            <div class="submit-row">
-                <input type="submit" value="{% translate 'Log in' %}">
-            </div>
-        </form>
-    </div>
+        <div class="submit-row">
+            <input type="submit" value="{% translate 'Log in' %}">
+        </div>
+    </form>
 
     <div class="login-footer">
         <a href="/">← На главный сайт</a>
