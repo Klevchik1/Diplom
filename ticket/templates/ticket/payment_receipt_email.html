@@ -1,0 +1,65 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{% static 'ticket/css/user/payment_receipt_email.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 Кинотеатр Премьера</h1>
+            <p class="header-subtitle">Чек об оплате билетов</p>
+        </div>
+
+        <div class="content">
+            <p>Здравствуйте, <strong>{{ user.name }}</strong>!</p>
+            <p>Спасибо за покупку билетов. Информация о вашем заказе:</p>
+
+            <div class="movie-title">
+                {{ ticket_group.screening.movie.title }}
+            </div>
+
+            <table class="info-table">
+                <tr>
+                    <td>Дата и время:</td>
+                    <td>{{ ticket_group.screening.start_time|date:"d.m.Y H:i" }}</td>
+                </tr>
+                <tr>
+                    <td>Зал:</td>
+                    <td>{{ ticket_group.screening.hall.name }}</td>
+                </tr>
+                <tr>
+                    <td>Места:</td>
+                    <td>{{ seats_list }}</td>
+                </tr>
+                <tr>
+                    <td>Количество билетов:</td>
+                    <td>{{ ticket_group.tickets_count }} шт.</td>
+                </tr>
+            </table>
+
+            <div class="amount">
+                <div class="amount-label">Сумма к оплате</div>
+                <div class="sum">{{ ticket_group.total_amount }} ₽</div>
+            </div>
+
+            <div class="order-number">
+                Номер заказа: <strong>{{ ticket_group.group_uuid }}</strong>
+            </div>
+
+            <p class="info-text">
+                Билеты прикреплены к письму в формате PDF.<br>
+                Вы также можете скачать их в личном кабинете.
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>Кинотеатр Премьера &copy; {% now "Y" %}</p>
+            <p>+7 (950) 080-19-02</p>
+            <p>Приятного просмотра! 🍿</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -153,7 +153,8 @@ def generate_enhanced_ticket_pdf(tickets):
 
     # === ФИЛЬМ ===
     elements.append(Paragraph(f"<b>ФИЛЬМ:</b> {first_ticket.screening.movie.title}", minimal_styles['Title']))
-    elements.append(Paragraph(f"Жанр: {first_ticket.screening.movie.genre}", minimal_styles['Info']))
+    genres_list = ", ".join(g.name for g in first_ticket.screening.movie.genres.all())
+    elements.append(Paragraph(f"Жанр: {genres_list}", minimal_styles['Info']))
 
     # ИСПРАВЛЕНИЕ: Форматируем длительность правильно
     duration_minutes = first_ticket.screening.movie.duration

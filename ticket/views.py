@@ -357,6 +357,10 @@ def home(request):
         'screenings__hall', 'genres'
     ).select_related('age_rating').all()
 
+    movies = movies.filter(
+        screenings__start_time__gt=local_now
+    ).distinct()
+
     # Применяем текстовые фильтры
     if search_query:
         movies = movies.filter(
@@ -686,6 +690,17 @@ def payment_result(request, group_uuid):
                     'group_uuid': str(group_uuid)
                 }
             )
+
+            # Отправляем чек на почту
+            try:
+                from .email_utils import send_ticket_receipt
+                email_sent = send_ticket_receipt(request.user, ticket_group, payment)
+                if email_sent:
+                    logger.info(f"Чек отправлен на почту {request.user.email}")
+                else:
+                    logger.warning(f"Не удалось отправить чек на почту {request.user.email}")
+            except Exception as e:
+                logger.error(f"Ошибка отправки чека: {e}")
 
             return render(request, 'ticket/payment_success.html', context)
         else:
@@ -2063,7 +2078,11 @@ def about(request):
         total_screenings=Count('screenings', distinct=True)
     ).select_related('hall_type')
 
-    total_movies = Movie.objects.count()
+    local_now = timezone.now()
+    today = local_now.date()
+    total_movies = Movie.objects.filter(
+        screenings__start_time__date__gte=today
+    ).distinct().count()
 
     today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
     total_screenings_today = Screening.objects.filter(

@@ -222,3 +222,76 @@ def send_screening_completed_notification(user, movie_title, screening_date):
     except Exception as e:
         logger.error(f"Failed to send notification to {user.email}: {str(e)}")
         return False
+
+
+def send_ticket_receipt(user, ticket_group, payment):
+    """Отправка чека на почту после успешной оплаты"""
+    try:
+        from django.core.mail import EmailMultiAlternatives
+        from django.template.loader import render_to_string
+        from django.utils.html import strip_tags
+
+        tickets = ticket_group.tickets.all().select_related(
+            'seat', 'screening__movie', 'screening__hall'
+        )
+
+        subject = f'Чек об оплате билетов - Кинотеатр Премьера'
+
+        # Генерируем PDF для вложения
+        from .utils import generate_enhanced_ticket_pdf
+        pdf_buffer = generate_enhanced_ticket_pdf(tickets)
+        pdf_buffer.seek(0)
+
+        # Список мест
+        seats_list = ", ".join(
+            f"Ряд {t.seat.row}, Место {t.seat.number}" for t in tickets
+        )
+
+        plain_message = f"""
+Кинотеатр Премьера — Чек об оплате
+
+Здравствуйте, {user.name}!
+
+Спасибо за покупку билетов!
+
+Фильм: {ticket_group.screening.movie.title}
+Дата и время: {ticket_group.screening.start_time.strftime('%d.%m.%Y %H:%M')}
+Зал: {ticket_group.screening.hall.name}
+Места: {seats_list}
+Количество билетов: {ticket_group.tickets_count}
+Сумма: {ticket_group.total_amount} ₽
+Номер заказа: {ticket_group.group_uuid}
+
+Билеты прикреплены к письму в формате PDF.
+
+Приятного просмотра!
+Команда Кинотеатра Премьера
+        """
+
+        html_message = render_to_string('ticket/payment_receipt_email.html', {
+            'user': user,
+            'ticket_group': ticket_group,
+            'tickets': tickets,
+            'payment': payment,
+            'seats_list': seats_list,
+        })
+
+        email = EmailMultiAlternatives(
+            subject,
+            plain_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email]
+        )
+        email.attach_alternative(html_message, "text/html")
+
+        # Прикрепляем PDF
+        filename = f"bilety_{ticket_group.screening.movie.title.replace(' ', '_')}_{ticket_group.group_uuid.hex[:8]}.pdf"
+        email.attach(filename, pdf_buffer.getvalue(), 'application/pdf')
+
+        result = email.send()
+        logger.info(f"Receipt email sent to {user.email}. Result: {result}")
+        return result > 0
+
+    except Exception as e:
+        logger.error(f"Failed to send receipt email to {user.email}: {str(e)}")
+        return False

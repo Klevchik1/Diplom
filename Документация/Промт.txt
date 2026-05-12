@@ -155,6 +155,7 @@ cinema-management-system/                         # Корень проекта 
 │   │       │   │   ├── home.css
 │   │       │   │   ├── movies.css
 │   │       │   │   ├── payment.css
+│   │       │   │   ├── payment_receipt_email.css
 │   │       │   │   ├── payment_result.css
 │   │       │   │   ├── profile.css
 │   │       │   │   └── screenings.css
@@ -211,6 +212,7 @@ cinema-management-system/                         # Корень проекта 
 │   │       ├── password_reset_confirm.html
 │   │       ├── password_reset_email.html
 │   │       ├── password_reset_request.html
+│   │       ├── payment_receipt_email.html
 │   │       ├── payment_result.html
 │   │       ├── payment_success.html
 │   │       ├── profile.html
