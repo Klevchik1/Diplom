@@ -506,7 +506,7 @@ def movie_detail(request, movie_id):
     if first_screening:
         # Получаем места для первого сеанса
         seats = Seat.objects.filter(hall=first_screening.hall).order_by('row', 'number')
-        booked_tickets = Ticket.objects.filter(screening=first_screening)
+        booked_tickets = Ticket.objects.filter(screening=first_screening, status__code='active')
         first_screening_booked_seat_ids = [ticket.seat.id for ticket in booked_tickets]
 
         # Группируем места по рядам
@@ -542,7 +542,7 @@ def screening_detail(request, screening_id):
     seats = Seat.objects.filter(hall=screening.hall).order_by('row', 'number')
 
     # Получаем все билеты на этот сеанс
-    booked_tickets = Ticket.objects.filter(screening=screening).select_related('status')
+    booked_tickets = Ticket.objects.filter(screening=screening, status__code='active')
     booked_seat_ids = [ticket.seat.id for ticket in booked_tickets]
 
     # Группируем места по рядам
@@ -587,7 +587,7 @@ def book_tickets(request):
     # Проверяем доступность мест
     for seat_id in seat_ids:
         seat = get_object_or_404(Seat, pk=seat_id)
-        if Ticket.objects.filter(screening=screening, seat=seat).exists():
+        if Ticket.objects.filter(screening=screening, seat=seat, status__code='active').exists():
             messages.error(request, f"Место {seat.row}-{seat.number} уже занято.")
             return redirect('screening_detail', screening_id=screening_id)
 
@@ -804,23 +804,28 @@ def download_ticket_single(request, ticket_id):
         messages.error(request, 'Нельзя скачать возвращённый билет')
         return redirect('profile')
 
-    # Если билет входит в группу, скачиваем всю группу
+    # Если билет входит в группу — фильтруем только невозвращённые
     if ticket.ticket_group:
-        tickets = Ticket.objects.filter(ticket_group=ticket.ticket_group, user=request.user)
+        tickets = Ticket.objects.filter(
+            ticket_group=ticket.ticket_group,
+            user=request.user
+        ).exclude(status__code='refunded')
     else:
         tickets = [ticket]
 
-    # ИСПРАВЛЕНИЕ 2: Получаем объекты ActionType и ModuleType для логирования
+    if not tickets:
+        messages.error(request, 'Все билеты в этой группе возвращены')
+        return redirect('profile')
+
+    # Логирование
     try:
         from .models import ActionType, ModuleType
         action_type = ActionType.objects.get(code='EXPORT')
         module_type = ModuleType.objects.get(code='TICKETS')
-
-        # ЛОГИРОВАНИЕ СКАЧИВАНИЯ PDF
         OperationLogger.log_operation(
             request=request,
-            action_type=action_type,  # Передаём объект, а не строку
-            module_type=module_type,  # Передаём объект, а не строку
+            action_type=action_type,
+            module_type=module_type,
             description=f'Скачивание PDF билета для фильма {ticket.screening.movie.title}',
             object_id=ticket.id,
             object_repr=str(ticket),
@@ -830,22 +835,18 @@ def download_ticket_single(request, ticket_id):
                 'ticket_count': len(tickets),
                 'group_id': str(ticket.ticket_group.group_uuid) if ticket.ticket_group else None,
                 'status': ticket.status.code if ticket.status else 'unknown',
-                'is_refunded': ticket.status and ticket.status.code == 'refunded'
             }
         )
     except Exception as e:
         logger.error(f"Logging error: {e}")
-        # Продолжаем выполнение даже если логирование не удалось
 
     try:
         pdf_buffer = generate_enhanced_ticket_pdf(tickets)
         response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
-
         if len(tickets) > 1 and ticket.ticket_group:
             filename = f"билет_{ticket.screening.movie.title}_{ticket.ticket_group.group_uuid[:8]}.pdf"
         else:
             filename = f"билет_{ticket.screening.movie.title}_{ticket.id}.pdf"
-
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
     except Exception as e:
@@ -918,9 +919,11 @@ def download_ticket_group(request, group_id):
 @login_required
 def profile(request):
     """Профиль пользователя"""
-    # Получаем все билеты пользователя
+    # Получаем все билеты пользователя (исключаем archived)
     all_tickets = Ticket.objects.filter(
         user=request.user
+    ).exclude(
+        status__code='archived'
     ).select_related(
         'screening__movie', 'screening__hall', 'seat', 'status', 'ticket_group'
     ).order_by('-created_at')
@@ -929,20 +932,32 @@ def profile(request):
     groups_dict = {}
 
     for ticket in all_tickets:
+        if ticket.status and ticket.status.code == 'active':
+            if ticket.update_status_if_passed():
+                ticket.refresh_from_db()
         if ticket.ticket_group:
             group_id = ticket.ticket_group.id
             if group_id not in groups_dict:
                 group = ticket.ticket_group
-                group_status = 'mixed'
 
-                # Определяем статус группы
-                group_tickets = group.tickets.all()
-                statuses = set(t.status.code for t in group_tickets if t.status)
+                # Определяем статус группы: только active, used, refunded
+                group_tickets = group.tickets.exclude(status__code='archived')
+                status_codes = set(t.status.code for t in group_tickets if t.status)
 
-                if len(statuses) == 1:
-                    group_status = list(statuses)[0]
-                elif 'refunded' in statuses and len(statuses) == 2 and 'active' in statuses:
-                    group_status = 'partially_refunded'
+                # Приоритет: active > used > refunded
+                if 'active' in status_codes:
+                    group_status = 'active'
+                elif 'used' in status_codes:
+                    group_status = 'used'
+                elif 'refunded' in status_codes:
+                    group_status = 'refunded'
+                else:
+                    group_status = 'unknown'
+
+                # Статус-маппинг для отображения
+                status_map = dict(TicketStatus.objects.filter(
+                    code__in=['active', 'used', 'refunded']
+                ).values_list('code', 'name'))
 
                 groups_dict[group_id] = {
                     'group': group,
@@ -955,36 +970,46 @@ def profile(request):
                     'screening': ticket.screening,
                     'screening_id': ticket.screening.id,
                     'seats': [],
-                    'ticket_count': group.tickets_count,
+                    'ticket_count': group_tickets.count(),
                     'total_price': group.total_amount,
                     'group_status': group_status,
-                    'status_display': dict(TicketStatus.objects.values_list('code', 'name')).get(group_status, group_status),
-                    'can_be_downloaded': group_status != 'refunded' or request.user.is_staff,
+                    'status_display': status_map.get(group_status, group_status),
+                    'can_be_downloaded': group_status in ('active', 'used') or request.user.is_staff,
+                    'can_be_refunded': group_status == 'active',
                     'is_future_screening': ticket.screening.start_time > timezone.now(),
                     'first_ticket_id': None,
                     'refund_processed_at': None,
                     'refund_message': 'Возврат возможен за 30 минут до сеанса',
                 }
 
-            # Добавляем информацию о месте
-            groups_dict[group_id]['seats'].append({
-                'row': ticket.seat.row,
-                'number': ticket.seat.number,
-                'ticket_id': ticket.id,
-                'status': ticket.status.code if ticket.status else 'unknown',
-                'status_display': ticket.get_status_display() if hasattr(ticket, 'get_status_display') else ticket.status.name if ticket.status else 'Неизвестно'
-            })
+            # Добавляем информацию о месте (только не archived)
+            if ticket.status and ticket.status.code != 'archived':
+                groups_dict[group_id]['seats'].append({
+                    'row': ticket.seat.row,
+                    'number': ticket.seat.number,
+                    'ticket_id': ticket.id,
+                    'status': ticket.status.code if ticket.status else 'unknown',
+                    'status_display': ticket.get_status_display() if hasattr(ticket, 'get_status_display') else ticket.status.name if ticket.status else 'Неизвестно'
+                })
 
-            # Запоминаем первый ticket_id для возврата
-            if groups_dict[group_id]['first_ticket_id'] is None:
+            # Запоминаем первый ticket_id для возврата (только активные)
+            if groups_dict[group_id]['first_ticket_id'] is None and ticket.status and ticket.status.code == 'active':
                 groups_dict[group_id]['first_ticket_id'] = ticket.id
 
             # Запоминаем дату возврата если есть
             if ticket.refund_processed_at and not groups_dict[group_id]['refund_processed_at']:
                 groups_dict[group_id]['refund_processed_at'] = ticket.refund_processed_at
         else:
-            # Билет без группы (старые или одиночные)
+            # Билет без группы (исключаем archived)
+            if ticket.status and ticket.status.code == 'archived':
+                continue
+
             group_id = f"single_{ticket.id}"
+            ticket_code = ticket.status.code if ticket.status else 'unknown'
+            status_map = dict(TicketStatus.objects.filter(
+                code__in=['active', 'used', 'refunded']
+            ).values_list('code', 'name'))
+
             groups_dict[group_id] = {
                 'group': None,
                 'group_uuid': None,
@@ -999,14 +1024,15 @@ def profile(request):
                     'row': ticket.seat.row,
                     'number': ticket.seat.number,
                     'ticket_id': ticket.id,
-                    'status': ticket.status.code if ticket.status else 'unknown',
-                    'status_display': ticket.get_status_display() if hasattr(ticket, 'get_status_display') else ticket.status.name if ticket.status else 'Неизвестно'
+                    'status': ticket_code,
+                    'status_display': status_map.get(ticket_code, ticket.status.name if ticket.status else 'Неизвестно')
                 }],
                 'ticket_count': 1,
                 'total_price': ticket.price,
-                'group_status': ticket.status.code if ticket.status else 'unknown',
-                'status_display': ticket.get_status_display() if hasattr(ticket, 'get_status_display') else ticket.status.name if ticket.status else 'Неизвестно',
-                'can_be_downloaded': (ticket.status and ticket.status.code != 'refunded') or request.user.is_staff,
+                'group_status': ticket_code,
+                'status_display': status_map.get(ticket_code, ticket.status.name if ticket.status else 'Неизвестно'),
+                'can_be_downloaded': ticket_code in ('active', 'used') or request.user.is_staff,
+                'can_be_refunded': ticket_code == 'active',
                 'is_future_screening': ticket.screening.start_time > timezone.now(),
                 'first_ticket_id': ticket.id,
                 'refund_processed_at': ticket.refund_processed_at,
@@ -1432,7 +1458,7 @@ def screening_partial(request, screening_id):
         pk=screening_id
     )
 
-    booked_tickets = Ticket.objects.filter(screening=screening)
+    booked_tickets = Ticket.objects.filter(screening=screening, status__code='active')
     booked_seat_ids = [ticket.seat.id for ticket in booked_tickets]
 
     seats = Seat.objects.filter(hall=screening.hall).order_by('row', 'number')
@@ -2074,8 +2100,8 @@ def about(request):
     from django.db.models import Count
 
     halls = Hall.objects.annotate(
-        total_seats=Count('seats'),
-        total_screenings=Count('screenings', distinct=True)
+        seat_count=Count('seats'),
+        screening_total=Count('screenings', distinct=True)
     ).select_related('hall_type')
 
     local_now = timezone.now()
@@ -2604,7 +2630,8 @@ def manager_statistics(request):
     )['total'] or 0
 
     refunded_tickets = Ticket.objects.filter(
-        date_filter,
+        refund_processed_at__date__gte=start_date,
+        refund_processed_at__date__lte=end_date,
         status__code='refunded'
     ).count()
 

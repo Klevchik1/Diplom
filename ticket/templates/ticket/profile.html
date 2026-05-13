@@ -126,16 +126,20 @@
                     </div>
 
                     {% if group.group_uuid %}
-                        <a href="{% url 'download_ticket_group' group.group_uuid %}" class="btn-save"
-                           style="padding: 8px 15px; font-size: 14px;">
-                            📥 Скачать билеты
-                        </a>
+                        {% if group.group_status == 'active' %}
+                            <a href="{% url 'download_ticket_group' group.group_uuid %}" class="btn-save"
+                               style="padding: 8px 15px; font-size: 14px;">
+                                📥 Скачать билеты
+                            </a>
+                        {% endif %}
                     {% else %}
                         {% for seat in group.seats %}
-                            <a href="{% url 'download_ticket_single' seat.ticket_id %}" class="btn-save"
-                               style="padding: 8px 15px; font-size: 14px; margin-left: 5px;">
-                                📥 Скачать (р{{ seat.row }}-м{{ seat.number }})
-                            </a>
+                            {% if seat.status == 'active' %}
+                                <a href="{% url 'download_ticket_single' seat.ticket_id %}" class="btn-save"
+                                   style="padding: 8px 15px; font-size: 14px; margin-left: 5px;">
+                                    📥 Скачать (р{{ seat.row }}-м{{ seat.number }})
+                                </a>
+                            {% endif %}
                         {% endfor %}
                     {% endif %}
                 </div>
@@ -170,12 +174,14 @@
                                 Активен
                             {% elif group.group_status == 'refunded' %}
                                 Возвращён
+                            {% elif group.group_status == 'used' %}
+                                Использован
                             {% elif group.group_status == 'partially_refunded' %}
                                 Частично возвращён
                             {% elif group.group_status == 'refund_requested' %}
                                 Запрос на возврат
                             {% else %}
-                                {{ group.group_status }}
+                                {{ group.status_display }}
                             {% endif %}
                         </span>
                     </div>

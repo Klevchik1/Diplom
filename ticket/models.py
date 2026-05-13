@@ -200,10 +200,6 @@ class Hall(models.Model):
 
     @property
     def total_seats(self):
-        return self.rows * self.seats_per_row
-
-    @property
-    def total_seats(self):
         """Общее количество мест в зале"""
         return self.rows * self.seats_per_row
 
@@ -714,7 +710,7 @@ class TicketGroup(models.Model):
         ]
 
     def request_refund(self):
-        """Запрос возврата всей группы билетов с возвратом платежа"""
+        """Запрос возврата всей группы билетов — меняет статус на refunded"""
         from django.utils import timezone
 
         tickets = self.tickets.all()
@@ -723,14 +719,14 @@ class TicketGroup(models.Model):
         if not active_tickets.exists():
             return False, 'В группе нет активных билетов для возврата'
 
-        # Проверяем временное ограничение для каждого активного билета
         for ticket in active_tickets:
             can_refund, message = ticket.can_be_refunded()
             if not can_refund:
                 return False, f'Невозможно вернуть билет (место {ticket.seat.row}-{ticket.seat.number}): {message}'
 
         try:
-            # Сохраняем информацию для логирования
+            refunded_status = TicketStatus.objects.get(code='refunded')
+
             movie_title = active_tickets[0].screening.movie.title
             hall_name = active_tickets[0].screening.hall.name
             user_email = self.user.email
@@ -738,10 +734,10 @@ class TicketGroup(models.Model):
             tickets_count = active_tickets.count()
             seats_info = [f"Ряд {t.seat.row}, Место {t.seat.number}" for t in active_tickets]
 
-            # Создаём возврат в YooKassa если платёж был через YooKassa
+            # Возврат в YooKassa если был платёж
             if hasattr(self, 'payment') and self.payment:
                 try:
-                    from .payment_service import YooKassaService  # ← ИМПОРТ ВНУТРИ ФУНКЦИИ
+                    from .payment_service import YooKassaService
                     refund_result = YooKassaService.create_refund(self.payment.payment_id)
                     if refund_result.get('success'):
                         logger.info(f"Возврат через YooKassa выполнен: {refund_result.get('refund_id')}")
@@ -749,20 +745,22 @@ class TicketGroup(models.Model):
                         logger.warning(f"Проблема с возвратом в YooKassa: {refund_result.get('error')}")
                 except Exception as e:
                     logger.error(f"Ошибка создания возврата в YooKassa: {e}")
-                    # Продолжаем возврат билетов даже если ошибка с YooKassa
 
-            # Удаляем все активные билеты из группы
+            # Меняем статус всех активных билетов на refunded
+            now = timezone.now()
             ticket_ids = list(active_tickets.values_list('id', flat=True))
-            active_tickets.delete()
+            active_tickets.update(
+                status=refunded_status,
+                refund_processed_at=now,
+                updated_at=now
+            )
 
             # Обновляем статус группы
             self.payment_status = 'canceled'
             self.save(update_fields=['payment_status'])
 
-            # Логируем возврат группы
-            logger.info(f"Автоматический возврат группы билетов #{self.id} на фильм {movie_title}")
+            logger.info(f"Возврат группы билетов #{self.id} на фильм {movie_title} — {tickets_count} билетов переведены в refunded")
 
-            # Логируем операцию возврата
             try:
                 from .logging_utils import OperationLogger
                 OperationLogger.log_system_operation(
@@ -785,8 +783,10 @@ class TicketGroup(models.Model):
             except Exception as e:
                 logger.error(f"Error logging group refund: {e}")
 
-            return True, f'✅ Группа из {tickets_count} билетов успешно возвращена! Места освобождены.'
+            return True, f'✅ Группа из {tickets_count} билетов успешно возвращена!'
 
+        except TicketStatus.DoesNotExist:
+            return False, 'Ошибка: статус возврата не найден'
         except Exception as e:
             logger.error(f"Ошибка при возврате группы билетов #{self.id}: {e}")
             return False, f'Ошибка при обработке возврата: {str(e)}'
@@ -1024,7 +1024,7 @@ class Ticket(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата и время обновления')
 
     class Meta:
-        unique_together = ('screening', 'seat')
+        # unique_together = ('screening', 'seat')
         verbose_name = "Билет"
         verbose_name_plural = "Билеты"
         indexes = [
@@ -1046,15 +1046,65 @@ class Ticket(models.Model):
             except TicketStatus.DoesNotExist:
                 pass
 
+    def is_screening_passed(self):
+        """Проверить, прошёл ли сеанс"""
+        from django.utils import timezone
+        return self.screening.start_time < timezone.now()
+
+    def update_status_if_passed(self):
+        """Автообновление: если сеанс прошёл, меняем active → used"""
+        if self.status and self.status.code == 'active' and self.is_screening_passed():
+            try:
+                used_status, created = TicketStatus.objects.get_or_create(
+                    code='used',
+                    defaults={
+                        'name': 'Использован',
+                        'description': 'Билет использован (сеанс завершён)',
+                        'is_active': True,
+                        'can_be_refunded': False
+                    }
+                )
+                self.status = used_status
+                self.updated_at = timezone.now()
+                self.save(update_fields=['status', 'updated_at'])
+                return True
+            except Exception as e:
+                logger.error(f"Error updating status to 'used': {e}")
+        return False
+
     def save(self, *args, **kwargs):
         # Проверяем, что место свободно (только для новых билетов)
         if not self.pk:  # Новый билет
-            existing_ticket = Ticket.objects.filter(
+            # Переводим старые неактивные билеты на это место в статус 'archived'
+            # НЕ трогаем screening — оставляем как есть
+            archived_status, _ = TicketStatus.objects.get_or_create(
+                code='archived',
+                defaults={
+                    'name': 'Архивный',
+                    'description': 'Место было возвращено/использовано и перепродано',
+                    'is_active': False,
+                    'can_be_refunded': False
+                }
+            )
+
+            # Просто меняем статус старых билетов, не трогая screening
+            old_inactive = Ticket.objects.filter(
                 screening=self.screening,
                 seat=self.seat
-            ).exists()
+            ).exclude(status__code='active')
 
-            if existing_ticket:
+            old_inactive.update(
+                status=archived_status,
+                updated_at=timezone.now()
+            )
+
+            # Проверяем активные билеты
+            existing_active = Ticket.objects.filter(
+                screening=self.screening,
+                seat=self.seat,
+                status__code='active'
+            ).exists()
+            if existing_active:
                 raise ValidationError(f"Место {self.seat.row}-{self.seat.number} уже занято на этот сеанс")
 
         # Автоматически устанавливаем статус при первом сохранении
@@ -1110,33 +1160,30 @@ class Ticket(models.Model):
         return True, 'Возврат возможен'
 
     def request_refund(self):
-        """Запрос возврата билета с автоматической обработкой"""
+        """Запрос возврата билета — меняет статус на refunded, не удаляя"""
         from django.utils import timezone
 
-        # Проверяем можно ли вернуть
         can_refund, message = self.can_be_refunded()
 
         if not can_refund:
             return False, message
 
         try:
-            # Если все условия соблюдены, сразу обрабатываем возврат
             refunded_status = TicketStatus.objects.get(code='refunded')
 
-            # ВАЖНО: Сначала удаляем билет, чтобы освободить место
-            # Но сохраняем информацию о возврате для логирования
             movie_title = self.screening.movie.title
             seat_info = f"Ряд {self.seat.row}, Место {self.seat.number}"
             user_email = self.user.email
             price = self.price
 
-            # Удаляем билет (освобождаем место)
-            self.delete()
+            # Меняем статус вместо удаления
+            self.status = refunded_status
+            self.refund_processed_at = timezone.now()
+            self.updated_at = timezone.now()
+            self.save(update_fields=['status', 'refund_processed_at', 'updated_at'])
 
-            # Логируем возврат
-            logger.info(f"Автоматический возврат билета на фильм {movie_title}, место {seat_info}")
+            logger.info(f"Возврат билета на фильм {movie_title}, место {seat_info} — статус изменён на refunded")
 
-            # Логируем операцию возврата
             try:
                 from .logging_utils import OperationLogger
                 OperationLogger.log_system_operation(
@@ -1148,13 +1195,14 @@ class Ticket(models.Model):
                         'user': user_email,
                         'seat': seat_info,
                         'refund_amount': str(price),
+                        'ticket_id': self.id,
                         'reason': 'Автоматический возврат по запросу пользователя'
                     }
                 )
             except Exception as e:
                 logger.error(f"Error logging refund: {e}")
 
-            return True, '✅ Билет успешно возвращен! Место освобождено.'
+            return True, '✅ Билет успешно возвращен!'
 
         except TicketStatus.DoesNotExist as e:
             logger.error(f"Статус 'refunded' не найден: {e}")
@@ -1169,16 +1217,15 @@ class Ticket(models.Model):
             if self.status.code != 'refund_requested':
                 return False, 'Билет не запрашивал возврат'
 
-            # Сохраняем информацию для логирования
+            refunded_status = TicketStatus.objects.get(code='refunded')
             movie_title = self.screening.movie.title
             seat_info = f"Ряд {self.seat.row}, Место {self.seat.number}"
-            user_email = self.user.email
-            price = self.price
 
-            # Удаляем билет (освобождаем место)
-            self.delete()
+            self.status = refunded_status
+            self.refund_processed_at = timezone.now()
+            self.updated_at = timezone.now()
+            self.save(update_fields=['status', 'refund_processed_at', 'updated_at'])
 
-            # Логируем операцию возврата
             try:
                 from .logging_utils import OperationLogger
                 OperationLogger.log_system_operation(
@@ -1187,9 +1234,9 @@ class Ticket(models.Model):
                     description=f'Билет на фильм {movie_title} (место {seat_info}) возвращен администратором',
                     additional_data={
                         'movie': movie_title,
-                        'user': user_email,
+                        'user': self.user.email,
                         'seat': seat_info,
-                        'refund_amount': str(price),
+                        'refund_amount': str(self.price),
                         'reason': 'Возврат обработан администратором'
                     }
                 )
