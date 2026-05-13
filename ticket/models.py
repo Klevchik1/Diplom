@@ -198,6 +198,12 @@ class Hall(models.Model):
     def __str__(self):
         return f"{self.name} ({self.hall_type.name})"
 
+    def clean(self):
+        if self.rows > 15:
+            raise ValidationError({'rows': 'Не больше 15 рядов'})
+        if self.seats_per_row > 20:
+            raise ValidationError({'seats_per_row': 'Не больше 20 мест в ряду'})
+
     @property
     def total_seats(self):
         """Общее количество мест в зале"""
@@ -321,6 +327,15 @@ class Director(models.Model):
     def __str__(self):
         return f"{self.name} {self.surname}"
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        from datetime import date
+        if self.birth_date:
+            if self.birth_date.year < 1800:
+                raise ValidationError({'birth_date': 'Дата рождения не может быть раньше 1800 года'})
+            if self.birth_date > date.today():
+                raise ValidationError({'birth_date': 'Дата рождения не может быть в будущем'})
+
     class Meta:
         verbose_name = 'Режиссёр'
         verbose_name_plural = 'Режиссёры'
@@ -340,6 +355,15 @@ class Actor(models.Model):
 
     def __str__(self):
         return f"{self.name} {self.surname}"
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        from datetime import date
+        if self.birth_date:
+            if self.birth_date.year < 1800:
+                raise ValidationError({'birth_date': 'Дата рождения не может быть раньше 1800 года'})
+            if self.birth_date > date.today():
+                raise ValidationError({'birth_date': 'Дата рождения не может быть в будущем'})
 
     class Meta:
         verbose_name = 'Актёр'

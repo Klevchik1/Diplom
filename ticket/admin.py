@@ -335,49 +335,6 @@ class GenreAdmin(LoggingModelAdmin):
         return obj.movies.count()
     movie_count.short_description = 'Количество фильмов'
 
-    actions = ['merge_duplicate_genres']
-
-    def merge_duplicate_genres(self, request, queryset):
-        """Объединить выбранные жанры в один (первый выбранный)"""
-        if queryset.count() < 2:
-            self.message_user(request, 'Выберите хотя бы 2 жанра для объединения', messages.WARNING)
-            return
-
-        main_genre = queryset.first()
-        other_genres = queryset.exclude(pk=main_genre.pk)
-
-        # Обновляем все связи фильмов с другими жанрами на основной жанр
-        updated_count = 0
-        for genre in other_genres:
-            movie_genres = MovieGenre.objects.filter(genre=genre)
-            for mg in movie_genres:
-                # Проверяем, нет ли уже связи с основным жанром
-                if not MovieGenre.objects.filter(movie=mg.movie, genre=main_genre).exists():
-                    MovieGenre.objects.create(movie=mg.movie, genre=main_genre)
-                    updated_count += 1
-                mg.delete()
-
-        # Удаляем объединенные жанры
-        deleted_count = other_genres.count()
-        other_genres.delete()
-
-        # Логируем операцию
-        OperationLogger.log_model_operation(
-            request=request,
-            action_type='UPDATE',
-            instance=main_genre,
-            description=f'Объединение жанров: {deleted_count} жанров объединены в "{main_genre.name}", обновлено {updated_count} фильмов',
-            module_type='MOVIES'
-        )
-
-        self.message_user(
-            request,
-            f'✅ Объединено {deleted_count} жанров в "{main_genre.name}". Обновлено {updated_count} фильмов.',
-            messages.SUCCESS
-        )
-
-    merge_duplicate_genres.short_description = "🔀 Объединить выбранные жанры"
-
 
 @admin.register(AgeRating)
 class AgeRatingAdmin(LoggingModelAdmin):
@@ -671,6 +628,12 @@ class TicketGroupAdmin(LoggingModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(Ticket)
@@ -1487,69 +1450,6 @@ class APIRequestLogAdmin(admin.ModelAdmin):
         return False
 
 
-@admin.register(ImportTask)
-class ImportTaskAdmin(admin.ModelAdmin):
-    list_display = ('id', 'import_type', 'status', 'progress_bar', 'total_processed', 'api_requests_made', 'created_at')
-    list_filter = ('status', 'import_type')
-    readonly_fields = ('status', 'current_page', 'total_processed', 'api_requests_made', 'started_at', 'completed_at')
-
-    def progress_bar(self, obj):
-        percent = obj.progress_percent
-        color = 'green' if obj.status == 'completed' else 'blue' if obj.status == 'running' else 'gray'
-        return format_html(
-            '<div style="background:#eee; width:100px; border-radius:3px;">'
-            '<div style="background:{}; width:{}%; height:20px; border-radius:3px; text-align:center; color:white; font-size:11px; line-height:20px;">{}%</div>'
-            '</div>',
-            color, percent, percent
-        )
-
-    progress_bar.short_description = 'Прогресс'
-
-    actions = ['run_selected_tasks']
-
-    def run_selected_tasks(self, request, queryset):
-        for task in queryset.filter(status__in=['pending', 'paused']):
-            # Запускаем в фоновом режиме
-            import threading
-            thread = threading.Thread(target=self._run_import_task, args=(task,))
-            thread.daemon = True
-            thread.start()
-        self.message_user(request, f'Запущено {queryset.count()} задач')
-
-    run_selected_tasks.short_description = '▶️ Запустить выбранные задачи'
-
-    def _run_import_task(self, task):
-        """Фоновый запуск импорта"""
-        task.status = 'running'
-        task.started_at = timezone.now()
-        task.save()
-
-        try:
-            importer = SmartImporter(task=task)
-            importer.run_import(
-                pages=task.pages_limit,
-                year_from=task.year_from,
-                year_to=task.year_to,
-                import_posters=task.import_posters,
-                import_persons=task.import_persons
-            )
-            task.status = 'completed'
-            task.completed_at = timezone.now()
-        except Exception as e:
-            task.status = 'failed'
-            task.last_error = str(e)
-
-        task.save()
-
-
-@admin.register(ImportCache)
-class ImportCacheAdmin(admin.ModelAdmin):
-    list_display = ('cache_type', 'external_id', 'internal_id', 'created_at', 'expires_at')
-    list_filter = ('cache_type',)
-    search_fields = ('external_id',)
-    readonly_fields = ('created_at',)
-
-
 class SmartImportForm(forms.Form):
     """Форма для умного импорта с выбором категорий"""
 
@@ -1609,28 +1509,3 @@ class SmartImportForm(forms.Form):
         help_text='Импорт остановится при достижении лимита',
         widget=forms.NumberInput(attrs={'class': 'form-control'})
     )
-
-
-@admin.register(PriceHistory)
-class PriceHistoryAdmin(LoggingModelAdmin):
-    list_display = ('screening', 'old_price', 'new_price', 'price_change', 'changed_by', 'changed_at')
-    list_filter = ('changed_at', 'changed_by')
-    search_fields = ('screening__movie__title', 'changed_by__email')
-    readonly_fields = ('screening', 'old_price', 'new_price', 'changed_by', 'changed_at', 'reason')
-
-    def price_change(self, obj):
-        """Отображение изменения цены"""
-        change = obj.new_price - obj.old_price
-        if change > 0:
-            return f"+{change} руб."
-        elif change < 0:
-            return f"{change} руб."
-        return "0 руб."
-
-    price_change.short_description = 'Изменение'
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False

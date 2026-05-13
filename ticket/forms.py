@@ -244,6 +244,15 @@ class DirectorForm(forms.ModelForm):
 
         return cleaned_data
 
+    def clean_birth_date(self):
+        birth_date = self.cleaned_data.get('birth_date')
+        if birth_date:
+            if birth_date.year < 1800:
+                raise ValidationError('Дата рождения не может быть раньше 1800 года')
+            if birth_date > date.today():
+                raise ValidationError('Дата рождения не может быть в будущем')
+        return birth_date
+
 
 class ActorForm(forms.ModelForm):
     class Meta:
@@ -267,6 +276,15 @@ class ActorForm(forms.ModelForm):
             raise ValidationError('Фамилия может содержать только буквы и дефисы')
 
         return cleaned_data
+
+    def clean_birth_date(self):
+        birth_date = self.cleaned_data.get('birth_date')
+        if birth_date:
+            if birth_date.year < 1800:
+                raise ValidationError('Дата рождения не может быть раньше 1800 года')
+            if birth_date > date.today():
+                raise ValidationError('Дата рождения не может быть в будущем')
+        return birth_date
 
 
 class MovieForm(forms.ModelForm):
@@ -370,6 +388,10 @@ class MovieForm(forms.ModelForm):
 
 
 class HallForm(forms.ModelForm):
+
+    rows = forms.IntegerField(min_value=1, max_value=15)
+    seats_per_row = forms.IntegerField(min_value=1, max_value=20)
+
     class Meta:
         model = Hall
         fields = ['name', 'hall_type', 'rows', 'seats_per_row', 'description']
