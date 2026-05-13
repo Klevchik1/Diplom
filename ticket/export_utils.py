@@ -1,5 +1,3 @@
-# ticket/export_utils.py - ИСПРАВЛЕННАЯ ВЕРСИЯ
-
 import json
 import os
 from io import BytesIO
@@ -267,3 +265,120 @@ class LogExporter:
             ('json', 'JSON'),
             ('pdf', 'PDF'),
         ]
+
+    @staticmethod
+    def export_api_logs_to_json(queryset, filename=None):
+        """Экспорт API логов в JSON"""
+        if filename is None:
+            filename = f"api_logs_export_{timezone.now().strftime('%Y%m%d_%H%M')}.json"
+
+        logs_data = []
+        for log in queryset:
+            log_data = {
+                'timestamp': log.created_at.isoformat(),
+                'token': log.token.label if log.token else None,
+                'endpoint': log.endpoint,
+                'params': log.params,
+                'status_code': log.status_code,
+                'success': log.success,
+                'response_size': log.response_size,
+                'duration_ms': log.duration_ms,
+                'error_message': log.error_message,
+            }
+            logs_data.append(log_data)
+
+        response = HttpResponse(
+            json.dumps(logs_data, ensure_ascii=False, indent=2),
+            content_type='application/json; charset=utf-8'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+    @staticmethod
+    def export_api_logs_to_pdf(queryset, filename=None):
+        """Экспорт API логов в PDF"""
+        if filename is None:
+            filename = f"api_logs_export_{timezone.now().strftime('%Y%m%d_%H%M')}.pdf"
+
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4,
+                                rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=30)
+        elements = []
+
+        has_custom_font = LogExporter._register_custom_fonts()
+
+        # Заголовок
+        title_style = ParagraphStyle(
+            name='CustomTitle',
+            fontName='DejaVuSans' if has_custom_font else 'Helvetica-Bold',
+            fontSize=16,
+            spaceAfter=25,
+            alignment=1,
+            textColor=colors.black
+        )
+        title_text = Paragraph(f"Экспорт логов API запросов - {timezone.now().strftime('%d.%m.%Y %H:%M')}", title_style)
+        elements.append(title_text)
+
+        # Статистика
+        stats_style = ParagraphStyle(
+            name='StatsStyle',
+            fontName='DejaVuSans' if has_custom_font else 'Helvetica',
+            fontSize=10,
+            spaceAfter=20,
+            alignment=1
+        )
+        total_logs = queryset.count()
+        stats_text = Paragraph(f"Всего записей: {total_logs}", stats_style)
+        elements.append(stats_text)
+
+        if queryset.exists():
+            table_data = [['Время', 'Токен', 'Endpoint', 'Статус', 'Код', 'Длительность (мс)', 'Ошибка']]
+
+            for log in queryset:
+                time_para = Paragraph(log.created_at.strftime('%d.%m.%Y<br/>%H:%M:%S'),
+                                      LogExporter._get_cell_style(has_custom_font))
+                token_para = Paragraph(log.token.label if log.token else '—',
+                                       LogExporter._get_cell_style(has_custom_font))
+                endpoint_para = Paragraph(log.endpoint, LogExporter._get_cell_style(has_custom_font))
+                status_para = Paragraph('✅ Успех' if log.success else '❌ Ошибка',
+                                        LogExporter._get_cell_style(has_custom_font))
+                code_para = Paragraph(str(log.status_code) if log.status_code else '—',
+                                      LogExporter._get_cell_style(has_custom_font))
+                duration_para = Paragraph(str(log.duration_ms) if log.duration_ms else '—',
+                                          LogExporter._get_cell_style(has_custom_font))
+                error_para = Paragraph((log.error_message[:100] + '...') if log.error_message and len(log.error_message) > 100 else (log.error_message or '—'),
+                                       LogExporter._get_cell_style(has_custom_font))
+
+                table_data.append([time_para, token_para, endpoint_para, status_para, code_para, duration_para, error_para])
+
+            col_widths = [70, 70, 130, 60, 40, 60, 100]
+
+            table = Table(table_data, colWidths=col_widths, repeatRows=1)
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2E86AB')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
+                ('FONTNAME', (0, 0), (-1, 0), 'DejaVuSans' if has_custom_font else 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 9),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+                ('ALIGN', (0, 1), (-1, -1), 'LEFT'),
+                ('VALIGN', (0, 1), (-1, -1), 'TOP'),
+                ('FONTNAME', (0, 1), (-1, -1), 'DejaVuSans' if has_custom_font else 'Helvetica'),
+                ('FONTSIZE', (0, 1), (-1, -1), 8),
+                ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+                ('TOPPADDING', (0, 0), (-1, -1), 5),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F8F9FA')]),
+            ]))
+
+            elements.append(table)
+
+        doc.build(elements)
+        buffer.seek(0)
+
+        response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response

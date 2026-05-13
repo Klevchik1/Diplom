@@ -137,6 +137,8 @@ cinema-management-system/                         # Корень проекта 
 │   │       │   │   ├── admin-login.css
 │   │       │   │   ├── backup-management.css
 │   │       │   │   ├── dashboard.css
+│   │       │   │   ├── export-logs.css
+│   │       │   │   ├── export-logs-api.css
 │   │       │   │   ├── import-form.css
 │   │       │   │   └── reports.css
 │   │       │   ├── manager/                      # Панель менеджера
@@ -188,10 +190,13 @@ cinema-management-system/                         # Корень проекта 
 │   │   │   ├── import_result.html
 │   │   │   ├── login.html
 │   │   │   └── ticket/                           # Кастомные шаблоны админки
+│   │   │       ├── apirequestlog/
+│   │   │       │   ├── change_list.html
+│   │   │       │   └── export_logs.html
 │   │   │       ├── backupmanager/
 │   │   │       │   └── change_list.html
 │   │   │       ├── operationlog/
-│   │   │       │   ├── change_form.js
+│   │   │       │   ├── change_form.html
 │   │   │       │   └── change_list.html
 │   │   │       ├── report/
 │   │   │       │   └── change_form.html

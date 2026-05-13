@@ -12,7 +12,7 @@ from .models import (
     Genre, AgeRating, Director, Actor, Country, HallType,
     ActionType, ModuleType, TicketStatus, TicketGroup,
     EmailChangeRequest, PendingRegistration, PasswordResetRequest,
-    MovieDirector, MovieActor, MovieGenre
+    MovieDirector, MovieActor, MovieGenre, APIToken
 )
 from django import forms
 from django.utils.html import format_html
@@ -909,3 +909,60 @@ class CountryForm(forms.ModelForm):
             if len(code) != 2:
                 raise ValidationError('Код страны должен содержать ровно 2 символа')
         return code
+
+
+class APIRequestLogExportForm(forms.Form):
+    """Форма для экспорта API логов"""
+
+    format_type = forms.ChoiceField(
+        choices=[('json', 'JSON'), ('pdf', 'PDF')],
+        label='Формат экспорта',
+        initial='json',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    start_date = forms.DateField(
+        label='Начальная дата',
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+
+    end_date = forms.DateField(
+        label='Конечная дата',
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+
+    success = forms.ChoiceField(
+        choices=[('', 'Все'), ('true', 'Успешные'), ('false', 'Ошибки')],
+        label='Статус',
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    token = forms.ModelChoiceField(
+        queryset=APIToken.objects.all(),
+        label='Токен',
+        required=False,
+        empty_label='Все токены',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+
+        if start_date and end_date and start_date > end_date:
+            raise forms.ValidationError('Начальная дата не может быть больше конечной')
+
+        # Преобразуем success в булево значение
+        success_val = cleaned_data.get('success')
+        if success_val == 'true':
+            cleaned_data['success'] = True
+        elif success_val == 'false':
+            cleaned_data['success'] = False
+        else:
+            cleaned_data['success'] = None
+
+        return cleaned_data

@@ -1,0 +1,49 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'ticket/css/admin/export-logs-api.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="export-container">
+    <h1 style="margin-bottom: 20px;">📊 Экспорт логов API запросов</h1>
+
+    <div class="stats-info">
+        <strong>💡 Информация:</strong> Вы можете экспортировать логи API запросов в JSON или PDF формате.
+        Используйте фильтры для выбора нужных записей.
+    </div>
+
+    <div class="filter-form">
+        <form method="get">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="id_format_type">Формат экспорта:</label>
+                    {{ form.format_type }}
+                </div>
+                <div class="form-group">
+                    <label for="id_start_date">Начальная дата:</label>
+                    {{ form.start_date }}
+                </div>
+                <div class="form-group">
+                    <label for="id_end_date">Конечная дата:</label>
+                    {{ form.end_date }}
+                </div>
+                <div class="form-group">
+                    <label for="id_success">Статус:</label>
+                    {{ form.success }}
+                </div>
+                <div class="form-group">
+                    <label for="id_token">Токен:</label>
+                    {{ form.token }}
+                </div>
+            </div>
+            <div style="margin-top: 20px;">
+                <button type="submit" class="btn-export">📥 Экспортировать логи</button>
+                <a href="{% url 'admin:ticket_apirequestlog_changelist' %}" class="btn-back">↩ Назад к списку</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

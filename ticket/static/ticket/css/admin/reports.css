@@ -340,15 +340,9 @@
         grid-template-columns: 1fr;
     }
 }
-/* ===== СВЕТЛАЯ ТЕМА ===== */
-[data-theme="light"] {
-    --report-bg: #ffffff;
-    --report-card-bg: #f9f9f9;
-    --report-border: #e0e0e0;
-    --report-text: #1a1a1a;
-    --report-muted: #555;
-}
 
+
+/* ===== СВЕТЛАЯ ТЕМА ДЛЯ ОТЧЕТОВ ===== */
 [data-theme="light"] .report-container {
     background: #ffffff;
     border-color: #e0e0e0;
@@ -392,6 +386,7 @@
 [data-theme="light"] .report-table th {
     background: #f0f0f0;
     color: #b8860b;
+    border-bottom-color: #cc0000;
 }
 
 [data-theme="light"] .report-table td {
@@ -424,7 +419,6 @@
 
 [data-theme="light"] .hall-card h4 {
     color: #b8860b;
-    border-bottom-color: rgba(0,0,0,0.08);
 }
 
 [data-theme="light"] .metric-item {
@@ -436,10 +430,17 @@
     color: #b8860b;
 }
 
-[data-theme="light"] .metric-label {
-    color: #555;
+[data-theme="light"] .btn-export {
+    background: linear-gradient(135deg, #cc0000 0%, #990000 100%);
+    color: #ffffff;
 }
 
-[data-theme="light"] .btn-export {
-    color: #fff;
+[data-theme="light"] .btn-export:hover {
+    background: linear-gradient(135deg, #990000 0%, #660000 100%);
+}
+
+[data-theme="light"] .alert {
+    background: rgba(255, 0, 0, 0.08);
+    border-color: #cc0000;
+    color: #1a1a1a;
 }
