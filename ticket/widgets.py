@@ -28,19 +28,21 @@ class TimePickerWidget(forms.MultiWidget):
             elif isinstance(value, str):
                 try:
                     if ':' in value:
-                        hour, minute = value.split(':')[:2]
-                        return [hour.zfill(2), minute.zfill(2)]
+                        parts = value.split(':')
+                        hour = parts[0].zfill(2) if parts[0] else '00'
+                        minute = parts[1].zfill(2) if len(parts) > 1 else '00'
+                        return [hour, minute]
                 except:
                     pass
         return [None, None]
 
     def value_from_datadict(self, data, files, name):
-        """Собираем часы и минуты обратно в строку времени"""
+        """Собираем часы и минуты обратно в строку времени (ТОЛЬКО ЧЧ:ММ)"""
         hour = data.get(f'{name}_0', '').zfill(2)
         minute = data.get(f'{name}_1', '').zfill(2)
 
-        if hour and minute:
-            return f'{hour}:{minute}:00'
+        if hour and minute and hour != 'None' and minute != 'None':
+            return f'{hour}:{minute}'
         return ''
 
     def format_output(self, rendered_widgets):

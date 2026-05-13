@@ -485,11 +485,18 @@ class ScreeningAdminForm(forms.ModelForm):
         required=True
     )
 
-    start_time = forms.CharField(
-        widget=TimePickerWidget(),
-        label='Время сеанса',
+    start_time_hour = forms.ChoiceField(
+        choices=[(str(h).zfill(2), str(h).zfill(2)) for h in range(8, 24)],
+        label='Час',
         required=True,
-        help_text='Выберите часы и минуты (доступно с 8:00 до 23:50)'
+        widget=forms.Select(attrs={'class': 'time-hour form-control', 'style': 'width: auto; display: inline-block;'})
+    )
+
+    start_time_minute = forms.ChoiceField(
+        choices=[(str(m).zfill(2), str(m).zfill(2)) for m in range(0, 60, 10)],
+        label='Минута',
+        required=True,
+        widget=forms.Select(attrs={'class': 'time-minute form-control', 'style': 'width: auto; display: inline-block;'})
     )
 
     price_calculation = forms.CharField(
@@ -507,72 +514,75 @@ class ScreeningAdminForm(forms.ModelForm):
 
     class Meta:
         model = Screening
-        fields = ['movie', 'hall', 'ticket_price']
+        fields = ['movie', 'hall']  # Без start_time
         widgets = {
             'movie': forms.Select(attrs={'class': 'form-control'}),
             'hall': forms.Select(attrs={'class': 'form-control'}),
-            'ticket_price': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
         }
         labels = {
             'movie': 'Фильм',
             'hall': 'Зал',
-            'ticket_price': 'Цена (рассчитывается автоматически)',
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # Добавляем поле ticket_price вручную
+        self.fields['ticket_price'] = forms.DecimalField(
+            required=False,
+            label='Цена (рассчитывается автоматически)',
+            widget=forms.NumberInput(attrs={
+                'class': 'form-control',
+                'readonly': 'readonly',
+                'style': 'background-color: #f0f0f0;'
+            })
+        )
+
         if self.instance.pk and self.instance.start_time:
             local_time = timezone.localtime(self.instance.start_time)
             self.fields['start_date'].initial = local_time.date()
-            self.fields['start_time'].initial = local_time.strftime('%H:%M')
+            self.fields['start_time_hour'].initial = str(local_time.hour).zfill(2)
+            self.fields['start_time_minute'].initial = str(local_time.minute).zfill(2)
 
-        self.fields['ticket_price'].widget.attrs['readonly'] = True
         self.fields['price_calculation'].initial = "Выберите зал, дату и время сеанса для расчета цены"
 
         if self.instance.pk and self.instance.hall and self.instance.start_time:
             calculation_text = self.instance.get_price_calculation_explanation()
             self.fields['price_calculation'].initial = calculation_text
-
-    def clean_start_time(self):
-        """Валидация времени"""
-        time_str = self.cleaned_data.get('start_time')
-        if time_str:
-            try:
-                hour, minute = map(int, time_str.split(':'))
-
-                if hour < 8 or hour > 23:
-                    raise ValidationError("Время должно быть с 8:00 до 23:50")
-                if hour == 23 and minute > 50:
-                    raise ValidationError("Последний сеанс может начинаться в 23:50")
-
-            except (ValueError, AttributeError):
-                raise ValidationError("Неверный формат времени. Используйте ЧЧ:ММ")
-
-        return time_str
+            if self.instance.ticket_price:
+                self.fields['ticket_price'].initial = self.instance.ticket_price
 
     def clean(self):
-        """Общая валидация формы"""
+        """Общая валидация формы и создание start_datetime"""
         cleaned_data = super().clean()
         start_date = cleaned_data.get('start_date')
-        start_time = cleaned_data.get('start_time')
+        start_hour = cleaned_data.get('start_time_hour')
+        start_minute = cleaned_data.get('start_time_minute')
         movie = cleaned_data.get('movie')
         hall = cleaned_data.get('hall')
 
-        if start_date and start_time and movie and hall:
+        if start_date and start_hour is not None and start_minute is not None and movie and hall:
             try:
-                hour, minute = map(int, start_time.split(':'))
-                start_datetime = datetime.datetime.combine(
-                    start_date,
-                    datetime.time(hour, minute)
-                )
-                start_datetime = timezone.make_aware(start_datetime)
+                hour = int(start_hour)
+                minute = int(start_minute)
 
+                # Создаем datetime
+                import datetime as dt
+                from django.utils import timezone
+
+                naive_datetime = dt.datetime.combine(
+                    start_date,
+                    dt.time(hour, minute)
+                )
+                start_datetime = timezone.make_aware(naive_datetime)
+
+                # Проверка: не в прошлом ли
                 if start_datetime < timezone.now():
                     raise ValidationError("Нельзя создавать сеансы в прошлом")
 
-                duration_timedelta = datetime.timedelta(minutes=movie.duration)
-                end_datetime = start_datetime + duration_timedelta + datetime.timedelta(minutes=10)
+                # Проверка окончания сеанса
+                duration_timedelta = dt.timedelta(minutes=movie.duration)
+                end_datetime = start_datetime + duration_timedelta + dt.timedelta(minutes=10)
 
                 local_end = timezone.localtime(end_datetime)
                 if local_end.hour == 0 and local_end.minute > 0:
@@ -586,6 +596,7 @@ class ScreeningAdminForm(forms.ModelForm):
                         f"Кинотеатр работает до 24:00. Выберите более раннее время начала."
                     )
 
+                # Проверка пересечения с другими сеансами
                 overlapping_screenings = Screening.objects.filter(
                     hall=hall,
                     start_time__lt=end_datetime,
@@ -603,11 +614,12 @@ class ScreeningAdminForm(forms.ModelForm):
                         f"Выберите другое время."
                     )
 
+                # Сохраняем datetime для использования в save()
                 cleaned_data['start_datetime'] = start_datetime
 
+            except ValidationError:
+                raise
             except Exception as e:
-                if isinstance(e, ValidationError):
-                    raise e
                 raise ValidationError(f"Ошибка при обработке времени: {str(e)}")
 
         return cleaned_data
@@ -618,10 +630,13 @@ class ScreeningAdminForm(forms.ModelForm):
 
         if 'start_datetime' in self.cleaned_data:
             screening.start_time = self.cleaned_data['start_datetime']
+            if screening.movie:
+                import datetime as dt
+                screening.end_time = screening.start_time + dt.timedelta(minutes=screening.movie.duration) + dt.timedelta(minutes=10)
 
-            if screening.movie and screening.start_time:
-                duration_timedelta = datetime.timedelta(minutes=screening.movie.duration)
-                screening.end_time = screening.start_time + duration_timedelta + datetime.timedelta(minutes=10)
+        # Рассчитываем цену
+        if screening.hall and screening.start_time:
+            screening.ticket_price = screening.calculate_ticket_price()
 
         if commit:
             screening.save()

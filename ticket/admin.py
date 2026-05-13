@@ -241,6 +241,8 @@ class CustomUserAdmin(LoggingModelAdmin, UserAdmin):
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'is_email_verified', 'created_at')
     search_fields = ('email', 'name', 'surname', 'number')
 
+    filter_horizontal = ('groups', 'user_permissions')
+
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Personal Info', {'fields': ('name', 'surname', 'number', 'created_at', 'updated_at')}),
@@ -502,17 +504,17 @@ class ScreeningAdmin(LoggingModelAdmin):
     list_display = ('movie', 'hall', 'start_time', 'end_time', 'ticket_price', 'is_active_screening')
     list_filter = ('hall', 'start_time', 'movie')
     search_fields = ('movie__title', 'hall__name')
-    readonly_fields = ('end_time', 'created_at')
+    readonly_fields = ('end_time', 'created_at', 'ticket_price')
     list_per_page = 20
     date_hierarchy = 'start_time'
     form = ScreeningAdminForm
 
     fieldsets = (
         ('Основная информация', {
-            'fields': ('movie', 'hall', 'start_date', 'start_time', 'end_time')
+            'fields': ('movie', 'hall', 'start_date', 'start_time_hour', 'start_time_minute', 'end_time')
         }),
         ('Стоимость билета', {
-            'fields': ('ticket_price', 'price_calculation'),
+            'fields': ('price_calculation', 'ticket_price'),
             'description': 'Цена рассчитывается автоматически на основе типа зала и времени сеанса'
         }),
         ('Системная информация', {
@@ -541,7 +543,6 @@ class ScreeningAdmin(LoggingModelAdmin):
             action_type='UPDATE' if change else 'CREATE',
             instance=obj,
             description=f"{'Изменен' if change else 'Создан'} сеанс. Цена: {obj.ticket_price} руб. (авторасчет)",
-            module_type='SCREENINGS'
         )
 
     change_form_template = 'admin/ticket/screening/change_form.html'
@@ -572,8 +573,7 @@ class SeatAdmin(LoggingModelAdmin):
                 request=request,
                 action_type='DELETE',
                 instance=seat,
-                description=f'Удалено место {seat}',
-                module_type='HALLS'
+                description=f'Удалено место {seat}'
             )
 
         queryset.delete()
@@ -690,8 +690,7 @@ class TicketAdmin(LoggingModelAdmin):
                         request=request,
                         action_type='UPDATE',
                         instance=ticket,
-                        description=f'Обработка возврата билета #{ticket.id}',
-                        module_type='TICKETS'
+                        description=f'Обработка возврата билета #{ticket.id}'
                     )
                 else:
                     errors.append(f"Билет #{ticket.id}: {message}")

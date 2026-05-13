@@ -181,6 +181,16 @@ class HallType(models.Model):
     def __str__(self):
         return f"{self.name} (коэф. {self.price_coefficient})"
 
+    def clean(self):
+        """Валидация: коэффициент должен быть > 0"""
+        from django.core.exceptions import ValidationError
+        if self.price_coefficient <= 0:
+            raise ValidationError({'price_coefficient': 'Коэффициент стоимости должен быть больше 0'})
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
     class Meta:
         verbose_name = 'Тип зала'
         verbose_name_plural = 'Типы залов'
@@ -502,7 +512,10 @@ class Screening(models.Model):
         self._old_start_time = self.start_time if self.pk else None
 
     def clean(self):
-        # ВАЖНО: Сначала рассчитываем end_time если нужно
+        if isinstance(self.start_time, str):
+            return
+
+        # Рассчитываем end_time если нужно
         if self.movie and self.start_time:
             # Конвертируем длительность из минут в timedelta
             duration_timedelta = timedelta(minutes=self.movie.duration)
