@@ -1,181 +1,84 @@
 <div class="sales-report">
-    <h2 style="color: var(--report-secondary); margin-bottom: 25px; font-size: 1.5rem; border-bottom: 2px solid var(--report-border); padding-bottom: 10px;">
-        💰 Статистика продаж
-    </h2>
+    <h2>💰 Статистика продаж</h2>
 
     {% if report_data %}
-        <!-- Основные метрики -->
         <div class="stat-grid">
             <div class="stat-card">
                 <div class="stat-label">Всего продано</div>
                 <div class="stat-number">{{ report_data.total_tickets }}</div>
-                <div style="font-size: 0.9rem; color: var(--report-muted); margin-top: 5px;">
-                    билетов
-                </div>
+                <small>билетов</small>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Общая выручка</div>
                 <div class="stat-number">{{ report_data.total_revenue|floatformat:2 }} ₽</div>
-                <div style="font-size: 0.9rem; color: var(--report-muted); margin-top: 5px;">
-                    рублей
-                </div>
+                <small>рублей</small>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Средний чек</div>
                 <div class="stat-number">{{ report_data.avg_ticket_price|floatformat:2 }} ₽</div>
-                <div style="font-size: 0.9rem; color: var(--report-muted); margin-top: 5px;">
-                    на билет
-                </div>
+                <small>на билет</small>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Топ фильм</div>
-                <div style="font-size: 1.1rem; font-weight: 600; margin: 10px 0; color: var(--report-secondary);">
-                    {{ report_data.popular_movie|truncatechars:15 }}
-                </div>
-                <div style="font-size: 0.9rem; color: var(--report-muted);">
-                    {{ report_data.popular_movie_tickets }} билетов
-                </div>
+                <div class="top-movie-title">{{ report_data.popular_movie|truncatechars:15 }}</div>
+                <small>{{ report_data.popular_movie_tickets }} билетов</small>
             </div>
         </div>
 
-        <!-- Детальная информация -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 30px;">
-            <!-- Левая колонка: детали -->
-            <div class="hall-card">
-                <h3 style="margin: 0 0 15px 0; color: var(--report-secondary); font-size: 1.2rem;">
-                    📋 Детальная статистика
-                </h3>
-                <table style="width: 100%;">
-                    <tr>
-                        <td style="padding: 10px 0; border-bottom: 1px solid var(--report-border);">
-                            <strong>Всего продано билетов:</strong>
-                        </td>
-                        <td style="padding: 10px 0; text-align: right; border-bottom: 1px solid var(--report-border);">
-                            <span style="font-weight: bold; color: var(--report-secondary);">
-                                {{ report_data.total_tickets }}
-                            </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px 0; border-bottom: 1px solid var(--report-border);">
-                            <strong>Общая выручка:</strong>
-                        </td>
-                        <td style="padding: 10px 0; text-align: right; border-bottom: 1px solid var(--report-border);">
-                            <span style="font-weight: bold; color: var(--report-success);">
-                                {{ report_data.total_revenue|floatformat:2 }} ₽
-                            </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px 0; border-bottom: 1px solid var(--report-border);">
-                            <strong>Средняя цена билета:</strong>
-                        </td>
-                        <td style="padding: 10px 0; text-align: right; border-bottom: 1px solid var(--report-border);">
-                            <span style="font-weight: bold; color: var(--report-info);">
-                                {{ report_data.avg_ticket_price|floatformat:2 }} ₽
-                            </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px 0; border-bottom: 1px solid var(--report-border);">
-                            <strong>Самый популярный фильм:</strong>
-                        </td>
-                        <td style="padding: 10px 0; text-align: right; border-bottom: 1px solid var(--report-border);">
-                            <span style="font-weight: bold; color: var(--report-text);">
-                                {{ report_data.popular_movie }}
-                            </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px 0;">
-                            <strong>Билетов на популярный фильм:</strong>
-                        </td>
-                        <td style="padding: 10px 0; text-align: right;">
-                            <span style="font-weight: bold; color: var(--report-secondary);">
-                                {{ report_data.popular_movie_tickets }}
-                            </span>
-                        </td>
-                    </tr>
+        <div class="sales-details">
+            <div class="detail-card">
+                <h3>📋 Детальная статистика</h3>
+                <table>
+                    <tr><td><strong>Всего продано билетов:</strong></td><td class="value">{{ report_data.total_tickets }}</td></tr>
+                    <tr><td><strong>Общая выручка:</strong></td><td class="value revenue">{{ report_data.total_revenue|floatformat:2 }} ₽</td></tr>
+                    <tr><td><strong>Средняя цена билета:</strong></td><td class="value">{{ report_data.avg_ticket_price|floatformat:2 }} ₽</td></tr>
+                    <tr><td><strong>Самый популярный фильм:</strong></td><td class="value">{{ report_data.popular_movie }}</td></tr>
+                    <tr><td><strong>Билетов на популярный фильм:</strong></td><td class="value">{{ report_data.popular_movie_tickets }}</td></tr>
                 </table>
             </div>
 
-            <!-- Правая колонка: только доля популярного фильма -->
-            <div class="hall-card">
-                <h3 style="margin: 0 0 15px 0; color: var(--report-secondary); font-size: 1.2rem;">
-                    📈 Доля популярного фильма
-                </h3>
-
+            <div class="detail-card">
+                <h3>📈 Доля популярного фильма</h3>
                 {% if report_data.total_tickets > 0 %}
-                    <div style="text-align: center; padding: 20px;">
-                        <div style="font-size: 3rem; font-weight: bold; color: var(--report-success); margin-bottom: 10px;">
-                            {% if report_data.total_tickets > 0 %}
-                                {% widthratio report_data.popular_movie_tickets report_data.total_tickets 100 as popularity_percent %}
-                                {{ popularity_percent }}%
-                            {% else %}
-                                0%
-                            {% endif %}
-                        </div>
-                        <div style="font-size: 1rem; color: var(--report-muted);">
-                            от всех продаж
-                        </div>
-                        <div style="margin-top: 20px; font-size: 0.9rem; color: var(--report-text);">
-                            {{ report_data.popular_movie_tickets }} из {{ report_data.total_tickets }} билетов
-                        </div>
+                    <div class="percentage-circle">
+                        {% widthratio report_data.popular_movie_tickets report_data.total_tickets 100 as popularity_percent %}
+                        <div class="percentage">{{ popularity_percent }}%</div>
+                        <div>от всех продаж</div>
                     </div>
+                    <div class="percentage-detail">{{ report_data.popular_movie_tickets }} из {{ report_data.total_tickets }} билетов</div>
                 {% else %}
-                    <div style="text-align: center; padding: 20px; color: var(--report-muted);">
-                        Нет данных для расчета доли
-                    </div>
+                    <div class="alert">Нет данных для расчета доли</div>
                 {% endif %}
             </div>
         </div>
 
-        <!-- Общая статистика -->
-        <div style="margin-top: 30px; padding: 20px; background: var(--report-card-bg); border-radius: 8px; border: 1px solid var(--report-border);">
-            <h3 style="margin: 0 0 15px 0; color: var(--report-text); font-size: 1.1rem;">
-                📊 Общая статистика
-            </h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
-                <div style="text-align: center;">
-                    <div style="font-size: 0.9rem; color: var(--report-muted); margin-bottom: 5px;">
-                        Период анализа
-                    </div>
-                    <div style="font-size: 1.5rem; font-weight: bold; color: var(--report-secondary);">
+        <div class="table-footer">
+            <h3>📊 Общая статистика</h3>
+            <div class="footer-stats">
+                <div>
+                    <div class="stat-label">Период анализа</div>
+                    <div class="stat-value">
                         {% if filters.period == 'daily' %}По дням
                         {% elif filters.period == 'weekly' %}По неделям
                         {% elif filters.period == 'monthly' %}По месяцам
                         {% else %}Не указан{% endif %}
                     </div>
                 </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 0.9rem; color: var(--report-muted); margin-bottom: 5px;">
-                        Общая выручка
-                    </div>
-                    <div style="font-size: 1.5rem; font-weight: bold; color: var(--report-success);">
-                        {{ report_data.total_revenue|floatformat:2 }} ₽
-                    </div>
+                <div>
+                    <div class="stat-label">Общая выручка</div>
+                    <div class="stat-value revenue">{{ report_data.total_revenue|floatformat:2 }} ₽</div>
                 </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 0.9rem; color: var(--report-muted); margin-bottom: 5px;">
-                        Средний чек
-                    </div>
-                    <div style="font-size: 1.5rem; font-weight: bold; color: var(--report-info);">
-                        {{ report_data.avg_ticket_price|floatformat:2 }} ₽
-                    </div>
+                <div>
+                    <div class="stat-label">Средний чек</div>
+                    <div class="stat-value">{{ report_data.avg_ticket_price|floatformat:2 }} ₽</div>
                 </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 0.9rem; color: var(--report-muted); margin-bottom: 5px;">
-                        Продано билетов
-                    </div>
-                    <div style="font-size: 1.5rem; font-weight: bold; color: var(--report-warning);">
-                        {{ report_data.total_tickets }}
-                    </div>
+                <div>
+                    <div class="stat-label">Продано билетов</div>
+                    <div class="stat-value">{{ report_data.total_tickets }}</div>
                 </div>
             </div>
         </div>
     {% else %}
-        <div class="alert">
-            ℹ️ Нет данных по продажам за выбранный период.
-        </div>
+        <div class="alert">ℹ️ Нет данных по продажам за выбранный период.</div>
     {% endif %}
 </div>

@@ -54,20 +54,20 @@ def aggregate_movies_stats(data):
 
 
 @register.filter
-def aggregate_halls_stats(data):
-    """Агрегированные статистики для залов"""
-    if not data:
+def aggregate_halls_stats(halls_data):
+    """Агрегирует статистику по залам"""
+    if not halls_data:
         return {'avg_occupancy': 0, 'total_revenue': 0, 'total_tickets': 0}
 
-    occupancy_values = [h.get('occupancy_percent', 0) for h in data]
-    avg_occupancy = sum(occupancy_values) / len(occupancy_values) if occupancy_values else 0
+    total_revenue = sum(h.get('total_revenue', 0) for h in halls_data)
+    total_tickets = sum(h.get('sold_tickets', 0) for h in halls_data)
 
-    total_revenue = sum(float(h.get('total_revenue', 0) or 0) for h in data)
-    total_tickets = sum(h.get('sold_tickets', 0) for h in data)
+    occupancy_values = [h.get('occupancy_percent', 0) for h in halls_data]
+    avg_occupancy = round(sum(occupancy_values) / len(occupancy_values), 1) if occupancy_values else 0
 
     return {
-        'avg_occupancy': round(avg_occupancy, 1),
-        'total_revenue': round(total_revenue, 2),
+        'avg_occupancy': avg_occupancy,
+        'total_revenue': total_revenue,
         'total_tickets': total_tickets
     }
 

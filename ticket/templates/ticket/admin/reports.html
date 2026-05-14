@@ -4,6 +4,7 @@
 {% block extrastyle %}
 {{ block.super }}
 <link rel="stylesheet" href="{% static 'ticket/css/admin/reports.css' %}">
+<link rel="stylesheet" href="{% static 'ticket/css/admin/reports-light.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -13,7 +14,6 @@
         <p class="report-subtitle">Аналитика и статистика за {{ period|default:"последний месяц" }}</p>
     </div>
 
-    <!-- Форма фильтров -->
     <div class="filter-form">
         <form method="get">
             <div class="form-row">
@@ -34,24 +34,18 @@
                     {{ form.end_date }}
                 </div>
             </div>
-            <button type="submit" class="btn-export">
-                📈 Сгенерировать отчет
-            </button>
+            <button type="submit" class="btn-export">📈 Сгенерировать отчет</button>
         </form>
     </div>
 
-    <!-- Отображение отчетов -->
     {% if form.is_valid and report_data %}
-        <!-- Форма для экспорта в PDF -->
         <form method="post" style="margin-bottom: 20px;">
             {% csrf_token %}
             <input type="hidden" name="report_type" value="{{ form.report_type.value }}">
             <input type="hidden" name="period" value="{{ form.period.value }}">
             <input type="hidden" name="start_date" value="{{ form.start_date.value|default:'' }}">
             <input type="hidden" name="end_date" value="{{ form.end_date.value|default:'' }}">
-            <button type="submit" name="export_pdf" class="btn-export">
-                📥 Экспорт в PDF
-            </button>
+            <button type="submit" name="export_pdf" class="btn-export">📥 Экспорт в PDF</button>
         </form>
 
         {% if report_type == 'revenue' %}
@@ -64,9 +58,7 @@
             {% include 'ticket/admin/reports/sales_report.html' %}
         {% endif %}
     {% elif form.is_valid and not report_data %}
-        <div class="alert">
-            ⚠️ Нет данных для отображения по выбранным фильтрам.
-        </div>
+        <div class="alert">⚠️ Нет данных для отображения по выбранным фильтрам.</div>
     {% endif %}
 </div>
 {% endblock %}

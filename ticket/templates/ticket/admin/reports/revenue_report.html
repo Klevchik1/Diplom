@@ -1,35 +1,27 @@
 {% load report_filters %}
 <div class="revenue-report">
-    <h2 style="color: var(--report-secondary); margin-bottom: 25px; font-size: 1.5rem; border-bottom: 2px solid var(--report-border); padding-bottom: 10px;">
-        📈 Финансовая статистика
-    </h2>
+    <h2>📈 Финансовая статистика</h2>
 
     {% if report_data %}
-        <!-- Рассчитываем общие показатели -->
         {% with total_revenue=report_data|sum_revenue total_tickets=report_data|sum_tickets total_avg=report_data|total_avg_ticket_price %}
-
-        <!-- Карточки с ключевыми метриками -->
         <div class="stat-grid">
             <div class="stat-card">
                 <div class="stat-label">Общая выручка</div>
                 <div class="stat-number">{{ total_revenue|floatformat:2 }} ₽</div>
-                <small style="color: var(--report-muted);">За весь период</small>
+                <small>За весь период</small>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Всего билетов</div>
                 <div class="stat-number">{{ total_tickets }}</div>
-                <small style="color: var(--report-muted);">Продано</small>
+                <small>Продано</small>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Средний чек</div>
-                <div class="stat-number">
-                    {{ total_avg|floatformat:2 }} ₽
-                </div>
-                <small style="color: var(--report-muted);">На билет</small>
+                <div class="stat-number">{{ total_avg|floatformat:2 }} ₽</div>
+                <small>На билет</small>
             </div>
         </div>
 
-        <!-- Основная таблица -->
         <table class="report-table">
             <thead>
                 <tr>
@@ -42,7 +34,7 @@
             <tbody>
                 {% for item in report_data %}
                 <tr>
-                    <td style="font-weight: 600;">
+                    <td class="period">
                         {% if item.date %}
                             <span class="badge primary">{{ item.date|date:"d.m.Y" }}</span>
                         {% elif item.week %}
@@ -51,55 +43,29 @@
                             {{ item.month }}/{{ item.year }}
                         {% endif %}
                     </td>
-                    <td style="font-weight: bold; color: var(--report-success);">
-                        {{ item.revenue|default:0|floatformat:2 }} ₽
-                    </td>
-                    <td style="text-align: center;">
-                        <span class="badge info">{{ item.tickets_sold }}</span>
-                    </td>
-                    <td style="font-weight: 600; color: var(--report-secondary);">
-                        {{ item|avg_ticket_price|floatformat:2 }} ₽
-                    </td>
+                    <td class="revenue">{{ item.revenue|default:0|floatformat:2 }} ₽</td>
+                    <td><span class="badge info">{{ item.tickets_sold }}</span></td>
+                    <td class="avg-price">{{ item|avg_ticket_price|floatformat:2 }} ₽</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tfoot>
                 <tr>
-                    <td style="padding: 14px 16px; font-weight: bold;">Итого:</td>
-                    <td style="padding: 14px 16px; font-weight: bold; color: var(--report-success);">
-                        {{ total_revenue|floatformat:2 }} ₽
-                    </td>
-                    <td style="padding: 14px 16px; text-align: center; font-weight: bold;">
-                        <span class="badge primary">{{ total_tickets }}</span>
-                    </td>
-                    <td style="padding: 14px 16px; font-weight: bold; color: var(--report-secondary);">
-                        {{ total_avg|floatformat:2 }} ₽
-                    </td>
+                    <td>Итого:</td>
+                    <td class="revenue">{{ total_revenue|floatformat:2 }} ₽</td>
+                    <td><span class="badge primary">{{ total_tickets }}</span></td>
+                    <td class="avg-price">{{ total_avg|floatformat:2 }} ₽</td>
                 </tr>
             </tfoot>
         </table>
 
-        <!-- Информация о периоде -->
-        <div style="margin-top: 30px; padding: 20px; background: var(--report-card-bg); border-radius: 8px; border: 1px solid var(--report-border);">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h4 style="margin: 0 0 5px 0; color: var(--report-secondary);">📅 Анализ за период</h4>
-                    <p style="margin: 0; color: var(--report-muted);">
-                        Отчет сгенерирован за {{ report_data|length }} дней
-                    </p>
-                </div>
-                <div style="text-align: right;">
-                    <div style="font-size: 0.9rem; color: var(--report-muted);">Общая выручка за период</div>
-                    <div style="font-size: 1.5rem; font-weight: bold; color: var(--report-secondary);">
-                        {{ total_revenue|floatformat:2 }} ₽
-                    </div>
-                </div>
-            </div>
+        <div class="table-footer">
+            <h4>📅 Анализ за период</h4>
+            <p>Отчет сгенерирован за {{ report_data|length }} дней</p>
+            <div>Общая выручка за период: <strong>{{ total_revenue|floatformat:2 }} ₽</strong></div>
         </div>
         {% endwith %}
     {% else %}
-        <div class="alert">
-            ℹ️ Нет данных по выручке за выбранный период.
-        </div>
+        <div class="alert">ℹ️ Нет данных по выручке за выбранный период.</div>
     {% endif %}
 </div>

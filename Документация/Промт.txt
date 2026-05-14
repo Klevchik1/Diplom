@@ -143,6 +143,7 @@ cinema-management-system/                         # Корень проекта 
 │   │       │   │   ├── import-form.css
 │   │       │   │   ├── movie-form-fix.css
 │   │       │   │   ├── reports.css
+│   │       │   │   ├── reports-light.css
 │   │       │   │   └── user-permissions-fix.css
 │   │       │   ├── manager/                      # Панель менеджера
 │   │       │   │   ├── api-import.css

@@ -1,37 +1,27 @@
 {% load report_filters %}
 <div class="movies-report">
-    <h2 style="color: var(--report-secondary); margin-bottom: 25px; font-size: 1.5rem; border-bottom: 2px solid var(--report-border); padding-bottom: 10px;">
-        🎬 Популярность фильмов
-    </h2>
+    <h2>🎬 Популярность фильмов</h2>
 
     {% if report_data %}
-        <!-- Рассчитываем общие показатели -->
         {% with aggregated=report_data|aggregate_movies_stats %}
-
-        <!-- Карточки с топ фильмами -->
         <div class="stat-grid">
             <div class="stat-card">
                 <div class="stat-label">Топ фильм</div>
-                <div style="font-size: 1.1rem; font-weight: 600; margin: 10px 0; color: var(--report-secondary);">
-                    {{ report_data.0.title|truncatechars:30 }}
-                </div>
-                <small style="color: var(--report-muted);">
-                    {{ report_data.0.tickets_sold|default:0 }} билетов
-                </small>
+                <div class="top-movie-title">{{ report_data.0.title|truncatechars:30 }}</div>
+                <small>{{ report_data.0.tickets_sold|default:0 }} билетов</small>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Общая выручка</div>
                 <div class="stat-number">{{ aggregated.total_revenue|floatformat:2 }} ₽</div>
-                <small style="color: var(--report-muted);">От всех фильмов</small>
+                <small>От всех фильмов</small>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Всего билетов</div>
                 <div class="stat-number">{{ aggregated.total_tickets }}</div>
-                <small style="color: var(--report-muted);">Продано</small>
+                <small>Продано</small>
             </div>
         </div>
 
-        <!-- Таблица фильмов -->
         <table class="report-table">
             <thead>
                 <tr>
@@ -46,47 +36,21 @@
             <tbody>
                 {% for movie in report_data %}
                 <tr>
-                    <td style="text-align: center; font-weight: bold; color: var(--report-secondary);">
-                        {{ forloop.counter }}
-                    </td>
+                    <td class="rank-number">{{ forloop.counter }}</td>
                     <td>
-                        <div style="font-weight: 600; color: var(--report-text); margin-bottom: 3px;">
-                            {{ movie.title }}
-                        </div>
-                        <div style="font-size: 0.85rem; color: var(--report-muted);">
-                            {{ movie.age_rating }} •
-                            {% if movie.duration %}
-                                {{ movie.duration }}
-                            {% else %}
-                                —
-                            {% endif %}
-                        </div>
+                        <div class="movie-title">{{ movie.title }}</div>
+                        <div class="movie-meta">{{ movie.age_rating }} • {% if movie.duration %}{{ movie.duration }} мин{% else %}—{% endif %}</div>
                     </td>
-                    <td>
-                        <span class="badge">{% for genre in movie.genres.all %}{{ genre.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
-                    </td>
-                    <td style="text-align: center;">
-                        <span class="badge info">{{ movie.tickets_sold|default:0 }}</span>
-                        <small style="display: block; color: var(--report-muted);">
-                            билетов
-                        </small>
-                    </td>
-                    <td>
-                        <div style="font-weight: bold; color: var(--report-success);">
-                            {{ movie.total_revenue|default:0|floatformat:2 }} ₽
-                        </div>
-                    </td>
-                    <td style="text-align: center; font-weight: bold; color: var(--report-secondary);">
-                        {{ movie.popularity_percentage|default:0|floatformat:1 }}%
-                    </td>
+                    <td><span class="badge">{{ movie.genre|default:"Не указан" }}</span></td>
+                    <td><span class="badge info">{{ movie.tickets_sold|default:0 }}</span> <small>билетов</small></td>
+                    <td class="revenue">{{ movie.total_revenue|default:0|floatformat:2 }} ₽</td>
+                    <td class="popularity">{{ movie.popularity_percentage|default:0|floatformat:1 }}%</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
         {% endwith %}
     {% else %}
-        <div class="alert">
-            ℹ️ Нет данных по популярности фильмов за выбранный период.
-        </div>
+        <div class="alert">ℹ️ Нет данных по популярности фильмов за выбранный период.</div>
     {% endif %}
 </div>
