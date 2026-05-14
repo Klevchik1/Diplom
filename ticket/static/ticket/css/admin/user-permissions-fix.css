@@ -1,0 +1,192 @@
+/* Улучшение отображения filter_horizontal для групп и прав пользователя */
+
+/* Контейнер для filter_horizontal */
+.selector {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 20px !important;
+    justify-content: space-between !important;
+}
+
+/* Левая и правая колонки - фиксированная одинаковая ширина */
+.selector-available, .selector-chosen {
+    flex: 1 1 0 !important;  /* Обе колонки получают одинаковую долю пространства */
+    min-width: 0 !important;  /* Позволяет сжиматься при необходимости */
+    width: auto !important;
+    max-width: none !important;
+}
+
+/* Select списки - растягиваем на всю ширину колонки */
+.selector select {
+    width: 100% !important;
+    min-height: 300px !important;
+    background: #1e1e1e !important;
+    border: 1px solid #cc0000 !important;
+    border-radius: 6px !important;
+    padding: 10px !important;
+    font-size: 13px !important;
+    color: #ffffff !important;
+}
+
+/* Светлая тема */
+[data-theme="light"] .selector select {
+    background: #f5f5f5 !important;
+    color: #1a1a1a !important;
+    border-color: #cc0000 !important;
+}
+
+/* Заголовки колонок */
+.selector-available h2, .selector-chosen h2 {
+    background: linear-gradient(135deg, #cc0000 0%, #ff0000 100%) !important;
+    color: white !important;
+    padding: 12px !important;
+    margin: 0 0 10px 0 !important;
+    border-radius: 6px !important;
+    font-size: 14px !important;
+    text-align: center !important;
+    font-weight: bold !important;
+}
+
+/* Поле фильтра */
+.selector .selector-filter {
+    background: rgba(0, 0, 0, 0.3) !important;
+    padding: 8px !important;
+    border-radius: 6px !important;
+    margin: 8px 0 !important;
+}
+
+[data-theme="light"] .selector .selector-filter {
+    background: #f0f0f0 !important;
+}
+
+.selector .selector-filter input {
+    width: 100% !important;
+    padding: 8px 12px !important;
+    border: 1px solid #cc0000 !important;
+    border-radius: 4px !important;
+    background: #2a2a2a !important;
+    color: white !important;
+}
+
+[data-theme="light"] .selector .selector-filter input {
+    background: white !important;
+    color: #1a1a1a !important;
+}
+
+/* Кнопки переноса между колонками */
+.selector-chooser {
+    width: 50px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    text-align: center !important;
+    flex-shrink: 0 !important;  /* Запрещаем сжатие кнопок */
+}
+
+/* Кнопки */
+.selector .selector-available .button,
+.selector .selector-chosen .button {
+    background: #cc0000 !important;
+    color: white !important;
+    border: none !important;
+    padding: 6px 12px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 12px !important;
+    margin: 2px !important;
+    display: inline-block !important;
+}
+
+.selector .selector-available .button:hover,
+.selector .selector-chosen .button:hover {
+    background: #990000 !important;
+}
+
+/* Опции в списках */
+.selector select option {
+    padding: 8px 12px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="light"] .selector select option {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Выбранные элементы */
+.selector-chosen select option {
+    background: #1a3a1a !important;
+    color: #4caf50 !important;
+}
+
+[data-theme="light"] .selector-chosen select option {
+    background: #e8f5e9 !important;
+    color: #2e7d32 !important;
+}
+
+/* Доступные элементы */
+.selector-available select option {
+    background: #3a1a1a !important;
+    color: #ff6b6b !important;
+}
+
+[data-theme="light"] .selector-available select option {
+    background: #fff3e0 !important;
+    color: #e65100 !important;
+}
+
+/* Подсветка при наведении */
+.selector select option:hover {
+    background: #ffcc00 !important;
+    color: #333 !important;
+}
+
+/* Ссылка "Выбрать все группы" */
+.selector-available .selector-filter label,
+.selector-chosen .selector-filter label {
+    display: inline-block !important;
+    margin-right: 10px !important;
+    font-size: 12px !important;
+}
+
+/* Кнопка "Удалить все группы" (обычно это ссылка) */
+.selector-chosen .selector-filter + div {
+    margin-top: 10px !important;
+    text-align: center !important;
+}
+
+.selector-chosen .selector-filter + div a {
+    color: #ff6b6b !important;
+    text-decoration: none !important;
+    font-size: 12px !important;
+    padding: 4px 8px !important;
+    background: rgba(255, 0, 0, 0.2) !important;
+    border-radius: 4px !important;
+}
+
+.selector-chosen .selector-filter + div a:hover {
+    background: rgba(255, 0, 0, 0.4) !important;
+    color: #ff9999 !important;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .selector {
+        flex-direction: column !important;
+        gap: 15px !important;
+    }
+
+    .selector-available, .selector-chosen {
+        width: 100% !important;
+    }
+
+    .selector-chooser {
+        flex-direction: row !important;
+        width: 100% !important;
+        justify-content: center !important;
+        gap: 15px !important;
+        margin: 10px 0 !important;
+    }
+}

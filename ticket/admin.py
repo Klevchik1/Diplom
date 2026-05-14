@@ -26,6 +26,122 @@ from django.contrib import messages
 from django.core.management import call_command
 import io
 import sys
+from .phone_utils import validate_and_format_phone
+from django import forms
+from django.core.exceptions import ValidationError
+from django.contrib.auth.models import Group
+from django.contrib.auth.admin import GroupAdmin
+
+
+class CustomGroupForm(forms.ModelForm):
+    """Кастомная форма для группы с улучшенным отображением прав"""
+
+    class Meta:
+        model = Group
+        fields = ('name', 'permissions')
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'style': 'width: 300px;'}),
+        }
+
+
+class CustomGroupAdmin(GroupAdmin):
+    """Кастомный админ-класс для групп с улучшенным отображением прав"""
+
+    form = CustomGroupForm
+    filter_horizontal = ('permissions',)
+
+    list_display = ('name', 'get_permissions_count')
+    search_fields = ('name',)
+
+    class Media:
+        css = {
+            'all': ['ticket/css/admin/user-permissions-fix.css']
+        }
+
+    def get_permissions_count(self, obj):
+        return obj.permissions.count()
+
+    get_permissions_count.short_description = 'Количество прав'
+
+    def has_add_permission(self, request):
+        return True
+
+    def has_change_permission(self, request, obj=None):
+        return True
+
+    def has_delete_permission(self, request, obj=None):
+        return True
+
+# Переопределяем стандартную регистрацию Group
+admin.site.unregister(Group)
+admin.site.register(Group, CustomGroupAdmin)
+
+
+class CustomUserChangeForm(forms.ModelForm):
+    """Кастомная форма для редактирования пользователя с валидацией телефона"""
+
+    class Meta:
+        model = User
+        fields = '__all__'
+
+    def clean_number(self):
+        number = self.cleaned_data.get('number')
+        if number:
+            try:
+                return validate_and_format_phone(number)
+            except ValidationError as e:
+                raise ValidationError(str(e))
+        return number
+
+
+class CustomUserCreationForm(forms.ModelForm):
+    """Кастомная форма для создания пользователя"""
+
+    password1 = forms.CharField(
+        label='Пароль',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        help_text='Минимум 8 символов'
+    )
+    password2 = forms.CharField(
+        label='Подтверждение пароля',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
+
+    class Meta:
+        model = User
+        fields = ('email', 'name', 'surname', 'number')
+        widgets = {
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'style': 'width: 300px;'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'style': 'width: 300px;'}),
+            'surname': forms.TextInput(attrs={'class': 'form-control', 'style': 'width: 300px;'}),
+            'number': forms.TextInput(attrs={'class': 'form-control', 'style': 'width: 300px;',
+                                             'placeholder': 'Введите 10 цифр (9011234567)'}),
+        }
+
+    def clean_number(self):
+        number = self.cleaned_data.get('number')
+        if number:
+            try:
+                return validate_and_format_phone(number)
+            except ValidationError as e:
+                raise ValidationError(str(e))
+        return number
+
+    def clean_password2(self):
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+        if password1 and password2 and password1 != password2:
+            raise ValidationError("Пароли не совпадают")
+        if len(password1) < 8:
+            raise ValidationError("Пароль должен содержать минимум 8 символов")
+        return password2
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data["password1"])
+        if commit:
+            user.save()
+        return user
 
 class LoggingModelAdmin(admin.ModelAdmin):
     """Базовый класс для автоматического логирования операций в админке"""
@@ -241,14 +357,25 @@ class CustomUserAdmin(LoggingModelAdmin, UserAdmin):
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'is_email_verified', 'created_at')
     search_fields = ('email', 'name', 'surname', 'number')
 
+    # Используем filter_horizontal для групп и прав
     filter_horizontal = ('groups', 'user_permissions')
+
+    # Используем кастомные формы
+    form = CustomUserChangeForm
+    add_form = CustomUserCreationForm
+
+    # Кастомные стили для filter_horizontal
+    class Media:
+        css = {
+            'all': ['ticket/css/admin/user-permissions-fix.css']
+        }
 
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Personal Info', {'fields': ('name', 'surname', 'number', 'created_at', 'updated_at')}),
-        ('Email Verification', {'fields': ('is_email_verified', 'email_verification_code', 'email_verification_code_sent_at')}),
-        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
-        ('Important dates', {'fields': ('last_login', 'date_joined')}),
+        ('Личная информация', {'fields': ('name', 'surname', 'number', 'created_at', 'updated_at')}),
+        ('Верификация email', {'fields': ('is_email_verified', 'email_verification_code', 'email_verification_code_sent_at')}),
+        ('Права доступа', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Важные даты', {'fields': ('last_login', 'date_joined')}),
     )
 
     add_fieldsets = (
@@ -260,6 +387,13 @@ class CustomUserAdmin(LoggingModelAdmin, UserAdmin):
 
     readonly_fields = ('created_at', 'updated_at', 'last_login', 'date_joined')
     ordering = ('email',)
+
+    def get_form(self, request, obj=None, **kwargs):
+        if obj is None:
+            kwargs['form'] = self.add_form
+        else:
+            kwargs['form'] = self.form
+        return super().get_form(request, obj, **kwargs)
 
     def has_add_permission(self, request):
         return True

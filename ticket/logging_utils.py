@@ -246,13 +246,6 @@ class OperationLogger:
     def _get_field_changes(form):
         """
         Сравнивает form.initial с form.cleaned_data и возвращает словарь изменений.
-
-        Args:
-            form: Django ModelForm после валидации (form.is_valid() == True)
-
-        Returns:
-            dict: {"field_name": {"old": old_value, "new": new_value}, ...}
-                  Только для полей, которые реально изменились.
         """
         if not form.initial:
             return {}
@@ -265,16 +258,50 @@ class OperationLogger:
 
             old_value = form.initial.get(field_name)
 
-            # Приводим к строкам для корректного сравнения (даты, Decimal и т.д.)
-            old_str = str(old_value) if old_value is not None else None
-            new_str = str(new_value) if new_value is not None else None
+            # Приводим к строкам для корректного сравнения
+            old_serialized = OperationLogger._serialize_value(old_value)
+            new_serialized = OperationLogger._serialize_value(new_value)
 
-            if old_str != new_str:
-                # Для JSON-сериализации преобразуем специальные типы
-                changes[field_name] = {
-                    "old": OperationLogger._serialize_value(old_value),
-                    "new": OperationLogger._serialize_value(new_value)
-                }
+            # Для ManyToMany и других сложных полей - специальная обработка
+            if isinstance(new_value, (list, tuple, set)) or hasattr(new_value, 'all'):
+                # Это QuerySet или список объектов
+                if hasattr(new_value, 'all'):
+                    new_value = list(new_value.all())
+                if hasattr(old_value, 'all'):
+                    old_value = list(old_value.all())
+
+                # Преобразуем в список ID для сравнения
+                old_ids = set()
+                new_ids = set()
+
+                if old_value:
+                    if isinstance(old_value, (list, tuple)):
+                        for item in old_value:
+                            if hasattr(item, 'pk'):
+                                old_ids.add(item.pk)
+                            elif isinstance(item, (int, str)):
+                                old_ids.add(str(item))
+
+                if new_value:
+                    if isinstance(new_value, (list, tuple)):
+                        for item in new_value:
+                            if hasattr(item, 'pk'):
+                                new_ids.add(item.pk)
+                            elif isinstance(item, (int, str)):
+                                new_ids.add(str(item))
+
+                if old_ids != new_ids:
+                    changes[field_name] = {
+                        "old": list(old_ids) if old_ids else None,
+                        "new": list(new_ids) if new_ids else None
+                    }
+            else:
+                # Обычные поля
+                if old_serialized != new_serialized:
+                    changes[field_name] = {
+                        "old": old_serialized,
+                        "new": new_serialized
+                    }
 
         return changes
 
@@ -283,6 +310,7 @@ class OperationLogger:
         """Преобразует значение в JSON-сериализуемый формат"""
         from decimal import Decimal
         from datetime import date, datetime, time
+        from django.db.models.query import QuerySet
 
         if value is None:
             return None
@@ -290,11 +318,16 @@ class OperationLogger:
             return value.isoformat()
         if isinstance(value, Decimal):
             return float(value)
+        if isinstance(value, QuerySet):
+            # Преобразуем QuerySet в список ID
+            return [obj.pk for obj in value]
         if hasattr(value, 'pk'):
             # ForeignKey/Model instance
             return {"id": value.pk, "repr": str(value)}
         if isinstance(value, (list, tuple)):
             return [OperationLogger._serialize_value(v) for v in value]
+        if isinstance(value, dict):
+            return {k: OperationLogger._serialize_value(v) for k, v in value.items()}
 
         return value
 

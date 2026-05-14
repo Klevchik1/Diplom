@@ -92,6 +92,7 @@ cinema-management-system/                         # Корень проекта 
 │   ├── models.py                                 # Все модели (19+)
 │   ├── payment_service.py                        # YooKassaService (платежи)
 │   ├── pdf_utils.py                              # Генерация PDF-отчётов
+│   ├── phone_utils.py                            # Форматирование и валидация телефона
 │   ├── report_utils.py                           # ReportGenerator (статистика)
 │   ├── tests.py                                  # Тесты
 │   ├── tmdb_client.py                            # Poiskkino.dev API клиент
@@ -140,7 +141,8 @@ cinema-management-system/                         # Корень проекта 
 │   │       │   │   ├── export-logs.css
 │   │       │   │   ├── export-logs-api.css
 │   │       │   │   ├── import-form.css
-│   │       │   │   └── reports.css
+│   │       │   │   ├── reports.css
+│   │       │   │   └── user-permissions-fix.css
 │   │       │   ├── manager/                      # Панель менеджера
 │   │       │   │   ├── api-import.css
 │   │       │   │   ├── api-tokens.css
