@@ -300,38 +300,36 @@ class MovieForm(forms.ModelForm):
         label='Год выпуска',
         widget=forms.NumberInput(attrs={'class': 'form-control'})
     )
-
-    # Используем обычные ModelMultipleChoiceField без кастомных промежуточных моделей
     genres = forms.ModelMultipleChoiceField(
-        queryset=Genre.objects.all().order_by('name'),
-        required=True,
-        label='Жанры',
-        widget=forms.SelectMultiple(attrs={'class': 'form-control', 'size': 5})
+        queryset=Genre.objects.all(),
+        widget=forms.SelectMultiple(attrs={'class': 'form-control', 'size': '5'}),
+        required=False,
+        label='Жанры'
     )
 
     directors = forms.ModelMultipleChoiceField(
-        queryset=Director.objects.all().order_by('surname', 'name'),
+        queryset=Director.objects.all(),
+        widget=forms.SelectMultiple(attrs={'class': 'form-control', 'size': '5'}),
         required=False,
-        label='Режиссёры',
-        widget=forms.SelectMultiple(attrs={'class': 'form-control', 'size': 5})
+        label='Режиссёры'
     )
 
     actors = forms.ModelMultipleChoiceField(
-        queryset=Actor.objects.all().order_by('surname', 'name'),
+        queryset=Actor.objects.all(),
+        widget=forms.SelectMultiple(attrs={'class': 'form-control', 'size': '5'}),
         required=False,
-        label='Актёры',
-        widget=forms.SelectMultiple(attrs={'class': 'form-control', 'size': 5})
+        label='Актёры'
     )
 
     class Meta:
         model = Movie
         fields = ['title', 'release_year', 'short_description', 'description',
-                  'duration', 'genres', 'age_rating', 'poster', 'directors', 'actors']
+                  'duration', 'age_rating', 'poster', 'genres', 'directors', 'actors']
         widgets = {
             'short_description': forms.Textarea(attrs={
                 'rows': 3,
                 'class': 'form-control',
-                'placeholder': 'Короткое описание для главной страницы (до 300 символов)'
+                'placeholder': 'Короткое описание для главной страницы (до 200 символов)'
             }),
             'description': forms.Textarea(attrs={
                 'rows': 5,
@@ -346,45 +344,61 @@ class MovieForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # Устанавливаем начальные значения для ManyToMany полей
         if self.instance and self.instance.pk:
-            # Для существующего фильма загружаем текущие жанры, режиссёров и актёров
             self.fields['genres'].initial = self.instance.genres.all()
             self.fields['directors'].initial = self.instance.directors.all()
             self.fields['actors'].initial = self.instance.actors.all()
+
+        # Настройка виджетов для ManyToMany полей
+        self.fields['genres'].widget.attrs['class'] = 'form-control select2-multiple'
+        self.fields['directors'].widget.attrs['class'] = 'form-control select2-multiple'
+        self.fields['actors'].widget.attrs['class'] = 'form-control select2-multiple'
+
+        if 'age_rating' in self.fields:
+            self.fields['age_rating'].empty_label = "----- Выберите возрастной рейтинг -----"
+            self.fields['age_rating'].required = True
+
+    def save(self, commit=True):
+        """Переопределяем save для сохранения ManyToMany связей"""
+        movie = super().save(commit=False)
+
+        if commit:
+            movie.save()
+            # Сохраняем ManyToMany связи
+            self._save_m2m()
+
+        return movie
+
+    def _save_m2m(self):
+        """Сохраняем ManyToMany связи после сохранения фильма"""
+        if self.instance.pk:
+            self.instance.genres.set(self.cleaned_data.get('genres', []))
+            self.instance.directors.set(self.cleaned_data.get('directors', []))
+            self.instance.actors.set(self.cleaned_data.get('actors', []))
 
     def clean_release_year(self):
         year = self.cleaned_data.get('release_year')
         current_year = date.today().year
         if year and year > current_year:
-            raise ValidationError(
-                f'Год выпуска не может быть больше текущего ({current_year})'
-            )
+            raise ValidationError(f'Год выпуска не может быть больше текущего ({current_year})')
+        if year and year < 1900:
+            raise ValidationError('Год выпуска не может быть меньше 1900')
         return year
 
-    def save(self, commit=True):
-        movie = super().save(commit=False)
-        if commit:
-            movie.save()
-            # Сохраняем связи через кастомные промежуточные модели
+    def clean_age_rating(self):
+        age_rating = self.cleaned_data.get('age_rating')
+        if not age_rating:
+            raise ValidationError('Пожалуйста, выберите возрастной рейтинг')
+        return age_rating
 
-            # Жанры
-            if self.cleaned_data.get('genres') is not None:
-                MovieGenre.objects.filter(movie=movie).delete()
-                for genre in self.cleaned_data['genres']:
-                    MovieGenre.objects.create(movie=movie, genre=genre)
-
-            # Режиссёры
-            if self.cleaned_data.get('directors') is not None:
-                MovieDirector.objects.filter(movie=movie).delete()
-                for director in self.cleaned_data['directors']:
-                    MovieDirector.objects.create(movie=movie, director=director)
-
-            # Актёры
-            if self.cleaned_data.get('actors') is not None:
-                MovieActor.objects.filter(movie=movie).delete()
-                for actor in self.cleaned_data['actors']:
-                    MovieActor.objects.create(movie=movie, actor=actor)
-        return movie
+    def clean_title(self):
+        title = self.cleaned_data.get('title')
+        if title:
+            title = title.strip()
+            if len(title) < 2:
+                raise ValidationError('Название фильма должно содержать минимум 2 символа')
+        return title
 
 
 class HallForm(forms.ModelForm):

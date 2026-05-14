@@ -31,6 +31,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import GroupAdmin
+from django.forms import BaseInlineFormSet
 
 
 class CustomGroupForm(forms.ModelForm):
@@ -284,6 +285,7 @@ class HallTypeAdmin(LoggingModelAdmin):
     halls_count.short_description = 'Количество залов'
 
 
+
 @admin.register(Director)
 class DirectorAdmin(LoggingModelAdmin):
     list_display = ('surname', 'name', 'country', 'birth_date', 'movies_count')
@@ -310,25 +312,241 @@ class ActorAdmin(LoggingModelAdmin):
     movies_count.short_description = 'Фильмов'
 
 
-class MovieDirectorInline(admin.TabularInline):
-    model = MovieDirector
-    extra = 1
-    autocomplete_fields = ['director']
+class BaseMovieInlineFormSet(BaseInlineFormSet):
+    """Базовый formset для inline-форм фильма"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Убеждаемся, что формы создаются правильно
+        for form in self.forms:
+            form.empty_permitted = False
 
 
-class MovieActorInline(admin.TabularInline):
-    model = MovieActor
-    extra = 1
-    autocomplete_fields = ['actor']
+class MovieGenreInlineForm(forms.ModelForm):
+    """Форма для inline жанров"""
+
+    class Meta:
+        model = MovieGenre
+        fields = ('genre',)
+        widgets = {
+            'genre': forms.Select(attrs={'class': 'form-control'})
+        }
+
+
+class MovieDirectorInlineForm(forms.ModelForm):
+    """Форма для inline режиссёров"""
+
+    class Meta:
+        model = MovieDirector
+        fields = ('director',)
+        widgets = {
+            'director': forms.Select(attrs={'class': 'form-control'})
+        }
+
+
+class MovieActorInlineForm(forms.ModelForm):
+    """Форма для inline актёров"""
+
+    class Meta:
+        model = MovieActor
+        fields = ('actor',)
+        widgets = {
+            'actor': forms.Select(attrs={'class': 'form-control'})
+        }
 
 
 class MovieGenreInline(admin.TabularInline):
-    """Инлайн для отображения жанров фильма"""
+    """Инлайн для жанров фильма"""
     model = MovieGenre
+    form = MovieGenreInlineForm
     extra = 1
     verbose_name = 'Жанр'
     verbose_name_plural = 'Жанры'
-    autocomplete_fields = ['genre']
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('genre')
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'genre':
+            kwargs['queryset'] = Genre.objects.all().order_by('name')
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+class MovieDirectorInline(admin.TabularInline):
+    """Инлайн для режиссёров фильма"""
+    model = MovieDirector
+    form = MovieDirectorInlineForm
+    extra = 1
+    verbose_name = 'Режиссёр'
+    verbose_name_plural = 'Режиссёры'
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('director')
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'director':
+            kwargs['queryset'] = Director.objects.all().order_by('surname', 'name')
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+class MovieActorInline(admin.TabularInline):
+    """Инлайн для актёров фильма"""
+    model = MovieActor
+    form = MovieActorInlineForm
+    extra = 1
+    verbose_name = 'Актёр'
+    verbose_name_plural = 'Актёры'
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('actor')
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'actor':
+            kwargs['queryset'] = Actor.objects.all().order_by('surname', 'name')
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+@admin.register(Movie)
+class MovieAdmin(LoggingModelAdmin):
+    list_display = ('title', 'release_year', 'display_genres', 'age_rating', 'duration_display', 'has_poster', 'screening_count')
+    search_fields = ('title', 'description')
+    list_filter = ('age_rating', 'release_year')
+    list_per_page = 20
+    form = MovieForm
+    readonly_fields = ('created_at',)
+
+    inlines = [MovieGenreInline, MovieDirectorInline, MovieActorInline]
+
+    fieldsets = (
+        (None, {
+            'fields': ('title', 'release_year', 'duration')
+        }),
+        ('Описание', {
+            'fields': ('short_description', 'description')
+        }),
+        ('Классификация', {
+            'fields': ('age_rating',)
+        }),
+        ('Медиа', {
+            'fields': ('poster',)
+        }),
+        ('Системная информация', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def duration_display(self, obj):
+        hours = obj.duration // 60
+        minutes = obj.duration % 60
+        if hours > 0:
+            return f"{hours} ч {minutes} мин"
+        return f"{minutes} мин"
+
+    duration_display.short_description = 'Длительность'
+
+    def display_genres(self, obj):
+        genres = obj.genres.all()
+        if genres:
+            return ", ".join(g.name for g in genres)
+        return "-"
+
+    display_genres.short_description = 'Жанры'
+
+    def has_poster(self, obj):
+        return bool(obj.poster)
+
+    has_poster.boolean = True
+    has_poster.short_description = 'Есть постер'
+
+    def screening_count(self, obj):
+        return obj.screenings.count()
+
+    screening_count.short_description = 'Сеансы'
+
+    class Media:
+        js = ['ticket/js/admin/movie-form-fix.js']
+        css = {'all': ['ticket/css/admin/movie-form-fix.css']}
+
+    def display_directors(self, obj):
+        """Отображение режиссёров в админке"""
+        if obj.pk:
+            directors = obj.directors.all()
+            if directors:
+                return ", ".join([f"{d.name} {d.surname}" for d in directors])
+        return "-"
+
+    display_directors.short_description = 'Режиссёры'
+
+    def display_actors(self, obj):
+        """Отображение актёров в админке"""
+        if obj.pk:
+            actors = obj.actors.all()
+            if actors:
+                return ", ".join([f"{a.name} {a.surname}" for a in actors[:5]]) + (f" и ещё {len(actors) - 5}" if len(actors) > 5 else "")
+        return "-"
+
+    display_actors.short_description = 'Актёры'
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('import-from-api/',
+                 self.admin_site.admin_view(self.smart_import_view),
+                 name='movie-import-from-api'),
+        ]
+        return custom_urls + urls
+
+    def smart_import_view(self, request):
+        """Новая страница умного импорта с информацией о токенах"""
+        from django.core.management import call_command
+        import io, sys
+
+        # Получаем информацию о токенах
+        try:
+            token_info = KinopoiskDevClient.get_total_available_tokens()
+        except Exception:
+            token_info = {'tokens_count': 0, 'total_remaining': 0, 'total_limit': 0, 'tokens': []}
+
+        if request.method == 'POST':
+            form = SmartImportForm(request.POST)
+            if form.is_valid():
+                stdout = sys.stdout
+                string_io = io.StringIO()
+                sys.stdout = string_io
+
+                try:
+                    call_command(
+                        'smart_import',
+                        type=form.cleaned_data['import_type'],
+                        pages=form.cleaned_data['pages'],
+                        year_from=form.cleaned_data['year_from'],
+                        year_to=form.cleaned_data['year_to'],
+                        no_posters=not form.cleaned_data['import_posters'],
+                        no_persons=not form.cleaned_data['import_persons'],
+                    )
+                    output = string_io.getvalue()
+                    messages.success(request, "✅ Импорт успешно выполнен!")
+                except Exception as e:
+                    output = str(e)
+                    messages.error(request, f"❌ Ошибка импорта: {e}")
+                finally:
+                    sys.stdout = stdout
+
+                return render(request, 'admin/import_result.html', {
+                    'title': 'Результат импорта',
+                    'output': output,
+                    'opts': self.model._meta,
+                })
+        else:
+            form = SmartImportForm()
+
+        context = {
+            'title': 'Умный импорт фильмов из Poiskkino.dev',
+            'form': form,
+            'opts': self.model._meta,
+            'token_info': token_info,
+        }
+        return render(request, 'admin/import_form.html', context)
 
 
 @admin.register(MovieGenre)
@@ -488,149 +706,22 @@ class AgeRatingAdmin(LoggingModelAdmin):
     movie_count.short_description = 'Количество фильмов'
 
 
-@admin.register(Movie)
-class MovieAdmin(LoggingModelAdmin):
-    list_display = ('title', 'release_year', 'display_genres', 'age_rating', 'duration_display', 'has_poster', 'screening_count')
-    search_fields = ('title', 'moviegenre__genre__name', 'short_description', 'description')
-    list_filter = ('moviegenre__genre', 'age_rating', 'release_year')
-    list_per_page = 20
-    form = MovieForm
-    readonly_fields = ('created_at', 'display_directors', 'display_actors')
-    inlines = [MovieGenreInline]
+class DirectorInline(admin.TabularInline):
+    """Inline для быстрого добавления режиссёров (не используется напрямую, но можно)"""
+    model = Movie.directors.through
+    extra = 1
+    autocomplete_fields = ['director']
+    verbose_name = 'Режиссёр'
+    verbose_name_plural = 'Режиссёры'
 
-    fieldsets = (
-        (None, {
-            'fields': ('title', 'release_year', 'duration')
-        }),
-        ('Описание', {
-            'fields': ('short_description', 'description')
-        }),
-        ('Классификация', {
-            'fields': ('age_rating',)
-        }),
-        ('Медиа', {
-            'fields': ('poster',)
-        }),
-        ('Создатели', {
-            'fields': ('display_directors', 'display_actors'),
-            'description': 'Режиссёры и актёры (редактирование через форму фильма)'
-        }),
-        ('Системная информация', {
-            'fields': ('created_at',),
-            'classes': ('collapse',)
-        }),
-    )
 
-    def duration_display(self, obj):
-        hours = obj.duration // 60
-        minutes = obj.duration % 60
-        if hours > 0:
-            return f"{hours} ч {minutes} мин"
-        return f"{minutes} мин"
-
-    duration_display.short_description = 'Длительность'
-
-    def display_genres(self, obj):
-        """Отображение жанров в списке фильмов"""
-        genres = obj.genres.all()
-        if genres:
-            return ", ".join(g.name for g in genres)
-        return "-"
-
-    display_genres.short_description = 'Жанры'
-
-    def has_poster(self, obj):
-        return bool(obj.poster)
-
-    has_poster.boolean = True
-    has_poster.short_description = 'Есть постер'
-
-    def screening_count(self, obj):
-        """Количество сеансов для этого фильма"""
-        return obj.screenings.count()
-
-    screening_count.short_description = 'Сеансы'
-
-    def display_directors(self, obj):
-        """Отображение режиссёров в админке"""
-        if obj.pk:
-            directors = obj.directors.all()
-            if directors:
-                return ", ".join([f"{d.name} {d.surname}" for d in directors])
-        return "-"
-
-    display_directors.short_description = 'Режиссёры'
-
-    def display_actors(self, obj):
-        """Отображение актёров в админке"""
-        if obj.pk:
-            actors = obj.actors.all()
-            if actors:
-                return ", ".join([f"{a.name} {a.surname}" for a in actors[:5]]) + (f" и ещё {len(actors) - 5}" if len(actors) > 5 else "")
-        return "-"
-
-    display_actors.short_description = 'Актёры'
-
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path('import-from-api/',
-                 self.admin_site.admin_view(self.smart_import_view),
-                 name='movie-import-from-api'),
-        ]
-        return custom_urls + urls
-
-    def smart_import_view(self, request):
-        """Новая страница умного импорта с информацией о токенах"""
-        from django.core.management import call_command
-        import io, sys
-
-        # Получаем информацию о токенах
-        try:
-            token_info = KinopoiskDevClient.get_total_available_tokens()
-        except Exception:
-            token_info = {'tokens_count': 0, 'total_remaining': 0, 'total_limit': 0, 'tokens': []}
-
-        if request.method == 'POST':
-            form = SmartImportForm(request.POST)
-            if form.is_valid():
-                stdout = sys.stdout
-                string_io = io.StringIO()
-                sys.stdout = string_io
-
-                try:
-                    call_command(
-                        'smart_import',
-                        type=form.cleaned_data['import_type'],
-                        pages=form.cleaned_data['pages'],
-                        year_from=form.cleaned_data['year_from'],
-                        year_to=form.cleaned_data['year_to'],
-                        no_posters=not form.cleaned_data['import_posters'],
-                        no_persons=not form.cleaned_data['import_persons'],
-                    )
-                    output = string_io.getvalue()
-                    messages.success(request, "✅ Импорт успешно выполнен!")
-                except Exception as e:
-                    output = str(e)
-                    messages.error(request, f"❌ Ошибка импорта: {e}")
-                finally:
-                    sys.stdout = stdout
-
-                return render(request, 'admin/import_result.html', {
-                    'title': 'Результат импорта',
-                    'output': output,
-                    'opts': self.model._meta,
-                })
-        else:
-            form = SmartImportForm()
-
-        context = {
-            'title': 'Умный импорт фильмов из Poiskkino.dev',
-            'form': form,
-            'opts': self.model._meta,
-            'token_info': token_info,
-        }
-        return render(request, 'admin/import_form.html', context)
+class ActorInline(admin.TabularInline):
+    """Inline для быстрого добавления актёров"""
+    model = Movie.actors.through
+    extra = 1
+    autocomplete_fields = ['actor']
+    verbose_name = 'Актёр'
+    verbose_name_plural = 'Актёры'
 
 
 @admin.register(Screening)

@@ -1,0 +1,36 @@
+/* Стили для улучшенной формы фильма */
+
+/* Подсветка полей с ошибками */
+.field-error {
+    border: 2px solid #f44336 !important;
+    background-color: rgba(244, 67, 54, 0.1) !important;
+}
+
+/* Улучшение отображения filter_horizontal */
+.selector {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.selector select {
+    min-height: 200px !important;
+}
+
+/* Стили для кнопок быстрого добавления */
+.quick-add-btn {
+    transition: all 0.3s ease !important;
+}
+
+.quick-add-btn:hover {
+    background: #6c2fd6 !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Светлая тема */
+[data-theme="light"] .quick-add-btn {
+    background: #4a00e0 !important;
+}
+
+[data-theme="light"] .quick-add-btn:hover {
+    background: #6c2fd6 !important;
+}

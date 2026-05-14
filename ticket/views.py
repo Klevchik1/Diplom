@@ -2342,7 +2342,7 @@ def manager_movie_add(request):
     if request.method == 'POST':
         form = MovieForm(request.POST, request.FILES)
         if form.is_valid():
-            movie = form.save()
+            movie = form.save()  # Теперь save() правильно обработает ManyToMany
 
             OperationLogger.log_operation(
                 request=request,
@@ -2350,11 +2350,22 @@ def manager_movie_add(request):
                 module_type='MOVIES',
                 description=f'Менеджер создал фильм: {movie.title}',
                 object_id=movie.pk,
-                object_repr=str(movie)
+                object_repr=str(movie),
+                additional_data={
+                    'genres': ", ".join(g.name for g in movie.genres.all()),
+                    'directors': ", ".join(str(d) for d in movie.directors.all()),
+                    'actors': ", ".join(str(a) for a in movie.actors.all()[:5])
+                }
             )
 
             messages.success(request, f'Фильм "{movie.title}" успешно добавлен.')
             return redirect('manager_movies')
+        else:
+            # Логируем ошибки формы для отладки
+            logger.error(f"Form errors: {form.errors}")
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
     else:
         form = MovieForm()
 
@@ -2369,7 +2380,7 @@ def manager_movie_edit(request, movie_id):
     if request.method == 'POST':
         form = MovieForm(request.POST, request.FILES, instance=movie)
         if form.is_valid():
-            movie = form.save()
+            movie = form.save()  # Теперь save() правильно обработает ManyToMany
 
             OperationLogger.log_operation(
                 request=request,
@@ -2377,11 +2388,22 @@ def manager_movie_edit(request, movie_id):
                 module_type='MOVIES',
                 description=f'Менеджер обновил фильм: {movie.title}',
                 object_id=movie.pk,
-                object_repr=str(movie)
+                object_repr=str(movie),
+                additional_data={
+                    'genres': ", ".join(g.name for g in movie.genres.all()),
+                    'directors': ", ".join(str(d) for d in movie.directors.all()),
+                    'actors': ", ".join(str(a) for a in movie.actors.all()[:5])
+                }
             )
 
             messages.success(request, f'Фильм "{movie.title}" успешно обновлен.')
             return redirect('manager_movies')
+        else:
+            # Логируем ошибки формы для отладки
+            logger.error(f"Form errors: {form.errors}")
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
     else:
         form = MovieForm(instance=movie)
 

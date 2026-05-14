@@ -141,6 +141,7 @@ cinema-management-system/                         # Корень проекта 
 │   │       │   │   ├── export-logs.css
 │   │       │   │   ├── export-logs-api.css
 │   │       │   │   ├── import-form.css
+│   │       │   │   ├── movie-form-fix.css
 │   │       │   │   ├── reports.css
 │   │       │   │   └── user-permissions-fix.css
 │   │       │   ├── manager/                      # Панель менеджера
@@ -167,7 +168,8 @@ cinema-management-system/                         # Корень проекта 
 │   │       └── js/                               # JavaScript
 │   │           ├── admin/                        # Админ-панель
 │   │           │   ├── admin-base.js
-│   │           │   └── backup-management.js
+│   │           │   ├── backup-management.js
+│   │           │   └── movie-form-fix.js
 │   │           ├── manager/                      # Панель менеджера
 │   │           │   ├── api-import.js
 │   │           │   ├── api-tokens.js
