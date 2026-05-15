@@ -1,0 +1,341 @@
+Unable to configure handler 'file'
+Unable to configure handler 'file'
+Unable to configure handler 'file'
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 246, in run
+    handler()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 271, in handle_chld
+    self.reap_workers()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 641, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/bin/gunicorn", line 6, in <module>
+    sys.exit(run())
+             ^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 66, in run
+    WSGIApplication("%(prog)s [OPTIONS] [APP_MODULE]", prog=prog).run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 235, in run
+    super().run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 71, in run
+    Arbiter(self).run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 254, in run
+    self.halt(reason=inst.reason, exit_status=inst.exit_status)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 378, in halt
+    self.stop()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 458, in stop
+    self.reap_workers()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 641, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+Unable to configure handler 'file'
+Unable to configure handler 'file'
+Unable to configure handler 'file'
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 246, in run
+    handler()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 271, in handle_chld
+    self.reap_workers()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 641, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/bin/gunicorn", line 6, in <module>
+    sys.exit(run())
+             ^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 66, in run
+    WSGIApplication("%(prog)s [OPTIONS] [APP_MODULE]", prog=prog).run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 235, in run
+    super().run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 71, in run
+    Arbiter(self).run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 254, in run
+    self.halt(reason=inst.reason, exit_status=inst.exit_status)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 378, in halt
+    self.stop()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 458, in stop
+    self.reap_workers()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 641, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+Unable to configure handler 'file'
+Unable to configure handler 'file'
+Unable to configure handler 'file'
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 246, in run
+    handler()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 271, in handle_chld
+    self.reap_workers()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 641, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/bin/gunicorn", line 6, in <module>
+    sys.exit(run())
+             ^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 66, in run
+    WSGIApplication("%(prog)s [OPTIONS] [APP_MODULE]", prog=prog).run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 235, in run
+    super().run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 71, in run
+    Arbiter(self).run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 254, in run
+    self.halt(reason=inst.reason, exit_status=inst.exit_status)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 378, in halt
+    self.stop()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 458, in stop
+    self.reap_workers()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 641, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+Unable to configure handler 'file'
+Unable to configure handler 'file'
+Unable to configure handler 'file'
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 246, in run
+    handler()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 271, in handle_chld
+    self.reap_workers()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 641, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/bin/gunicorn", line 6, in <module>
+    sys.exit(run())
+             ^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 66, in run
+    WSGIApplication("%(prog)s [OPTIONS] [APP_MODULE]", prog=prog).run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 235, in run
+    super().run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 71, in run
+    Arbiter(self).run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 254, in run
+    self.halt(reason=inst.reason, exit_status=inst.exit_status)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 378, in halt
+    self.stop()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 458, in stop
+    self.reap_workers()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 641, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+Unable to configure handler 'file'
+Unable to configure handler 'file'
+Unable to configure handler 'file'
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 246, in run
+    handler()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 271, in handle_chld
+    self.reap_workers()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 641, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/bin/gunicorn", line 6, in <module>
+    sys.exit(run())
+             ^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 66, in run
+    WSGIApplication("%(prog)s [OPTIONS] [APP_MODULE]", prog=prog).run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 235, in run
+    super().run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 71, in run
+    Arbiter(self).run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 254, in run
+    self.halt(reason=inst.reason, exit_status=inst.exit_status)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 378, in halt
+    self.stop()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 458, in stop
+    self.reap_workers()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 641, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+Unable to configure handler 'file'
+Unable to configure handler 'file'
+Unable to configure handler 'file'
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 246, in run
+    handler()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 271, in handle_chld
+    self.reap_workers()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 641, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/bin/gunicorn", line 6, in <module>
+    sys.exit(run())
+             ^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 66, in run
+    WSGIApplication("%(prog)s [OPTIONS] [APP_MODULE]", prog=prog).run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 235, in run
+    super().run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 71, in run
+    Arbiter(self).run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 254, in run
+    self.halt(reason=inst.reason, exit_status=inst.exit_status)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 378, in halt
+    self.stop()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 458, in stop
+    self.reap_workers()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 641, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+Unable to configure handler 'file'
+Unable to configure handler 'file'
+Unable to configure handler 'file'
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 246, in run
+    handler()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 271, in handle_chld
+    self.reap_workers()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 641, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/bin/gunicorn", line 6, in <module>
+    sys.exit(run())
+             ^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 66, in run
+    WSGIApplication("%(prog)s [OPTIONS] [APP_MODULE]", prog=prog).run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 235, in run
+    super().run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 71, in run
+    Arbiter(self).run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 254, in run
+    self.halt(reason=inst.reason, exit_status=inst.exit_status)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 378, in halt
+    self.stop()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 458, in stop
+    self.reap_workers()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 641, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+Unable to configure handler 'file'
+Unable to configure handler 'file'
+Unable to configure handler 'file'
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 246, in run
+    handler()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 271, in handle_chld
+    self.reap_workers()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 641, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/bin/gunicorn", line 6, in <module>
+    sys.exit(run())
+             ^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 66, in run
+    WSGIApplication("%(prog)s [OPTIONS] [APP_MODULE]", prog=prog).run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 235, in run
+    super().run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 71, in run
+    Arbiter(self).run()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 254, in run
+    self.halt(reason=inst.reason, exit_status=inst.exit_status)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 378, in halt
+    self.stop()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 458, in stop
+    self.reap_workers()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 641, in reap_workers
+    raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+DEBUG: screening_id=554, rows count=6, total seats=48
+  Row 1: 8 seats
+  Row 2: 8 seats
+  Row 3: 8 seats
+  Row 4: 8 seats
+  Row 5: 8 seats
+  Row 6: 8 seats
+DEBUG: screening_id=551, rows count=7, total seats=70
+  Row 1: 10 seats
+  Row 2: 10 seats
+  Row 3: 10 seats
+  Row 4: 10 seats
+  Row 5: 10 seats
+  Row 6: 10 seats
+  Row 7: 10 seats
+DEBUG: screening_id=550, rows count=6, total seats=48
+  Row 1: 8 seats
+  Row 2: 8 seats
+  Row 3: 8 seats
+  Row 4: 8 seats
+  Row 5: 8 seats
+  Row 6: 8 seats
+=== DEBUG HALL DATA ===
+Зал: Стандарт, total_seats=150, total_screenings=404
+Зал: VIP Зал, total_seats=48, total_screenings=407
+Зал: Love Hall, total_seats=30, total_screenings=407
+Зал: Комфорт, total_seats=70, total_screenings=407
+Зал: IMAX, total_seats=216, total_screenings=405
+=== DEBUG HALL DATA ===
+Зал: Стандарт, total_seats=150, total_screenings=404
+Зал: VIP Зал, total_seats=48, total_screenings=407
+Зал: Love Hall, total_seats=30, total_screenings=407
+Зал: Комфорт, total_seats=70, total_screenings=407
+Зал: IMAX, total_seats=216, total_screenings=405
+=== DEBUG HALL DATA ===
+Зал: Стандарт, total_seats=150, total_screenings=404
+Зал: VIP Зал, total_seats=48, total_screenings=407
+Зал: Love Hall, total_seats=30, total_screenings=407
+Зал: Комфорт, total_seats=70, total_screenings=407
+Зал: IMAX, total_seats=216, total_screenings=405
+DEBUG: screening_id=551, rows count=7, total seats=70
+  Row 1: 10 seats
+  Row 2: 10 seats
+  Row 3: 10 seats
+  Row 4: 10 seats
+  Row 5: 10 seats
+  Row 6: 10 seats
+  Row 7: 10 seats
+DEBUG: screening_id=552, rows count=12, total seats=216
+  Row 1: 18 seats
+  Row 2: 18 seats
+  Row 3: 18 seats
+  Row 4: 18 seats
+  Row 5: 18 seats
+  Row 6: 18 seats
+  Row 7: 18 seats
+  Row 8: 18 seats
+  Row 9: 18 seats
+  Row 10: 18 seats
+  Row 11: 18 seats
+  Row 12: 18 seats
+=== DEBUG HALL DATA ===
+Зал: Стандарт, total_seats=150, total_screenings=404
+Зал: VIP Зал, total_seats=48, total_screenings=407
+Зал: Love Hall, total_seats=30, total_screenings=407
+Зал: Комфорт, total_seats=70, total_screenings=407
+Зал: IMAX, total_seats=216, total_screenings=405
+=== DEBUG HALL DATA ===
+Зал: Стандарт, total_seats=150, total_screenings=404
+Зал: VIP Зал, total_seats=48, total_screenings=407
+Зал: Love Hall, total_seats=30, total_screenings=407
+Зал: Комфорт, total_seats=70, total_screenings=407
+Зал: IMAX, total_seats=216, total_screenings=405
+Missing session data in verify_email
+Missing session data in verify_email
+Invalid verification code entered for vladislavmix2020@gmail.com
+Invalid verification code entered for vladislavmix2020@gmail.com

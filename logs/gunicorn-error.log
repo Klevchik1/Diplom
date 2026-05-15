@@ -1,0 +1,1681 @@
+[2026-05-14 08:13:26 +0300] [256836] [INFO] Starting gunicorn 26.0.0
+[2026-05-14 08:13:26 +0300] [256836] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (256836)
+[2026-05-14 08:13:26 +0300] [256836] [INFO] Using worker: sync
+[2026-05-14 08:13:26 +0300] [256837] [INFO] Booting worker with pid: 256837
+[2026-05-14 08:13:26 +0300] [256838] [INFO] Booting worker with pid: 256838
+[2026-05-14 08:13:26 +0300] [256839] [INFO] Booting worker with pid: 256839
+[2026-05-14 08:13:26 +0300] [256836] [ERROR] Control server error: [Errno 13] Permission denied: '/var/www/.gunicorn'
+[2026-05-14 13:13:26 +0800] [256837] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:26 +0800] [256837] [INFO] Worker exiting (pid: 256837)
+[2026-05-14 13:13:26 +0800] [256838] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:26 +0800] [256838] [INFO] Worker exiting (pid: 256838)
+[2026-05-14 08:13:27 +0300] [256836] [ERROR] Worker (pid:256837) exited with code 3.
+[2026-05-14 13:13:27 +0800] [256839] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:27 +0800] [256839] [INFO] Worker exiting (pid: 256839)
+[2026-05-14 08:13:27 +0300] [256836] [INFO] Worker (pid:256838) was sent SIGTERM!
+[2026-05-14 08:13:27 +0300] [256836] [ERROR] Worker (pid:256839) exited with code 3.
+[2026-05-14 08:13:28 +0300] [256841] [INFO] Starting gunicorn 26.0.0
+[2026-05-14 08:13:28 +0300] [256841] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (256841)
+[2026-05-14 08:13:28 +0300] [256841] [INFO] Using worker: sync
+[2026-05-14 08:13:28 +0300] [256842] [INFO] Booting worker with pid: 256842
+[2026-05-14 08:13:28 +0300] [256843] [INFO] Booting worker with pid: 256843
+[2026-05-14 08:13:28 +0300] [256844] [INFO] Booting worker with pid: 256844
+[2026-05-14 08:13:28 +0300] [256841] [ERROR] Control server error: [Errno 13] Permission denied: '/var/www/.gunicorn'
+[2026-05-14 13:13:28 +0800] [256842] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:28 +0800] [256842] [INFO] Worker exiting (pid: 256842)
+[2026-05-14 08:13:28 +0300] [256841] [ERROR] Worker (pid:256842) exited with code 3.
+[2026-05-14 13:13:28 +0800] [256843] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:28 +0800] [256843] [INFO] Worker exiting (pid: 256843)
+[2026-05-14 13:13:28 +0800] [256844] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:28 +0800] [256844] [INFO] Worker exiting (pid: 256844)
+[2026-05-14 08:13:29 +0300] [256841] [ERROR] Worker (pid:256843) exited with code 3.
+[2026-05-14 08:13:31 +0300] [256847] [INFO] Starting gunicorn 26.0.0
+[2026-05-14 08:13:31 +0300] [256847] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (256847)
+[2026-05-14 08:13:31 +0300] [256847] [INFO] Using worker: sync
+[2026-05-14 08:13:31 +0300] [256848] [INFO] Booting worker with pid: 256848
+[2026-05-14 08:13:31 +0300] [256849] [INFO] Booting worker with pid: 256849
+[2026-05-14 08:13:31 +0300] [256850] [INFO] Booting worker with pid: 256850
+[2026-05-14 13:13:31 +0800] [256848] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:31 +0800] [256848] [INFO] Worker exiting (pid: 256848)
+[2026-05-14 08:13:31 +0300] [256847] [ERROR] Control server error: [Errno 13] Permission denied: '/var/www/.gunicorn'
+[2026-05-14 08:13:31 +0300] [256847] [ERROR] Worker (pid:256848) exited with code 3.
+[2026-05-14 13:13:31 +0800] [256849] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:31 +0800] [256849] [INFO] Worker exiting (pid: 256849)
+[2026-05-14 13:13:31 +0800] [256850] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:31 +0800] [256850] [INFO] Worker exiting (pid: 256850)
+[2026-05-14 08:13:32 +0300] [256847] [ERROR] Worker (pid:256849) exited with code 3.
+[2026-05-14 08:13:34 +0300] [256865] [INFO] Starting gunicorn 26.0.0
+[2026-05-14 08:13:34 +0300] [256865] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (256865)
+[2026-05-14 08:13:34 +0300] [256865] [INFO] Using worker: sync
+[2026-05-14 08:13:34 +0300] [256866] [INFO] Booting worker with pid: 256866
+[2026-05-14 08:13:34 +0300] [256867] [INFO] Booting worker with pid: 256867
+[2026-05-14 08:13:34 +0300] [256868] [INFO] Booting worker with pid: 256868
+[2026-05-14 13:13:34 +0800] [256866] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 08:13:34 +0300] [256865] [ERROR] Control server error: [Errno 13] Permission denied: '/var/www/.gunicorn'
+[2026-05-14 13:13:34 +0800] [256866] [INFO] Worker exiting (pid: 256866)
+[2026-05-14 08:13:34 +0300] [256865] [ERROR] Worker (pid:256866) exited with code 3.
+[2026-05-14 13:13:34 +0800] [256868] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:34 +0800] [256868] [INFO] Worker exiting (pid: 256868)
+[2026-05-14 13:13:34 +0800] [256867] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:34 +0800] [256867] [INFO] Worker exiting (pid: 256867)
+[2026-05-14 08:13:34 +0300] [256865] [ERROR] Worker (pid:256867) exited with code 3.
+[2026-05-14 08:13:36 +0300] [256871] [INFO] Starting gunicorn 26.0.0
+[2026-05-14 08:13:36 +0300] [256871] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (256871)
+[2026-05-14 08:13:36 +0300] [256871] [INFO] Using worker: sync
+[2026-05-14 08:13:36 +0300] [256872] [INFO] Booting worker with pid: 256872
+[2026-05-14 08:13:36 +0300] [256873] [INFO] Booting worker with pid: 256873
+[2026-05-14 08:13:36 +0300] [256874] [INFO] Booting worker with pid: 256874
+[2026-05-14 08:13:36 +0300] [256871] [ERROR] Control server error: [Errno 13] Permission denied: '/var/www/.gunicorn'
+[2026-05-14 13:13:36 +0800] [256872] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:36 +0800] [256872] [INFO] Worker exiting (pid: 256872)
+[2026-05-14 13:13:36 +0800] [256873] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:36 +0800] [256873] [INFO] Worker exiting (pid: 256873)
+[2026-05-14 08:13:36 +0300] [256871] [ERROR] Worker (pid:256873) exited with code 3.
+[2026-05-14 13:13:37 +0800] [256874] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:37 +0800] [256874] [INFO] Worker exiting (pid: 256874)
+[2026-05-14 08:13:37 +0300] [256871] [INFO] Worker (pid:256872) was sent SIGTERM!
+[2026-05-14 08:13:37 +0300] [256871] [ERROR] Worker (pid:256874) exited with code 3.
+[2026-05-14 08:13:38 +0300] [256876] [INFO] Starting gunicorn 26.0.0
+[2026-05-14 08:13:38 +0300] [256876] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (256876)
+[2026-05-14 08:13:38 +0300] [256876] [INFO] Using worker: sync
+[2026-05-14 08:13:38 +0300] [256878] [INFO] Booting worker with pid: 256878
+[2026-05-14 08:13:38 +0300] [256879] [INFO] Booting worker with pid: 256879
+[2026-05-14 08:13:38 +0300] [256880] [INFO] Booting worker with pid: 256880
+[2026-05-14 08:13:38 +0300] [256876] [ERROR] Control server error: [Errno 13] Permission denied: '/var/www/.gunicorn'
+[2026-05-14 13:13:38 +0800] [256878] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:38 +0800] [256878] [INFO] Worker exiting (pid: 256878)
+[2026-05-14 13:13:38 +0800] [256879] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:38 +0800] [256879] [INFO] Worker exiting (pid: 256879)
+[2026-05-14 08:13:38 +0300] [256876] [ERROR] Worker (pid:256878) exited with code 3.
+[2026-05-14 13:13:38 +0800] [256880] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:38 +0800] [256880] [INFO] Worker exiting (pid: 256880)
+[2026-05-14 08:13:38 +0300] [256876] [INFO] Worker (pid:256879) was sent SIGTERM!
+[2026-05-14 08:13:38 +0300] [256876] [ERROR] Worker (pid:256880) exited with code 3.
+[2026-05-14 08:13:41 +0300] [256884] [INFO] Starting gunicorn 26.0.0
+[2026-05-14 08:13:41 +0300] [256884] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (256884)
+[2026-05-14 08:13:41 +0300] [256884] [INFO] Using worker: sync
+[2026-05-14 08:13:41 +0300] [256885] [INFO] Booting worker with pid: 256885
+[2026-05-14 08:13:41 +0300] [256886] [INFO] Booting worker with pid: 256886
+[2026-05-14 08:13:41 +0300] [256887] [INFO] Booting worker with pid: 256887
+[2026-05-14 13:13:41 +0800] [256885] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:41 +0800] [256885] [INFO] Worker exiting (pid: 256885)
+[2026-05-14 08:13:41 +0300] [256884] [ERROR] Control server error: [Errno 13] Permission denied: '/var/www/.gunicorn'
+[2026-05-14 08:13:41 +0300] [256884] [ERROR] Worker (pid:256885) exited with code 3.
+[2026-05-14 13:13:41 +0800] [256886] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:41 +0800] [256886] [INFO] Worker exiting (pid: 256886)
+[2026-05-14 13:13:41 +0800] [256887] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:41 +0800] [256887] [INFO] Worker exiting (pid: 256887)
+[2026-05-14 08:13:41 +0300] [256884] [ERROR] Worker (pid:256886) exited with code 3.
+[2026-05-14 08:13:44 +0300] [256889] [INFO] Starting gunicorn 26.0.0
+[2026-05-14 08:13:44 +0300] [256889] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (256889)
+[2026-05-14 08:13:44 +0300] [256889] [INFO] Using worker: sync
+[2026-05-14 08:13:44 +0300] [256890] [INFO] Booting worker with pid: 256890
+[2026-05-14 08:13:44 +0300] [256891] [INFO] Booting worker with pid: 256891
+[2026-05-14 08:13:44 +0300] [256892] [INFO] Booting worker with pid: 256892
+[2026-05-14 08:13:44 +0300] [256889] [ERROR] Control server error: [Errno 13] Permission denied: '/var/www/.gunicorn'
+[2026-05-14 13:13:44 +0800] [256890] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:44 +0800] [256890] [INFO] Worker exiting (pid: 256890)
+[2026-05-14 13:13:45 +0800] [256891] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:45 +0800] [256891] [INFO] Worker exiting (pid: 256891)
+[2026-05-14 08:13:45 +0300] [256889] [ERROR] Worker (pid:256890) exited with code 3.
+[2026-05-14 13:13:45 +0800] [256892] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/logging/config.py", line 581, in configure
+    handler = self.configure_handler(handlers[name])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/config.py", line 848, in configure_handler
+    result = factory(**kwargs)
+             ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1231, in __init__
+    StreamHandler.__init__(self, self._open())
+                                 ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/logging/__init__.py", line 1263, in _open
+    return open_func(self.baseFilename, self.mode,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/var/www/cinema/django.log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/arbiter.py", line 713, in spawn_worker
+    worker.init_process()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 136, in init_process
+    self.load_wsgi()
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/workers/base.py", line 148, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/gunicorn/util.py", line 411, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/var/www/cinema/cinematic/wsgi.py", line 16, in <module>
+    application = get_wsgi_application()
+                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/core/wsgi.py", line 12, in get_wsgi_application
+    django.setup(set_prefix=False)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/__init__.py", line 19, in setup
+    configure_logging(settings.LOGGING_CONFIG, settings.LOGGING)
+  File "/var/www/cinema/.venv/lib/python3.12/site-packages/django/utils/log.py", line 76, in configure_logging
+    logging_config_func(logging_settings)
+  File "/usr/lib/python3.12/logging/config.py", line 914, in dictConfig
+    dictConfigClass(config).configure()
+  File "/usr/lib/python3.12/logging/config.py", line 588, in configure
+    raise ValueError('Unable to configure handler '
+ValueError: Unable to configure handler 'file'
+[2026-05-14 13:13:45 +0800] [256892] [INFO] Worker exiting (pid: 256892)
+[2026-05-14 08:13:45 +0300] [256889] [INFO] Worker (pid:256891) was sent SIGTERM!
+[2026-05-14 08:13:45 +0300] [256889] [ERROR] Worker (pid:256892) exited with code 3.
+[2026-05-14 08:18:03 +0300] [256928] [INFO] Starting gunicorn 26.0.0
+[2026-05-14 08:18:03 +0300] [256928] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (256928)
+[2026-05-14 08:18:03 +0300] [256928] [INFO] Using worker: sync
+[2026-05-14 08:18:03 +0300] [256929] [INFO] Booting worker with pid: 256929
+[2026-05-14 08:18:03 +0300] [256930] [INFO] Booting worker with pid: 256930
+[2026-05-14 08:18:03 +0300] [256931] [INFO] Booting worker with pid: 256931
+[2026-05-14 08:18:03 +0300] [256928] [INFO] Control socket listening at /run/user/0/gunicorn.ctl
+[2026-05-14 08:22:13 +0300] [256928] [INFO] Handling signal: int
+[2026-05-14 13:22:13 +0800] [256930] [INFO] Worker exiting (pid: 256930)
+[2026-05-14 13:22:13 +0800] [256931] [INFO] Worker exiting (pid: 256931)
+[2026-05-14 13:22:13 +0800] [256929] [INFO] Worker exiting (pid: 256929)
+[2026-05-14 08:22:14 +0300] [256928] [INFO] Shutting down: Master
+[2026-05-14 08:23:20 +0300] [256973] [INFO] Starting gunicorn 26.0.0
+[2026-05-14 08:23:20 +0300] [256973] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (256973)
+[2026-05-14 08:23:20 +0300] [256973] [INFO] Using worker: sync
+[2026-05-14 08:23:20 +0300] [256974] [INFO] Booting worker with pid: 256974
+[2026-05-14 08:23:20 +0300] [256975] [INFO] Booting worker with pid: 256975
+[2026-05-14 08:23:21 +0300] [256976] [INFO] Booting worker with pid: 256976
+[2026-05-14 08:23:21 +0300] [256973] [ERROR] Control server error: [Errno 13] Permission denied: '/var/www/.gunicorn'
+[2026-05-14 08:25:45 +0300] [256973] [INFO] Handling signal: term
+[2026-05-14 13:25:45 +0800] [256974] [INFO] Worker exiting (pid: 256974)
+[2026-05-14 13:25:45 +0800] [256975] [INFO] Worker exiting (pid: 256975)
+[2026-05-14 13:25:45 +0800] [256976] [INFO] Worker exiting (pid: 256976)
+[2026-05-14 08:25:46 +0300] [256973] [INFO] Shutting down: Master
+[2026-05-14 08:26:14 +0300] [257042] [INFO] Starting gunicorn 26.0.0
+[2026-05-14 08:26:14 +0300] [257042] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (257042)
+[2026-05-14 08:26:14 +0300] [257042] [INFO] Using worker: sync
+[2026-05-14 08:26:14 +0300] [257043] [INFO] Booting worker with pid: 257043
+[2026-05-14 08:26:14 +0300] [257044] [INFO] Booting worker with pid: 257044
+[2026-05-14 08:26:14 +0300] [257045] [INFO] Booting worker with pid: 257045
+[2026-05-14 08:26:14 +0300] [257042] [ERROR] Control server error: [Errno 13] Permission denied: '/var/www/.gunicorn'
+[2026-05-14 08:26:54 +0300] [257056] [INFO] Starting gunicorn 26.0.0
+[2026-05-14 08:37:32 +0300] [257136] [INFO] Starting gunicorn 26.0.0
+[2026-05-14 08:44:00 +0300] [257042] [INFO] Handling signal: term
+[2026-05-14 13:44:00 +0800] [257043] [INFO] Worker exiting (pid: 257043)
+[2026-05-14 13:44:00 +0800] [257044] [INFO] Worker exiting (pid: 257044)
+[2026-05-14 13:44:00 +0800] [257045] [INFO] Worker exiting (pid: 257045)
+[2026-05-14 08:44:01 +0300] [257042] [INFO] Shutting down: Master
+[2026-05-14 08:44:01 +0300] [257211] [INFO] Starting gunicorn 26.0.0
+[2026-05-14 08:44:01 +0300] [257211] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (257211)
+[2026-05-14 08:44:01 +0300] [257211] [INFO] Using worker: sync
+[2026-05-14 08:44:01 +0300] [257212] [INFO] Booting worker with pid: 257212
+[2026-05-14 08:44:01 +0300] [257213] [INFO] Booting worker with pid: 257213
+[2026-05-14 08:44:01 +0300] [257214] [INFO] Booting worker with pid: 257214
+[2026-05-14 08:44:01 +0300] [257211] [INFO] Control socket listening at /var/www/.gunicorn/gunicorn.ctl
+[2026-05-14 10:59:27 +0300] [257211] [INFO] Handling signal: term
+[2026-05-14 15:59:27 +0800] [257213] [INFO] Worker exiting (pid: 257213)
+[2026-05-14 15:59:27 +0800] [257212] [INFO] Worker exiting (pid: 257212)
+[2026-05-14 15:59:27 +0800] [257214] [INFO] Worker exiting (pid: 257214)
+[2026-05-14 10:59:28 +0300] [257211] [INFO] Shutting down: Master
+[2026-05-14 10:59:28 +0300] [258696] [INFO] Starting gunicorn 26.0.0
+[2026-05-14 10:59:28 +0300] [258696] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (258696)
+[2026-05-14 10:59:28 +0300] [258696] [INFO] Using worker: sync
+[2026-05-14 10:59:28 +0300] [258697] [INFO] Booting worker with pid: 258697
+[2026-05-14 10:59:28 +0300] [258698] [INFO] Booting worker with pid: 258698
+[2026-05-14 10:59:29 +0300] [258699] [INFO] Booting worker with pid: 258699
+[2026-05-14 10:59:29 +0300] [258696] [INFO] Control socket listening at /var/www/.gunicorn/gunicorn.ctl
+[2026-05-14 11:02:09 +0300] [258696] [INFO] Handling signal: term
+[2026-05-14 16:02:09 +0800] [258699] [INFO] Worker exiting (pid: 258699)
+[2026-05-14 16:02:09 +0800] [258697] [INFO] Worker exiting (pid: 258697)
+[2026-05-14 16:02:09 +0800] [258698] [INFO] Worker exiting (pid: 258698)
+[2026-05-14 11:02:10 +0300] [258696] [INFO] Shutting down: Master
+[2026-05-14 11:02:10 +0300] [258774] [INFO] Starting gunicorn 26.0.0
+[2026-05-14 11:02:10 +0300] [258774] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (258774)
+[2026-05-14 11:02:10 +0300] [258774] [INFO] Using worker: sync
+[2026-05-14 11:02:10 +0300] [258775] [INFO] Booting worker with pid: 258775
+[2026-05-14 11:02:10 +0300] [258776] [INFO] Booting worker with pid: 258776
+[2026-05-14 11:02:10 +0300] [258777] [INFO] Booting worker with pid: 258777
+[2026-05-14 11:02:10 +0300] [258774] [INFO] Control socket listening at /var/www/.gunicorn/gunicorn.ctl
+[2026-05-14 11:03:59 +0300] [258774] [INFO] Handling signal: term
+[2026-05-14 16:03:59 +0800] [258775] [INFO] Worker exiting (pid: 258775)
+[2026-05-14 16:03:59 +0800] [258777] [INFO] Worker exiting (pid: 258777)
+[2026-05-14 16:03:59 +0800] [258776] [INFO] Worker exiting (pid: 258776)
+[2026-05-14 11:04:00 +0300] [258774] [INFO] Shutting down: Master
+[2026-05-14 11:04:00 +0300] [258812] [INFO] Starting gunicorn 26.0.0
+[2026-05-14 11:04:00 +0300] [258812] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (258812)
+[2026-05-14 11:04:00 +0300] [258812] [INFO] Using worker: sync
+[2026-05-14 11:04:00 +0300] [258813] [INFO] Booting worker with pid: 258813
+[2026-05-14 11:04:00 +0300] [258814] [INFO] Booting worker with pid: 258814
+[2026-05-14 11:04:00 +0300] [258815] [INFO] Booting worker with pid: 258815
+[2026-05-14 11:04:00 +0300] [258812] [INFO] Control socket listening at /var/www/.gunicorn/gunicorn.ctl
+[2026-05-14 11:05:52 +0300] [258812] [INFO] Handling signal: term
+[2026-05-14 16:05:52 +0800] [258813] [INFO] Worker exiting (pid: 258813)
+[2026-05-14 16:05:52 +0800] [258814] [INFO] Worker exiting (pid: 258814)
+[2026-05-14 16:05:52 +0800] [258815] [INFO] Worker exiting (pid: 258815)
+[2026-05-14 11:05:52 +0300] [258812] [INFO] Shutting down: Master
+[2026-05-14 11:05:52 +0300] [258907] [INFO] Starting gunicorn 26.0.0
+[2026-05-14 11:05:52 +0300] [258907] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (258907)
+[2026-05-14 11:05:52 +0300] [258907] [INFO] Using worker: sync
+[2026-05-14 11:05:52 +0300] [258908] [INFO] Booting worker with pid: 258908
+[2026-05-14 11:05:53 +0300] [258909] [INFO] Booting worker with pid: 258909
+[2026-05-14 11:05:53 +0300] [258910] [INFO] Booting worker with pid: 258910
+[2026-05-14 11:05:53 +0300] [258907] [INFO] Control socket listening at /var/www/.gunicorn/gunicorn.ctl
+[2026-05-15 04:44:36 +0300] [258907] [INFO] Handling signal: term
+[2026-05-15 09:44:36 +0800] [258910] [INFO] Worker exiting (pid: 258910)
+[2026-05-15 09:44:36 +0800] [258908] [INFO] Worker exiting (pid: 258908)
+[2026-05-15 09:44:36 +0800] [258909] [INFO] Worker exiting (pid: 258909)
+[2026-05-15 04:44:37 +0300] [258907] [INFO] Shutting down: Master
+[2026-05-15 04:44:37 +0300] [270724] [INFO] Starting gunicorn 26.0.0
+[2026-05-15 04:44:37 +0300] [270724] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (270724)
+[2026-05-15 04:44:37 +0300] [270724] [INFO] Using worker: sync
+[2026-05-15 04:44:37 +0300] [270725] [INFO] Booting worker with pid: 270725
+[2026-05-15 04:44:37 +0300] [270726] [INFO] Booting worker with pid: 270726
+[2026-05-15 04:44:37 +0300] [270727] [INFO] Booting worker with pid: 270727
+[2026-05-15 04:44:37 +0300] [270724] [INFO] Control socket listening at /var/www/.gunicorn/gunicorn.ctl
+[2026-05-15 04:51:19 +0300] [270724] [INFO] Handling signal: term
+[2026-05-15 09:51:19 +0800] [270726] [INFO] Worker exiting (pid: 270726)
+[2026-05-15 09:51:19 +0800] [270725] [INFO] Worker exiting (pid: 270725)
+[2026-05-15 09:51:19 +0800] [270727] [INFO] Worker exiting (pid: 270727)
+[2026-05-15 04:51:20 +0300] [270724] [INFO] Shutting down: Master
+[2026-05-15 04:51:20 +0300] [270848] [INFO] Starting gunicorn 26.0.0
+[2026-05-15 04:51:20 +0300] [270848] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (270848)
+[2026-05-15 04:51:20 +0300] [270848] [INFO] Using worker: sync
+[2026-05-15 04:51:20 +0300] [270849] [INFO] Booting worker with pid: 270849
+[2026-05-15 04:51:20 +0300] [270850] [INFO] Booting worker with pid: 270850
+[2026-05-15 04:51:20 +0300] [270851] [INFO] Booting worker with pid: 270851
+[2026-05-15 04:51:20 +0300] [270848] [INFO] Control socket listening at /var/www/.gunicorn/gunicorn.ctl
