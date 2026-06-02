@@ -12,7 +12,8 @@ from .models import (
     Report, OperationLog, AgeRating, TicketStatus, Country,
     HallType, Director, Actor, MovieDirector, MovieActor,
     TicketGroup, ActionType, ModuleType, EmailChangeRequest,
-    MovieGenre, ImportCache, ImportTask, APIRequestLog, APIToken, PriceHistory
+    MovieGenre, ImportCache, ImportTask, APIRequestLog, APIToken, PriceHistory,
+    MovieCountry
 )
 from .models import Hall, Movie, Screening, Seat, Ticket, User, Genre
 from .report_utils import ReportGenerator
@@ -402,16 +403,29 @@ class MovieActorInline(admin.TabularInline):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
+class MovieCountryInline(admin.TabularInline):
+    """Инлайн для стран фильма"""
+    model = MovieCountry
+    extra = 1
+    verbose_name = 'Страна'
+    verbose_name_plural = 'Страны'
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'country':
+            kwargs['queryset'] = Country.objects.all().order_by('name')
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
 @admin.register(Movie)
 class MovieAdmin(LoggingModelAdmin):
-    list_display = ('title', 'release_year', 'display_genres', 'age_rating', 'duration_display', 'has_poster', 'screening_count')
+    list_display = ('title', 'release_year', 'display_genres', 'display_countries', 'age_rating', 'duration_display', 'has_poster', 'screening_count')
     search_fields = ('title', 'description')
     list_filter = ('age_rating', 'release_year')
     list_per_page = 20
     form = MovieForm
     readonly_fields = ('created_at',)
 
-    inlines = [MovieGenreInline, MovieDirectorInline, MovieActorInline]
+    inlines = [MovieGenreInline, MovieDirectorInline, MovieActorInline, MovieCountryInline]
 
     fieldsets = (
         (None, {
@@ -431,6 +445,14 @@ class MovieAdmin(LoggingModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+    def display_countries(self, obj):
+        countries = obj.countries.all()
+        if countries:
+            return ", ".join(c.name for c in countries)
+        return "-"
+
+    display_countries.short_description = 'Страны'
 
     def duration_display(self, obj):
         hours = obj.duration // 60

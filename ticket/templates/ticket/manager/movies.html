@@ -55,6 +55,7 @@
                 <th>Постер</th>
                 <th>Название</th>
                 <th>Жанры</th>
+                <th>Страны</th>
                 <th>Год</th>
                 <th>Возраст</th>
                 <th>Длительность</th>
@@ -75,6 +76,13 @@
                 <td>
                     {% for genre in movie.genres.all %}
                         <span class="genre-tag">{{ genre.name }}</span>
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for country in movie.countries.all %}
+                        <span class="country-tag">{{ country.name }}</span>
+                    {% empty %}
+                        —
                     {% endfor %}
                 </td>
                 <td>{{ movie.release_year }}</td>

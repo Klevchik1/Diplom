@@ -12,6 +12,16 @@
     overflow: hidden; /* Предотвращает выход содержимого */
 }
 
+.country-tag {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    margin: 2px;
+}
+
 /* Заголовок */
 .form-container h2 {
     color: #ffcc00;

@@ -385,6 +385,12 @@ class Actor(models.Model):
 
 class Movie(models.Model):
     title = models.CharField(max_length=50, verbose_name='Название фильма')
+    countries = models.ManyToManyField(
+        Country,
+        through='MovieCountry',
+        verbose_name='Страны',
+        related_name='movies'
+    )
     short_description = models.CharField(
         max_length=200,
         blank=True,
@@ -459,6 +465,25 @@ class Movie(models.Model):
             models.Index(fields=['age_rating']),
             models.Index(fields=['release_year']),
         ]
+
+
+class MovieCountry(models.Model):
+    """Связующая модель для фильмов и стран"""
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, verbose_name='Фильм')
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, verbose_name='Страна')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата и время создания')
+
+    class Meta:
+        verbose_name = 'Страна фильма'
+        verbose_name_plural = 'Страны фильмов'
+        unique_together = ('movie', 'country')
+        indexes = [
+            models.Index(fields=['movie']),
+            models.Index(fields=['country']),
+        ]
+
+    def __str__(self):
+        return f"{self.movie.title} - {self.country.name}"
 
 
 class MovieDirector(models.Model):

@@ -320,11 +320,17 @@ class MovieForm(forms.ModelForm):
         required=False,
         label='Актёры'
     )
+    countries = forms.ModelMultipleChoiceField(
+        queryset=Country.objects.all(),
+        widget=forms.SelectMultiple(attrs={'class': 'form-control', 'size': '5'}),
+        required=False,
+        label='Страны'
+    )
 
     class Meta:
         model = Movie
         fields = ['title', 'release_year', 'short_description', 'description',
-                  'duration', 'age_rating', 'poster', 'genres', 'directors', 'actors']
+                  'duration', 'age_rating', 'poster', 'genres', 'directors', 'actors', 'countries']
         widgets = {
             'short_description': forms.Textarea(attrs={
                 'rows': 3,
@@ -349,11 +355,13 @@ class MovieForm(forms.ModelForm):
             self.fields['genres'].initial = self.instance.genres.all()
             self.fields['directors'].initial = self.instance.directors.all()
             self.fields['actors'].initial = self.instance.actors.all()
+            self.fields['countries'].initial = self.instance.countries.all()
 
         # Настройка виджетов для ManyToMany полей
         self.fields['genres'].widget.attrs['class'] = 'form-control select2-multiple'
         self.fields['directors'].widget.attrs['class'] = 'form-control select2-multiple'
         self.fields['actors'].widget.attrs['class'] = 'form-control select2-multiple'
+        self.fields['countries'].widget.attrs['class'] = 'form-control select2-multiple'
 
         if 'age_rating' in self.fields:
             self.fields['age_rating'].empty_label = "----- Выберите возрастной рейтинг -----"
@@ -376,6 +384,7 @@ class MovieForm(forms.ModelForm):
             self.instance.genres.set(self.cleaned_data.get('genres', []))
             self.instance.directors.set(self.cleaned_data.get('directors', []))
             self.instance.actors.set(self.cleaned_data.get('actors', []))
+            self.instance.countries.set(self.cleaned_data.get('countries', []))
 
     def clean_release_year(self):
         year = self.cleaned_data.get('release_year')

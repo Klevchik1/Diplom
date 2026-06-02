@@ -8,7 +8,8 @@ from django.utils import timezone
 from django.core.files.base import ContentFile
 from ticket.models import (
     Movie, Genre, AgeRating, Director, Actor,
-    MovieDirector, MovieActor, MovieGenre, Hall, Screening, APIToken, Country
+    MovieDirector, MovieActor, MovieGenre, Hall, Screening, APIToken, Country,
+    MovieCountry  # ДОБАВЛЕНО
 )
 from ticket.tmdb_client import KinopoiskDevClient
 
@@ -19,53 +20,70 @@ class Command(BaseCommand):
     help = 'Полный импорт фильмов с сеансами'
 
     def add_arguments(self, parser):
-        parser.add_argument('--pages', type=int, default=3)
-        parser.add_argument('--min-duration', type=int, default=60)
-        parser.add_argument('--dry-run', action='store_true')
-        parser.add_argument('--verbose', action='store_true')
+        parser.add_argument('--pages', type=int, default=3, help='Количество страниц (по 50 фильмов)')
+        parser.add_argument('--min-duration', type=int, default=60, help='Минимальная длительность фильма')
+        parser.add_argument('--dry-run', action='store_true', help='Пробный запуск без сохранения')
+        parser.add_argument('--verbose', action='store_true', help='Подробный вывод')
+        parser.add_argument('--screening-days', type=int, default=30, help='На сколько дней вперёд создавать сеансы')
+        parser.add_argument('--min-screenings', type=int, default=3, help='Минимум сеансов на фильм')
+        parser.add_argument('--max-screenings', type=int, default=6, help='Максимум сеансов на фильм')
 
     def handle(self, *args, **options):
         pages = options['pages']
         min_duration = options['min_duration']
         self.dry_run = options['dry_run']
         self.verbose = options['verbose']
+        self.screening_days = options['screening_days']
+        self.min_screenings_per_movie = options['min_screenings']
+        self.max_screenings_per_movie = options['max_screenings']
 
-        self.time_slots = [10, 12, 14, 16, 18, 20]
-        self.screening_days = 30
-        self.screening_interval = 20
-        self.min_screenings_per_movie = 3
-        self.max_screenings_per_movie = 6
+        self.time_slots = [10, 12, 14, 16, 18, 20, 22]  # Часы начала сеансов
+        self.screening_interval = 20  # Минут между сеансами
 
         self.known_countries = {
-            'россия': 'RU', 'сша': 'US', 'великобритания': 'GB', 'германия': 'DE',
-            'франция': 'FR', 'италия': 'IT', 'испания': 'ES', 'япония': 'JP',
-            'китай': 'CN', 'южная корея': 'KR', 'канада': 'CA', 'австралия': 'AU',
+            'россия': 'RU', 'рф': 'RU', 'russia': 'RU',
+            'сша': 'US', 'usa': 'US', 'united states': 'US', 'america': 'US',
+            'великобритания': 'GB', 'uk': 'GB', 'united kingdom': 'GB',
+            'германия': 'DE', 'germany': 'DE',
+            'франция': 'FR', 'france': 'FR',
+            'италия': 'IT', 'italy': 'IT',
+            'испания': 'ES', 'spain': 'ES',
+            'япония': 'JP', 'japan': 'JP',
+            'китай': 'CN', 'china': 'CN',
+            'южная корея': 'KR', 'korea': 'KR', 'south korea': 'KR',
+            'канада': 'CA', 'canada': 'CA',
+            'австралия': 'AU', 'australia': 'AU',
+            'индия': 'IN', 'india': 'IN',
+            'казахстан': 'KZ', 'kazakhstan': 'KZ',
         }
 
         self.stdout.write(self.style.SUCCESS('=' * 60))
-        self.stdout.write(self.style.SUCCESS('🎬 ПОЛНЫЙ ИМПОРТ ФИЛЬМОВ'))
+        self.stdout.write(self.style.SUCCESS('🎬 ПОЛНЫЙ ИМПОРТ ФИЛЬМОВ С СЕАНСАМИ'))
         self.stdout.write(self.style.SUCCESS('=' * 60))
 
+        # Получаем залы
         self.halls = list(Hall.objects.all())
         if not self.halls:
-            self.stdout.write(self.style.ERROR('❌ Нет залов!'))
+            self.stdout.write(self.style.ERROR('❌ Нет залов! Сначала создайте залы через админ-панель.'))
             return
         self.stdout.write(f"🏗️ Залов: {len(self.halls)}")
 
-        token = APIToken.objects.filter(is_active=True, label='Резервный 4').first()
-        if not token:
-            token = APIToken.objects.filter(is_active=True).first()
+        # Получаем активный токен
+        token = APIToken.objects.filter(is_active=True).first()
         if not token:
             self.stdout.write(self.style.ERROR('❌ Нет активных API токенов!'))
+            self.stdout.write('   Добавьте токены через админ-панель или команду init_tokens')
             return
-        self.stdout.write(f"🔑 Используем токен: {token.label}")
+        self.stdout.write(f"🔑 Используем токен: {token.label} (осталось: {token.remaining_today()}/{token.daily_limit})")
 
         self.client = KinopoiskDevClient(token_model=token)
 
+        # Кэши для существующих данных
         self.existing_countries = {c.name.lower(): c for c in Country.objects.all()}
         self.existing_directors = {}
         self.existing_actors = {}
         self.existing_genres = {g.name.lower(): g for g in Genre.objects.all()}
+        self.existing_movies = set(Movie.objects.values_list('title', flat=True))
 
         self.stats = {
             'movies': 0, 'genres': 0, 'countries': 0,
@@ -76,6 +94,11 @@ class Command(BaseCommand):
         current_year = datetime.now().year
 
         for page in range(1, pages + 1):
+            # Проверяем остаток запросов
+            if token.remaining_today() < 5:
+                self.stdout.write(self.style.WARNING(f'\n⚠️ У токена {token.label} осталось {token.remaining_today()} запросов. Остановка.'))
+                break
+
             self.stdout.write(f"\n📄 Страница {page}/{pages}...")
 
             result = self.client.get_movies_page(
@@ -95,7 +118,7 @@ class Command(BaseCommand):
             for movie_data in movies_data:
                 try:
                     self.process_movie(movie_data, min_duration)
-                    time.sleep(0.2)
+                    time.sleep(0.2)  # Пауза между фильмами
                 except Exception as e:
                     self.stats['errors'] += 1
                     if self.verbose:
@@ -105,37 +128,52 @@ class Command(BaseCommand):
         self.print_stats()
 
     def get_or_create_country(self, country_name):
+        """Создать или получить страну"""
         if not country_name or len(country_name) > 20:
             return None
         country_lower = country_name.lower().strip()
         if country_lower in self.existing_countries:
             return self.existing_countries[country_lower]
+
         for name_ru, code in self.known_countries.items():
             if name_ru in country_lower:
                 if not self.dry_run:
-                    country, _ = Country.objects.get_or_create(name=name_ru.capitalize(), defaults={'code': code})
+                    country, created = Country.objects.get_or_create(
+                        name=name_ru.capitalize(),
+                        defaults={'code': code}
+                    )
                 else:
                     country = type('obj', (), {})()
+                    created = False
                 self.existing_countries[country_lower] = country
-                self.stats['countries'] += 1
+                if created:
+                    self.stats['countries'] += 1
+                    if self.verbose:
+                        self.stdout.write(f"    🌍 Создана страна: {country.name}")
                 return country
         return None
 
     def get_or_create_genre(self, genre_name):
+        """Создать или получить жанр"""
         if not genre_name:
             return None
         name_lower = genre_name.lower().strip()
         if name_lower in self.existing_genres:
             return self.existing_genres[name_lower]
         if not self.dry_run:
-            genre, _ = Genre.objects.get_or_create(name=genre_name.capitalize())
+            genre, created = Genre.objects.get_or_create(name=genre_name.capitalize())
         else:
             genre = type('obj', (), {})()
+            created = False
         self.existing_genres[name_lower] = genre
-        self.stats['genres'] += 1
+        if created:
+            self.stats['genres'] += 1
+            if self.verbose:
+                self.stdout.write(f"    🎭 Создан жанр: {genre.name}")
         return genre
 
     def get_or_create_person(self, person_data, role):
+        """Создать или получить актёра или режиссёра"""
         name = person_data.get('name', '')
         if not name or len(name) < 2:
             return None
@@ -166,6 +204,7 @@ class Command(BaseCommand):
             return person_obj
 
     def download_poster(self, url, title):
+        """Скачать постер"""
         if not url:
             return None
         try:
@@ -178,6 +217,7 @@ class Command(BaseCommand):
         return None
 
     def create_screenings(self, movie):
+        """Создать сеансы для фильма"""
         created = 0
         today = timezone.now().date()
         num = random.randint(self.min_screenings_per_movie, self.max_screenings_per_movie)
@@ -187,16 +227,23 @@ class Command(BaseCommand):
             day_offset = random.randint(0, self.screening_days)
             session_date = today + timedelta(days=day_offset)
             hour = random.choice(self.time_slots)
-            start_time = timezone.make_aware(datetime(session_date.year, session_date.month, session_date.day, hour, 0))
+            minute = random.choice([0, 10, 20, 30, 40, 50])  # Разные минуты
+            start_time = timezone.make_aware(datetime(
+                session_date.year, session_date.month, session_date.day, hour, minute
+            ))
             end_time = start_time + timedelta(minutes=movie.duration + self.screening_interval)
 
+            # Проверяем пересечение с другими сеансами
             if not Screening.objects.filter(hall=hall, start_time__lt=end_time, end_time__gt=start_time).exists():
                 if not self.dry_run:
-                    Screening.objects.create(movie=movie, hall=hall, start_time=start_time, end_time=end_time)
+                    # Цена рассчитается автоматически при сохранении
+                    screening = Screening(movie=movie, hall=hall, start_time=start_time)
+                    screening.save()  # Триггеры сами рассчитают цену и end_time
                 created += 1
         return created
 
     def process_movie(self, movie_data, min_duration):
+        """Обработать один фильм"""
         title = movie_data.get('name')
         movie_id = movie_data.get('id')
         duration = movie_data.get('movieLength', 0)
@@ -204,11 +251,13 @@ class Command(BaseCommand):
         if not title or duration < min_duration:
             return
 
-        if Movie.objects.filter(title=title).exists():
+        # Пропускаем уже существующие
+        if title in self.existing_movies:
             if self.verbose:
-                self.stdout.write(f"  ⏭️ Пропущен: {title[:40]}")
+                self.stdout.write(f"  ⏭️ Пропущен: {title[:40]} (уже есть)")
             return
 
+        # Получаем детальную информацию о фильме
         details = self.client.get_movie_by_id(movie_id)
         self.stats['api_requests'] += 1
 
@@ -218,12 +267,15 @@ class Command(BaseCommand):
         if self.verbose:
             self.stdout.write(f"\n  🎬 {title[:40]}...")
 
+        # Возрастной рейтинг
         age_str = f"{details.get('ageRating', 16)}+"
         if not self.dry_run:
             age_rating, _ = AgeRating.objects.get_or_create(name=age_str)
 
+        # Описание
         description = details.get('description', '') or details.get('shortDescription', f'Фильм {title}')
 
+        # Создаём фильм
         if not self.dry_run:
             movie = Movie.objects.create(
                 title=title[:50],
@@ -234,9 +286,13 @@ class Command(BaseCommand):
                 age_rating=age_rating
             )
             self.stats['movies'] += 1
+            self.existing_movies.add(title)
+            if self.verbose:
+                self.stdout.write(f"    ✅ Создан фильм ID: {movie.id}")
         else:
             movie = type('obj', (), {'duration': duration, 'id': None})()
 
+        # Жанры
         for genre_data in details.get('genres', []):
             genre_name = genre_data.get('name')
             if genre_name:
@@ -244,6 +300,17 @@ class Command(BaseCommand):
                 if genre and not self.dry_run:
                     MovieGenre.objects.get_or_create(movie=movie, genre=genre)
 
+        # СТРАНЫ (добавлено!)
+        for country_data in details.get('countries', []):
+            country_name = country_data.get('name')
+            if country_name:
+                country = self.get_or_create_country(country_name)
+                if country and not self.dry_run:
+                    MovieCountry.objects.get_or_create(movie=movie, country=country)
+                    if self.verbose:
+                        self.stdout.write(f"    🌍 Добавлена страна: {country.name}")
+
+        # Персоны (актёры и режиссёры)
         for person in details.get('persons', [])[:30]:
             profession = person.get('profession', '').lower()
             person_name = person.get('name')
@@ -259,6 +326,7 @@ class Command(BaseCommand):
                 if actor and not self.dry_run:
                     MovieActor.objects.get_or_create(movie=movie, actor=actor)
 
+        # Постер
         if not self.dry_run:
             poster_url = None
             poster_data = details.get('poster', {})
@@ -269,18 +337,21 @@ class Command(BaseCommand):
                 if poster_content:
                     movie.poster.save(f"{title[:50]}.jpg", poster_content, save=True)
                     self.stats['posters'] += 1
+                    if self.verbose:
+                        self.stdout.write(f"    🖼️ Постер скачан")
 
+            # Сеансы
             screenings = self.create_screenings(movie)
             self.stats['screenings'] += screenings
-            if self.verbose:
-                self.stdout.write(f"    🎬 Сеансов: {screenings}")
+            if self.verbose and screenings > 0:
+                self.stdout.write(f"    🎬 Создано сеансов: {screenings}")
 
         if self.verbose:
             self.stdout.write(f"    ✅ Готово")
 
     def print_stats(self):
         self.stdout.write(self.style.SUCCESS('\n' + '=' * 60))
-        self.stdout.write(self.style.SUCCESS('📊 ИТОГИ'))
+        self.stdout.write(self.style.SUCCESS('📊 ИТОГИ ИМПОРТА'))
         self.stdout.write('=' * 60)
         self.stdout.write(f"   🎬 Фильмов: {self.stats['movies']}")
         self.stdout.write(f"   🎭 Жанров создано: {self.stats['genres']}")

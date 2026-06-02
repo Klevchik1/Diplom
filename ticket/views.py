@@ -354,7 +354,7 @@ def home(request):
 
     # Получаем все фильмы
     movies = Movie.objects.prefetch_related(
-        'screenings__hall', 'genres'
+        'screenings__hall', 'genres', 'countries'
     ).select_related('age_rating').all()
 
     movies = movies.filter(
@@ -2332,7 +2332,7 @@ def manager_dashboard(request):
 @user_passes_test(is_manager, login_url='login')
 def manager_movies(request):
     """Управление фильмами для менеджера"""
-    movies = Movie.objects.all().select_related('age_rating').prefetch_related('genres').order_by('-created_at')
+    movies = Movie.objects.all().select_related('age_rating').prefetch_related('genres', 'countries').order_by('-created_at')
     return render(request, 'ticket/manager/movies.html', {'movies': movies})
 
 
