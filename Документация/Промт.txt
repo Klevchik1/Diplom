@@ -259,13 +259,7 @@ cinema-management-system/                         # Корень проекта 
 │   │   └── ru_filters.py
 │   │
 │   └── tests/                                    # Модульные тесты
-│       ├── __init__.py
-│       ├── test_authentication.py
-│       ├── test_model_validation.py
-│       ├── test_pdf_generation.py
-│       ├── test_report_generation.py
-│       ├── test_ticket_booking.py
-│       └── test_ticket_refund.py
+│       └── __init__.py
 │
 ├── .env                                          # Переменные окружения (секреты)
 ├── .env.development                              # Переменные для разработки
