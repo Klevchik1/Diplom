@@ -2893,7 +2893,6 @@ def manager_settings(request):
                 'icon': '⚙️',
                 'links': [
                     {'name': 'API токены', 'url': '/admin/ticket/apitoken/', 'description': 'Управление токенами Poiskkino.dev'},
-                    {'name': 'Бэкапы', 'url': '/admin/ticket/backupmanager/', 'description': 'Управление бэкапами БД'},
                     {'name': 'Пользователи', 'url': '/admin/ticket/user/', 'description': 'Управление пользователями'},
                 ]
             },

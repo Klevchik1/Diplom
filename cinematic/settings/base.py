@@ -111,9 +111,6 @@ SESSION_COOKIE_AGE = 3600  # 1 час
 SESSION_COOKIE_HTTPONLY = True
 SESSION_SAVE_EVERY_REQUEST = True
 
-# Backup directory
-BACKUP_DIR = os.path.join(BASE_DIR, 'backups')
-
 # Email Settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.yandex.ru'

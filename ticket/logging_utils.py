@@ -44,7 +44,6 @@ class OperationLogger:
             'EXPORT': 'Экспорт',
             'LOGIN': 'Вход',
             'LOGOUT': 'Выход',
-            'BACKUP': 'Бэкап',
             'REPORT': 'Отчет',
             'OTHER': 'Прочее',
         }
@@ -60,7 +59,6 @@ class OperationLogger:
             'SCREENINGS': 'Сеансы',
             'TICKETS': 'Билеты',
             'REPORTS': 'Отчеты',
-            'BACKUPS': 'Бэкапы',
             'SYSTEM': 'Система',
             'AUTH': 'Аутентификация',
         }
@@ -165,7 +163,6 @@ class OperationLogger:
             'AGERATING': 'MOVIES',
             'SEAT': 'HALLS',
             'TICKETSTATUS': 'TICKETS',
-            'BACKUPMANAGER': 'BACKUPS',
             'OPERATIONLOG': 'SYSTEM',
             'PENDINGREGISTRATION': 'AUTH',
             'PASSWORDRESETREQUEST': 'AUTH',
@@ -203,17 +200,6 @@ class OperationLogger:
                 'format_type': format_type,
                 'filters': filters
             }
-        )
-
-    @staticmethod
-    def log_backup_operation(request, backup_type, description):
-        """Логирование операций с бэкапами"""
-        return OperationLogger.log_operation(
-            request=request,
-            action_type='BACKUP',
-            module_type='BACKUPS',
-            description=description,
-            additional_data={'backup_type': backup_type}
         )
 
     @staticmethod

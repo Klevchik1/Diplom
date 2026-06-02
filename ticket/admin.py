@@ -8,7 +8,7 @@ from .export_utils import LogExporter
 from .forms import ReportFilterForm, MovieForm, ScreeningAdminForm
 from .logging_utils import OperationLogger
 from .models import (
-    BackupManager, PasswordResetRequest, PendingRegistration,
+    PasswordResetRequest, PendingRegistration,
     Report, OperationLog, AgeRating, TicketStatus, Country,
     HallType, Director, Actor, MovieDirector, MovieActor,
     TicketGroup, ActionType, ModuleType, EmailChangeRequest,
@@ -167,7 +167,6 @@ class LoggingModelAdmin(admin.ModelAdmin):
             'TicketStatus': 'TICKETS',
             'TicketGroup': 'TICKETS',
             'Country': 'SYSTEM',
-            'BackupManager': 'BACKUPS',
             'OperationLog': 'SYSTEM',
         }
 
@@ -216,7 +215,6 @@ class LoggingModelAdmin(admin.ModelAdmin):
             'TicketStatus': 'TICKETS',
             'TicketGroup': 'TICKETS',
             'Country': 'SYSTEM',
-            'BackupManager': 'BACKUPS',
             'OperationLog': 'SYSTEM',
         }
 
@@ -248,7 +246,6 @@ class LoggingModelAdmin(admin.ModelAdmin):
                 'TicketStatus': 'TICKETS',
                 'TicketGroup': 'TICKETS',
                 'Country': 'SYSTEM',
-                'BackupManager': 'BACKUPS',
                 'OperationLog': 'SYSTEM',
             }
 
@@ -1025,295 +1022,6 @@ class ModuleTypeAdmin(LoggingModelAdmin):
     list_display = ('code', 'name', 'created_at')
     search_fields = ('code', 'name', 'description')
     readonly_fields = ('created_at',)
-
-
-# Функции для actions
-def create_full_backup(modeladmin, request, queryset):
-    """Action для создания полного бэкапа"""
-    try:
-        call_command('backup_db')
-        OperationLogger.log_backup_operation(
-            request=request,
-            backup_type='FULL',
-            description='Создан полный бэкап базы данных'
-        )
-        messages.success(request, '✅ Full backup created successfully!')
-    except Exception as e:
-        OperationLogger.log_operation(
-            request=request,
-            action_type='BACKUP',
-            module_type='BACKUPS',
-            description=f'Ошибка создания бэкапа: {str(e)}',
-            additional_data={'error': str(e)}
-        )
-        messages.error(request, f'❌ Error creating backup: {str(e)}')
-
-
-create_full_backup.short_description = "📦 Create full database backup"
-
-
-def create_daily_backup_today(modeladmin, request, queryset):
-    """Action для создания дневного бэкапа за сегодня"""
-    from datetime import date
-    try:
-        call_command('backup_db', f'--date={date.today()}')
-        OperationLogger.log_backup_operation(
-            request=request,
-            backup_type='DAILY',
-            description=f'Создан дневной бэкап за {date.today()}'
-        )
-        messages.success(request, f'✅ Daily backup for {date.today()} created successfully!')
-    except Exception as e:
-        OperationLogger.log_operation(
-            request=request,
-            action_type='BACKUP',
-            module_type='BACKUPS',
-            description=f'Ошибка создания дневного бэкапа: {str(e)}',
-            additional_data={'error': str(e)}
-        )
-        messages.error(request, f'❌ Error creating daily backup: {str(e)}')
-
-
-create_daily_backup_today.short_description = "📅 Create daily backup for today"
-
-
-@admin.register(BackupManager)
-class BackupManagerAdmin(LoggingModelAdmin):
-    list_display = [
-        'name', 'backup_type', 'backup_date', 'created_at',
-        'file_status', 'file_size', 'restoration_status_display'
-    ]
-    list_filter = ['backup_type', 'created_at', 'backup_date', 'restoration_status']
-    readonly_fields = [
-        'name', 'backup_file', 'created_at', 'backup_type',
-        'backup_date', 'restoration_status', 'restored_at', 'restoration_log', 'user'
-    ]
-    actions = [create_full_backup, create_daily_backup_today, 'restore_selected_backups']
-
-    def file_status(self, obj):
-        if obj.file_exists():
-            return "✅ Available"
-        return "❌ Missing"
-
-    file_status.short_description = "Status"
-
-    def file_size(self, obj):
-        return obj.file_size()
-
-    file_size.short_description = "Size"
-
-    def restoration_status_display(self, obj):
-        """Отображение статуса восстановления в списке"""
-        status_html = f'<span style="color:{obj.get_restoration_color()}; font-weight:bold;">{obj.get_restoration_status_display()}</span>'
-
-        if obj.restoration_log and obj.restoration_status == 'failed':
-            status_html += f'<br><small style="color:#f44336;">Ошибка: {obj.restoration_log[:100]}...</small>'
-
-        return format_html(status_html)
-
-    restoration_status_display.short_description = 'Статус восстановления'
-
-    def restore_selected_backups(self, request, queryset):
-        """Action для восстановления выбранных бэкапов"""
-        if queryset.count() > 1:
-            self.message_user(
-                request,
-                '⚠️ Пожалуйста, выберите только один бэкап для восстановления',
-                messages.WARNING
-            )
-            return
-
-        backup = queryset.first()
-
-        if not backup.file_exists():
-            self.message_user(
-                request,
-                f'❌ Файл бэкапа "{backup.name}" не найден',
-                messages.ERROR
-            )
-            return
-
-        if backup.restoration_status == 'in_progress':
-            self.message_user(
-                request,
-                f'⚠️ Восстановление из бэкапа "{backup.name}" уже выполняется',
-                messages.WARNING
-            )
-            return
-
-        self.message_user(
-            request,
-            f'🔄 Начато восстановление из бэкапа: {backup.name}. Проверьте статус на странице управления бэкапами.',
-            messages.INFO
-        )
-
-        import threading
-        thread = threading.Thread(
-            target=backup.restore_database,
-            args=(request.user,)
-        )
-        thread.daemon = True
-        thread.start()
-
-    restore_selected_backups.short_description = "🔄 Восстановить из выбранных бэкапов"
-
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path('backup-management/', self.admin_site.admin_view(self.backup_management_view),
-                 name='ticket_backupmanager_backup_management'),
-            path('restore-backup/<int:backup_id>/', self.admin_site.admin_view(self.restore_backup_view),
-                 name='ticket_backupmanager_restore_backup'),
-        ]
-        return custom_urls + urls
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-
-    def delete_model(self, request, obj):
-        """Логирование удаления бэкапа"""
-        OperationLogger.log_operation(
-            request=request,
-            action_type='DELETE',
-            module_type='BACKUPS',
-            description=f'Удален файл бэкапа {obj.name}',
-            object_id=obj.id,
-            object_repr=obj.name
-        )
-        file_path = obj.get_file_path()
-        if os.path.exists(file_path):
-            os.remove(file_path)
-        super().delete_model(request, obj)
-
-    def delete_queryset(self, request, queryset):
-        """Логирование массового удаления бэкапов"""
-        for obj in queryset:
-            OperationLogger.log_operation(
-                request=request,
-                action_type='DELETE',
-                module_type='BACKUPS',
-                description=f'Удален файл бэкапа {obj.name} (mass delete)',
-                object_id=obj.id,
-                object_repr=obj.name
-            )
-            file_path = obj.get_file_path()
-            if os.path.exists(file_path):
-                os.remove(file_path)
-        super().delete_queryset(request, queryset)
-
-    def backup_management_view(self, request):
-        """Страница управления бэкапами"""
-        from django.core.management import call_command
-        import io
-        from contextlib import redirect_stdout
-
-        backups = BackupManager.objects.all().order_by('-created_at')
-
-        if request.method == 'POST':
-            action = request.POST.get('action')
-
-            if action == 'full_backup':
-                try:
-                    f = io.StringIO()
-                    with redirect_stdout(f):
-                        call_command('backup_db')
-                    OperationLogger.log_backup_operation(
-                        request=request,
-                        backup_type='FULL',
-                        description='Создан полный бэкап базы данных через страницу управления'
-                    )
-                    messages.success(request, '✅ Полный бэкап создан успешно!')
-
-                except Exception as e:
-                    OperationLogger.log_operation(
-                        request=request,
-                        action_type='BACKUP',
-                        module_type='BACKUPS',
-                        description=f'Ошибка создания полного бэкапа: {str(e)}',
-                        additional_data={'error': str(e)}
-                    )
-                    messages.error(request, f'❌ Ошибка создания бэкапа: {str(e)}')
-
-            elif action == 'daily_backup':
-                backup_date = request.POST.get('backup_date')
-                if backup_date:
-                    try:
-                        f = io.StringIO()
-                        with redirect_stdout(f):
-                            call_command('backup_db', f'--date={backup_date}')
-
-                        OperationLogger.log_backup_operation(
-                            request=request,
-                            backup_type='DAILY',
-                            description=f'Создан дневной бэкап за {backup_date} через страницу управления'
-                        )
-
-                        messages.success(request, f'✅ Дневной бэкап за {backup_date} создан успешно!')
-
-                    except Exception as e:
-                        OperationLogger.log_operation(
-                            request=request,
-                            action_type='BACKUP',
-                            module_type='BACKUPS',
-                            description=f'Ошибка создания дневного бэкапа: {str(e)}',
-                            additional_data={'error': str(e)}
-                        )
-                        messages.error(request, f'❌ Ошибка создания бэкапа: {str(e)}')
-                else:
-                    messages.error(request, '❌ Выберите дату для дневного бэкапа')
-
-            backups = BackupManager.objects.all().order_by('-created_at')
-
-        context = {
-            'title': 'Управление бэкапами',
-            'backups': backups,
-            **self.admin_site.each_context(request),
-        }
-
-        return render(request, 'admin/backup_management.html', context)
-
-    def restore_backup_view(self, request, backup_id):
-        """API endpoint для восстановления бэкапа"""
-        try:
-            backup = BackupManager.objects.get(id=backup_id)
-
-            if not backup.can_be_restored():
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Бэкап недоступен для восстановления'
-                })
-
-            success, message = backup.restore_database(request.user)
-
-            if success:
-                OperationLogger.log_operation(
-                    request=request,
-                    action_type='BACKUP',
-                    module_type='BACKUPS',
-                    description=f'Восстановление БД из бэкапа: {backup.name}',
-                    object_id=backup.id,
-                    object_repr=backup.name
-                )
-
-            return JsonResponse({
-                'success': success,
-                'message': message,
-                'backup_name': backup.name
-            })
-
-        except BackupManager.DoesNotExist:
-            return JsonResponse({
-                'success': False,
-                'message': 'Бэкап не найден'
-            })
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'message': f'Ошибка: {str(e)}'
-            })
 
 
 @admin.register(Report)

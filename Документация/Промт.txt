@@ -66,6 +66,11 @@ cinema-management-system/                         # Корень проекта 
 ├── media/                                        # Медиафайлы (загружаемые пользователем)
 │   └── movie_posters/                            # Постеры фильмов
 │
+├── logs/                                          # Логи
+│   ├── gunicorn-access.log
+│   ├── gunicorn-error.log
+│   └── supervisor.log                              
+│
 ├── run/                                          # Файлы выполнения (продакшен)
 │   └── gunicorn.pid                              # PID процесса Gunicorn
 │
@@ -83,7 +88,6 @@ cinema-management-system/                         # Корень проекта 
 │   ├── __init__.py
 │   ├── admin.py                                  # Регистрация моделей + LoggingModelAdmin
 │   ├── apps.py                                   # Конфигурация приложения TicketConfig
-│   ├── backup_utils.py                           # DatabaseRestorer (восстановление БД)
 │   ├── email_utils.py                            # Отправка email (Yandex SMTP)
 │   ├── export_utils.py                           # LogExporter (CSV/JSON/PDF)
 │   ├── forms.py                                  # Все формы приложения
@@ -113,22 +117,20 @@ cinema-management-system/                         # Корень проекта 
 │   │   └── commands/
 │   │       ├── __init__.py
 │   │       ├── auto_update_ticket_statuses.py    # Автообновление статуса билетов
-│   │       ├── backup_db.py                      # Создание бэкапа БД
 │   │       ├── big_populate_db.py                # Заполнение тестовыми данными
 │   │       ├── cleanup_expired_registrations.py  # Очистка просроченных регистраций
 │   │       ├── create_manager.py                 # Создание менеджера
 │   │       ├── createsuperuser_custom.py         # Создание суперпользователя
+│   │       ├── full_import.py         
 │   │       ├── import_kinopoisk_movies.py        # Импорт фильмов из API
 │   │       ├── init_tokens.py        		    # Инициализация API токенов
-│   │       ├── restore_db.py                     # Восстановление БД
 │   │       ├── setup_manager_permissions.py      # Настройка прав менеджера
 │   │       ├── smart_import.py      		   # Умный импорт с контролем лимитов API, ротацией токенов и сохранением прогресса.
 │   │       └── posters/                          # Тестовые постеры
 │   │
 │   ├── migrations/                               # Миграции БД
 │   │   ├── __init__.py
-│   │   ├── 0001_initial.py
-│   │   └── 0002_remove_user_is_telegram_verified_and_more.py
+│   │   └── 0001_initial.py
 │   │
 │   ├── static/                                   # Статические файлы
 │   │   └── ticket/
@@ -136,7 +138,6 @@ cinema-management-system/                         # Корень проекта 
 │   │       │   ├── admin/                        # Админ-панель
 │   │       │   │   ├── admin-base.css
 │   │       │   │   ├── admin-login.css
-│   │       │   │   ├── backup-management.css
 │   │       │   │   ├── dashboard.css
 │   │       │   │   ├── export-logs.css
 │   │       │   │   ├── export-logs-api.css
@@ -169,7 +170,6 @@ cinema-management-system/                         # Корень проекта 
 │   │       └── js/                               # JavaScript
 │   │           ├── admin/                        # Админ-панель
 │   │           │   ├── admin-base.js
-│   │           │   ├── backup-management.js
 │   │           │   └── movie-form-fix.js
 │   │           ├── manager/                      # Панель менеджера
 │   │           │   ├── api-import.js
@@ -189,7 +189,6 @@ cinema-management-system/                         # Корень проекта 
 │   ├── templates/                                # HTML-шаблоны
 │   │   ├── __init__.py
 │   │   ├── admin/                                # Админ-панель
-│   │   │   ├── backup_management.html
 │   │   │   ├── base_site.html
 │   │   │   ├── import_form.html
 │   │   │   ├── import_result.html
@@ -233,20 +232,11 @@ cinema-management-system/                         # Корень проекта 
 │   │       ├── verify_email.html
 │   │       ├── welcome_email.html
 │   │       ├── admin/                            # Шаблоны для админ-панели
-│   │       │   ├── movie_confirm_delete.html
-│   │       │   ├── movie_form.html
-│   │       │   ├── movie_manage.html
-│   │       │   ├── hall_confirm_delete.html
-│   │       │   ├── hall_form.html
-│   │       │   ├── hall_manage.html
-│   │       │   ├── screening_confirm_delete.html
-│   │       │   ├── screening_form.html
-│   │       │   ├── screening_manage.html
+│   │       │   ├── export_logs.html
+│   │       │   ├── reports.html
 │   │       │   └── reports/
-│   │       │       ├── export_logs.html
 │   │       │       ├── halls_report.html
 │   │       │       ├── movies_report.html
-│   │       │       ├── reports.html
 │   │       │       ├── revenue_report.html
 │   │       │       └── sales_report.html
 │   │       └── manager/                          # Шаблоны панели менеджера
@@ -281,7 +271,6 @@ cinema-management-system/                         # Корень проекта 
 ├── .env.development                              # Переменные для разработки
 ├── .env.production                               # Переменные для продакшена
 ├── .gitignore                                    # Игнорируемые Git файлы
-├── backup_script.sh                              # Скрипт бэкапа
 ├── deploy.sh                                     # Скрипт деплоя на сервер
 ├── gunicorn_config.py                            # Конфигурация Gunicorn
 ├── manage.py                                     # Django management
