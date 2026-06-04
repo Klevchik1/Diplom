@@ -1,0 +1,132 @@
+<!-- ticket/templates/ticket/admin_panel/logs.html -->
+{% extends 'ticket/admin_panel/base_admin.html' %}
+{% load static %}
+
+{% block title %}Логи операций | Админ-панель{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>📝 Логи операций</h2>
+    <div class="header-actions">
+        <div class="export-buttons">
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'format' %}&{{ key }}={{ value }}{% endif %}{% endfor %}&format=csv" class="btn-export csv">📄 CSV</a>
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'format' %}&{{ key }}={{ value }}{% endif %}{% endfor %}&format=json" class="btn-export json">📋 JSON</a>
+        </div>
+    </div>
+</div>
+
+<!-- Фильтры -->
+<div class="filters-card">
+    <form method="get" class="filters-form">
+        <div class="filter-group">
+            <select name="action_type" class="filter-select">
+                <option value="">Все действия</option>
+                {% for at in action_types %}
+                <option value="{{ at.code }}" {% if filters.action_type == at.code %}selected{% endif %}>{{ at.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <select name="module_type" class="filter-select">
+                <option value="">Все модули</option>
+                {% for mt in module_types %}
+                <option value="{{ mt.code }}" {% if filters.module_type == mt.code %}selected{% endif %}>{{ mt.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <select name="user_id" class="filter-select">
+                <option value="">Все пользователи</option>
+                {% for u in users %}
+                <option value="{{ u.id }}" {% if filters.user_id|add:"0" == u.id %}selected{% endif %}>{{ u.email }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <input type="date" name="date_from" placeholder="Дата от" value="{{ filters.date_from }}" class="filter-input">
+        </div>
+        <div class="filter-group">
+            <input type="date" name="date_to" placeholder="Дата до" value="{{ filters.date_to }}" class="filter-input">
+        </div>
+        <button type="submit" class="btn-filter">Применить</button>
+        <a href="{% url 'admin_panel_logs' %}" class="btn-reset">Сбросить</a>
+    </form>
+</div>
+
+<!-- Таблица логов -->
+<div class="table-container logs-table">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Время</th>
+                <th>Пользователь</th>
+                <th>Действие</th>
+                <th>Модуль</th>
+                <th>Описание</th>
+                <th>IP адрес</th>
+                <th>Объект</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td class="nowrap">{{ log.timestamp|date:"d.m.Y H:i:s" }}</td>
+                <td>
+                    {% if log.user %}
+                        <span title="{{ log.user.email }}">{{ log.user.email|truncatechars:20 }}</span>
+                    {% else %}
+                        <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="action-badge action-{{ log.action_type.code|lower }}">
+                        {% if log.action_type.code == 'CREATE' %}➕ Создание
+                        {% elif log.action_type.code == 'UPDATE' %}✏️ Обновление
+                        {% elif log.action_type.code == 'DELETE' %}🗑️ Удаление
+                        {% elif log.action_type.code == 'VIEW' %}👁️ Просмотр
+                        {% elif log.action_type.code == 'LOGIN' %}🔓 Вход
+                        {% elif log.action_type.code == 'LOGOUT' %}🔒 Выход
+                        {% elif log.action_type.code == 'EXPORT' %}📤 Экспорт
+                        {% else %}{{ log.action_type.name }}
+                        {% endif %}
+                    </span>
+                </td>
+                <td>{{ log.module_type.name|default:"—" }}</td>
+                <td class="description-cell" title="{{ log.description }}">{{ log.description|truncatechars:60 }}</td>
+                <td class="nowrap">{{ log.ip_address|default:"—" }}</td>
+                <td class="nowrap">
+                    {% if log.object_repr %}
+                        <span title="{{ log.object_repr }}">{{ log.object_repr|truncatechars:20 }}</span>
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="empty-row">Логи не найдены</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Пагинация -->
+{% if logs.has_other_pages %}
+<div class="pagination">
+    {% if logs.has_previous %}
+        <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">« Первая</a>
+        <a href="?page={{ logs.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">‹ Назад</a>
+    {% endif %}
+
+    <span class="page-current">
+        Страница {{ logs.number }} из {{ logs.paginator.num_pages }}
+    </span>
+
+    {% if logs.has_next %}
+        <a href="?page={{ logs.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">Вперед ›</a>
+        <a href="?page={{ logs.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">Последняя »</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

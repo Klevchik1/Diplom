@@ -1,0 +1,65 @@
+{% extends 'ticket/admin_panel/base_admin.html' %}
+{% load static %}
+
+{% block title %}Статусы билетов | Админ-панель{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ticket/css/admin_panel/ticket-statuses.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>🏷️ Управление статусами билетов</h2>
+    <div class="warning-badge">⚠️ Будьте осторожны при изменении!</div>
+</div>
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Код</th>
+                <th>Название</th>
+                <th>Описание</th>
+                <th>Активен</th>
+                <th>Возврат возможен</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for status in statuses %}
+            <tr>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="status_id" value="{{ status.id }}">
+                    <td class="nowrap">{{ status.id }}</td>
+                    <td><code>{{ status.code }}</code></td>
+                    <td><input type="text" name="name" value="{{ status.name }}" class="form-control-sm" required></td>
+                    <td><input type="text" name="description" value="{{ status.description|default:'' }}" class="form-control-sm"></td>
+                    <td class="text-center">
+                        <input type="checkbox" name="is_active" {% if status.is_active %}checked{% endif %}>
+                    </td>
+                    <td class="text-center">
+                        <input type="checkbox" name="can_be_refunded" {% if status.can_be_refunded %}checked{% endif %}>
+                    </td>
+                    <td class="actions-cell">
+                        <button type="submit" class="btn-icon save" title="Сохранить">💾</button>
+                    </td>
+                </form>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="status-warning-box">
+    <strong>⚠️ ВНИМАНИЕ!</strong><br>
+    Изменение статусов билетов может повлиять на логику работы системы:
+    <ul>
+        <li><strong>active</strong> - активный билет (может быть возвращён, скачан)</li>
+        <li><strong>used</strong> - использованный билет (сеанс прошёл)</li>
+        <li><strong>refunded</strong> - возвращённый билет</li>
+        <li><strong>archived</strong> - архивный (место перепродано)</li>
+    </ul>
+    Рекомендуется не изменять стандартные статусы без крайней необходимости.
+</div>
+{% endblock %}

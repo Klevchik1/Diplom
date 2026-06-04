@@ -1,0 +1,44 @@
+{% extends 'ticket/admin_panel/base_admin.html' %}
+{% load static %}
+
+{% block title %}Роли | Админ-панель{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>🛡️ Управление ролями</h2>
+</div>
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Название роли</th>
+                <th>Пользователей</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for group in groups %}
+            <tr>
+                <td>{{ group.id }}</td>
+                <td><strong>{{ group.name }}</strong></td>
+                <td>{{ group.user_count }}</td>
+                <td class="actions-cell">
+                    <a href="{% url 'admin_panel_role_edit' group.id %}" class="btn-icon edit" title="Редактировать">✏️</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="empty-row">Роли не найдены</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="info-box">
+    <p><strong>ℹ️ О ролях:</strong></p>
+    <p>Роли (группы) определяют набор разрешений для пользователей. Менеджеры должны быть в группе "Manager".</p>
+</div>
+{% endblock %}

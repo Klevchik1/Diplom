@@ -75,7 +75,7 @@
             <a href="{% url 'manager_screenings' %}" {% if 'manager_screening' in request.resolver_match.url_name %}class="active"{% endif %}>🎫 Сеансы</a>
             <a href="{% url 'manager_statistics' %}" {% if request.resolver_match.url_name == 'manager_statistics' %}class="active"{% endif %}>📈 Статистика</a>
             {% if user.is_superuser %}
-            <a href="{% url 'manager_settings' %}" {% if request.resolver_match.url_name == 'manager_settings' %}class="active"{% endif %}>⚙️ Настройки</a>
+            <a href="{% url 'admin_panel_dashboard' %}" class="admin-link">👑 Админ-панель</a>
             {% endif %}
         </nav>
 

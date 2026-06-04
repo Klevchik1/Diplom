@@ -1,0 +1,161 @@
+<!-- ticket/templates/ticket/admin_panel/users.html -->
+{% extends 'ticket/admin_panel/base_admin.html' %}
+{% load static %}
+
+{% block title %}Пользователи | Админ-панель{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>👤 Управление пользователями</h2>
+    <div class="header-actions">
+        <span class="total-count">Всего: {{ users.paginator.count }}</span>
+    </div>
+</div>
+
+<!-- Фильтры -->
+<div class="filters-card">
+    <form method="get" class="filters-form">
+        <div class="filter-group">
+            <input type="text" name="search" placeholder="Поиск по email, имени, фамилии..." value="{{ search }}" class="filter-input">
+        </div>
+        <div class="filter-group">
+            <select name="is_verified" class="filter-select">
+                <option value="">Все по верификации</option>
+                <option value="yes" {% if filters.is_verified == 'yes' %}selected{% endif %}>Верифицированы</option>
+                <option value="no" {% if filters.is_verified == 'no' %}selected{% endif %}>Не верифицированы</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <select name="is_active" class="filter-select">
+                <option value="">Все по статусу</option>
+                <option value="yes" {% if filters.is_active == 'yes' %}selected{% endif %}>Активны</option>
+                <option value="no" {% if filters.is_active == 'no' %}selected{% endif %}>Заблокированы</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <select name="is_staff" class="filter-select">
+                <option value="">Все по роли</option>
+                <option value="yes" {% if filters.is_staff == 'yes' %}selected{% endif %}>Персонал</option>
+                <option value="no" {% if filters.is_staff == 'no' %}selected{% endif %}>Обычные</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-filter">Применить</button>
+        <a href="{% url 'admin_panel_users' %}" class="btn-reset">Сбросить</a>
+    </form>
+</div>
+
+<!-- Таблица пользователей -->
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Имя и фамилия</th>
+                <th>Телефон</th>
+                <th>Верификация</th>
+                <th>Статус</th>
+                <th>Роль</th>
+                <th>Регистрация</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr class="{% if not user.is_active %}row-inactive{% endif %}">
+                <td>{{ user.id }}</td>
+                <td>
+                    <strong>{{ user.email }}</strong>
+                    {% if user.is_superuser %}
+                        <span class="badge superuser">👑 Суперпользователь</span>
+                    {% endif %}
+                </td>
+                <td>{{ user.name }} {{ user.surname }}</td>
+                <td>{{ user.number|default:"—" }}</td>
+                <td>
+                    {% if user.is_email_verified %}
+                        <span class="badge success">✅ Верифицирован</span>
+                    {% else %}
+                        <span class="badge warning">⏳ Не верифицирован</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if user.is_active %}
+                        <span class="badge success">🟢 Активен</span>
+                    {% else %}
+                        <span class="badge danger">🔴 Заблокирован</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if user.is_staff %}
+                        <span class="badge info">👔 Персонал</span>
+                    {% else %}
+                        <span class="badge default">👤 Пользователь</span>
+                    {% endif %}
+                </td>
+                <td>{{ user.date_joined|date:"d.m.Y" }}</td>
+                <td class="actions-cell">
+                    <a href="{% url 'admin_panel_user_edit' user.id %}" class="btn-icon edit" title="Редактировать">✏️</a>
+                    <button type="button" class="btn-icon toggle" onclick="toggleUser({{ user.id }}, '{{ user.email }}', {{ user.is_active|lower }})" title="{% if user.is_active %}Заблокировать{% else %}Разблокировать{% endif %}">
+                        {% if user.is_active %}🔒{% else %}🔓{% endif %}
+                    </button>
+                    {% if not user.is_superuser %}
+                    <button type="button" class="btn-icon delete" onclick="deleteUser({{ user.id }}, '{{ user.email }}')" title="Удалить">🗑️</button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9" class="empty-row">Пользователи не найдены</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Пагинация -->
+{% if users.has_other_pages %}
+<div class="pagination">
+    {% if users.has_previous %}
+        <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">« Первая</a>
+        <a href="?page={{ users.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">‹ Назад</a>
+    {% endif %}
+
+    <span class="page-current">
+        Страница {{ users.number }} из {{ users.paginator.num_pages }}
+    </span>
+
+    {% if users.has_next %}
+        <a href="?page={{ users.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">Вперед ›</a>
+        <a href="?page={{ users.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">Последняя »</a>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Формы для действий -->
+<form id="toggle-form" method="post" style="display: none;">
+    {% csrf_token %}
+</form>
+<form id="delete-form" method="post" style="display: none;">
+    {% csrf_token %}
+</form>
+
+<script>
+function toggleUser(userId, userEmail, isActive) {
+    const action = isActive ? 'заблокировать' : 'разблокировать';
+    if (confirm(`Вы уверены, что хотите ${action} пользователя "${userEmail}"?`)) {
+        const form = document.getElementById('toggle-form');
+        form.action = `/admin-panel/users/${userId}/toggle-block/`;
+        form.submit();
+    }
+}
+
+function deleteUser(userId, userEmail) {
+    if (confirm(`ВНИМАНИЕ! Вы уверены, что хотите УДАЛИТЬ пользователя "${userEmail}"?\nЭто действие необратимо!`)) {
+        const form = document.getElementById('delete-form');
+        form.action = `/admin-panel/users/${userId}/delete/`;
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

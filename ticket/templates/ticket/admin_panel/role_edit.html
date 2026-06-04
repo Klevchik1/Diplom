@@ -1,0 +1,69 @@
+{% extends 'ticket/admin_panel/base_admin.html' %}
+{% load static %}
+
+{% block title %}Редактирование роли | Админ-панель{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ticket/css/admin_panel/role-edit.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>🛡️ Редактирование роли: {{ group.name }}</h2>
+    <a href="{% url 'admin_panel_roles' %}" class="btn-secondary">← Назад к списку</a>
+</div>
+
+<div class="form-container">
+    <form method="post" class="admin-form">
+        {% csrf_token %}
+
+        <div class="form-card">
+            <h3>Основная информация</h3>
+            <div class="form-group">
+                <label>Название роли</label>
+                <input type="text" name="name" value="{{ group.name }}" class="form-control" required>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <h3>Разрешения</h3>
+            <div class="permissions-tabs">
+                {% for app_label, perms in permissions_by_app.items %}
+                <div class="permission-group">
+                    <div class="permission-group-header">
+                        <input type="checkbox" class="select-all" data-app="{{ app_label }}">
+                        <strong>{{ app_label|upper }}</strong>
+                    </div>
+                    <div class="permission-list">
+                        {% for perm in perms %}
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="permissions" value="{{ perm.id }}" class="perm-checkbox" data-app="{{ app_label }}" {% if perm.checked %}checked{% endif %}>
+                            <span>
+                                <code>{{ perm.codename }}</code>
+                                <small>- {{ perm.name }}</small>
+                            </span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">💾 Сохранить изменения</button>
+            <a href="{% url 'admin_panel_roles' %}" class="btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.querySelectorAll('.select-all').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        const app = this.dataset.app;
+        document.querySelectorAll(`.perm-checkbox[data-app="${app}"]`).forEach(cb => {
+            cb.checked = this.checked;
+        });
+    });
+});
+</script>
+{% endblock %}

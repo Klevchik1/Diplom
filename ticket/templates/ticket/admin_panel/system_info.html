@@ -1,0 +1,17 @@
+{% extends 'ticket/admin_panel/base_admin.html' %}
+{% block content %}
+<div class="page-header"><h2>🖥️ Информация о системе</h2></div>
+<div class="stats-grid">
+    <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-info"><h3>Пользователи</h3><div class="stat-value">{{ db_stats.users }}</div></div></div>
+    <div class="stat-card"><div class="stat-icon">🎬</div><div class="stat-info"><h3>Фильмы</h3><div class="stat-value">{{ db_stats.movies }}</div></div></div>
+    <div class="stat-card"><div class="stat-icon">🎫</div><div class="stat-info"><h3>Сеансы</h3><div class="stat-value">{{ db_stats.screenings }}</div></div></div>
+    <div class="stat-card"><div class="stat-icon">🏢</div><div class="stat-info"><h3>Залы</h3><div class="stat-value">{{ db_stats.halls }}</div></div></div>
+    <div class="stat-card"><div class="stat-icon">🎟️</div><div class="stat-info"><h3>Билеты</h3><div class="stat-value">{{ db_stats.tickets }}</div></div></div>
+    <div class="stat-card"><div class="stat-icon">💳</div><div class="stat-info"><h3>Платежи</h3><div class="stat-value">{{ db_stats.payments }}</div></div></div>
+    <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-info"><h3>Логи операций</h3><div class="stat-value">{{ db_stats.logs }}</div></div></div>
+    <div class="stat-card"><div class="stat-icon">🔌</div><div class="stat-info"><h3>API логи</h3><div class="stat-value">{{ db_stats.api_logs }}</div></div></div>
+</div>
+<div class="form-card"><h3>📊 Статистика действий</h3>
+    <div class="info-row" style="flex-wrap:wrap">{% for name, count in actions_stats.items %}<span style="margin-right:20px"><strong>{{ name }}:</strong> {{ count }}</span>{% endfor %}</div>
+</div>
+{% endblock %}

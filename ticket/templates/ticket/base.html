@@ -1,3 +1,4 @@
+<!-- ticket/templates/ticket/base.html -->
 <!DOCTYPE html>
 {% load static %}
 <html lang="ru">
@@ -29,8 +30,10 @@
                     </a>
                 {% endif %}
 
-                {% if user.is_staff %}
-                    <a href="/admin/" class="btn-admin">Админ-панель</a>
+                {% if user.is_superuser %}
+                    <a href="{% url 'admin_panel_dashboard' %}" class="btn-admin" style="background: linear-gradient(135deg, #dc2626 0%, #7c2d12 100%);">
+                        👑 Админ-панель
+                    </a>
                 {% endif %}
                 <span>Привет, {{ user.name }}!</span>
                 <a href="{% url 'logout' %}" class="btn">Выйти</a>

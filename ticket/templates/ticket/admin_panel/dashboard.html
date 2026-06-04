@@ -1,0 +1,107 @@
+<!-- ticket/templates/ticket/admin_panel/dashboard.html -->
+{% extends 'ticket/admin_panel/base_admin.html' %}
+{% load static %}
+
+{% block title %}Дашборд | Админ-панель{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 24px;">
+    <h2 style="font-size: 24px; margin-bottom: 8px;">📊 Общая статистика системы</h2>
+    <p style="color: var(--text-secondary);">Актуально на {{ now|date:"d.m.Y H:i" }}</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>👥 Пользователи</h3>
+        <div class="stat-value">{{ total_users }}</div>
+        <div class="stat-details">
+            ✅ Верифицированы: {{ verified_users }}<br>
+            📱 Активны сегодня: {{ active_users_today }}
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <h3>🎬 Контент</h3>
+        <div class="stat-value">{{ total_movies }}</div>
+        <div class="stat-details">
+            🎫 Сеансов: {{ total_screenings }}<br>
+            🏢 Залы: {{ total_halls|default:"—" }}
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <h3>🎫 Билеты</h3>
+        <div class="stat-value">{{ total_tickets }}</div>
+        <div class="stat-details">
+            💰 Выручка: {{ total_revenue|floatformat:0 }} ₽
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <h3>💳 Платежи</h3>
+        <div class="stat-value">{{ total_payments }}</div>
+        <div class="stat-details">
+            ✅ Успешные: {{ successful_payments }}<br>
+            📊 Конверсия: {{ success_rate }}%
+        </div>
+    </div>
+</div>
+
+<div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="stat-card">
+        <h3>📝 Логи за неделю</h3>
+        <div class="stat-value">{{ logs_last_week }}</div>
+        <div class="stat-details">операций</div>
+    </div>
+
+    <div class="stat-card">
+        <h3>🔌 API запросы</h3>
+        <div class="stat-value">{{ total_api_requests }}</div>
+        <div class="stat-details">всего ({{ successful_api_requests }} успешно)</div>
+    </div>
+
+    <div class="stat-card">
+        <h3>🔄 Активные импорты</h3>
+        <div class="stat-value">{{ active_imports }}</div>
+        <div class="stat-details">задач в обработке</div>
+    </div>
+</div>
+
+<!-- Быстрые действия -->
+<div style="background: var(--header-bg); border-radius: 12px; padding: 20px; margin-top: 24px; border: 1px solid var(--border-color);">
+    <h3 style="margin-bottom: 16px;">⚡ Быстрые действия</h3>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="{% url 'admin_panel_users' %}" class="btn-primary" style="text-decoration: none;">👤 Управление пользователями</a>
+        <a href="{% url 'admin_panel_logs' %}" class="btn-primary" style="text-decoration: none; background: #6b7280;">📝 Просмотр логов</a>
+        <a href="{% url 'admin_panel_payments' %}" class="btn-primary" style="text-decoration: none; background: #10b981;">💳 Платежи</a>
+        <a href="{% url 'admin_redirect_to_django' %}" class="btn-secondary" style="text-decoration: none;">🔧 Django Admin</a>
+    </div>
+</div>
+
+<!-- Последние действия -->
+<div style="background: var(--header-bg); border-radius: 12px; padding: 20px; margin-top: 24px; border: 1px solid var(--border-color);">
+    <h3 style="margin-bottom: 16px;">🕐 Последние действия в системе</h3>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+        {% for log in recent_logs|slice:":10" %}
+        <div style="display: flex; align-items: flex-start; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+            <div style="font-size: 20px;">
+                {% if log.action_type.code == 'CREATE' %}➕
+                {% elif log.action_type.code == 'UPDATE' %}✏️
+                {% elif log.action_type.code == 'DELETE' %}🗑️
+                {% elif log.action_type.code == 'LOGIN' %}🔓
+                {% elif log.action_type.code == 'LOGOUT' %}🔒
+                {% else %}📋
+                {% endif %}
+            </div>
+            <div style="flex: 1;">
+                <div style="font-weight: 600; font-size: 14px;">{{ log.user.email|default:"Система" }}</div>
+                <div style="font-size: 13px; color: var(--text-secondary);">{{ log.description }}</div>
+                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">{{ log.timestamp|date:"d.m.Y H:i:s" }}</div>
+            </div>
+        </div>
+        {% empty %}
+        <div style="text-align: center; color: var(--text-secondary); padding: 20px;">Нет действий для отображения</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

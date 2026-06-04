@@ -1,0 +1,167 @@
+<!-- ticket/templates/ticket/admin_panel/base_admin.html -->
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Админ-панель{% endblock %} | Кинотеатр Премьера</title>
+    <link rel="stylesheet" href="{% static 'ticket/css/admin_panel/admin-panel.css' %}">
+    <link rel="stylesheet" href="{% static 'ticket/css/theme-switcher.css' %}">
+    {% block extra_css %}{% endblock %}
+    <style>
+        /* Гарантированное отображение кнопки темы */
+        .theme-toggle-btn {
+            background: transparent !important;
+            border: 1px solid currentColor !important;
+            cursor: pointer !important;
+            border-radius: 50% !important;
+            font-size: 18px !important;
+            width: 36px !important;
+            height: 36px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            margin-left: 10px !important;
+        }
+        .theme-toggle-btn:hover {
+            transform: rotate(15deg);
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <h1>👑 Административная панель</h1>
+        <div class="user-info">
+            <span>{{ user.name }} {{ user.surname }}</span>
+            <span>{{ user.email }}</span>
+            <a href="{% url 'admin_redirect_to_django' %}" class="btn-secondary" style="padding: 6px 12px; text-decoration: none;">🔧 Django Admin</a>
+            <button class="theme-toggle-btn" onclick="toggleTheme()" title="Переключить тему" style="background: transparent; border: 1px solid; border-radius: 50%; width: 36px; height: 36px; cursor: pointer;">
+                <span class="theme-icon icon-dark" style="display: inline-block;">🌙</span>
+                <span class="theme-icon icon-light" style="display: none;">☀️</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="admin-layout">
+        <!-- Горизонтальная навигация -->
+        <nav class="admin-nav-horizontal">
+            <a href="{% url 'admin_panel_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_panel_dashboard' %}active{% endif %}">
+                📊 Дашборд
+            </a>
+
+            <div class="nav-dropdown">
+                <a href="javascript:void(0)">👥 Пользователи ▼</a>
+                <div class="dropdown-content">
+                    <a href="{% url 'admin_panel_users' %}">👤 Пользователи</a>
+                    <a href="{% url 'admin_panel_roles' %}">🛡️ Роли и права</a>
+                </div>
+            </div>
+
+            <div class="nav-dropdown">
+                <a href="javascript:void(0)">🎬 Справочники ▼</a>
+                <div class="dropdown-content">
+                    <a href="{% url 'admin_panel_hall_types' %}">🏢 Типы залов</a>
+                    <a href="{% url 'admin_panel_age_ratings' %}">🔞 Возрастные рейтинги</a>
+                    <a href="{% url 'admin_panel_genres' %}">🎭 Жанры</a>
+                    <a href="{% url 'admin_panel_countries' %}">🌍 Страны</a>
+                    <a href="{% url 'admin_panel_directors' %}">🎬 Режиссёры</a>
+                    <a href="{% url 'admin_panel_actors' %}">🎭 Актёры</a>
+                </div>
+            </div>
+
+            <div class="nav-dropdown">
+                <a href="javascript:void(0)">📋 Логи и отчёты ▼</a>
+                <div class="dropdown-content">
+                    <a href="{% url 'admin_panel_logs' %}">📝 Логи операций</a>
+                    <a href="{% url 'admin_panel_api_logs' %}">🔌 Логи API</a>
+                    <a href="{% url 'admin_panel_price_history' %}">💰 История цен</a>
+                </div>
+            </div>
+
+            <div class="nav-dropdown">
+                <a href="javascript:void(0)">🎫 Билеты и платежи ▼</a>
+                <div class="dropdown-content">
+                    <a href="{% url 'admin_panel_ticket_statuses' %}">🏷️ Статусы билетов</a>
+                    <a href="{% url 'admin_panel_payments' %}">💳 Платежи</a>
+                </div>
+            </div>
+
+            <a href="{% url 'admin_panel_import_tasks' %}">📥 Импорт</a>
+            <a href="{% url 'admin_panel_system_info' %}">🖥️ Система</a>
+
+            <a href="{% url 'manager_dashboard' %}" style="margin-left: auto;">← Назад в панель менеджера</a>
+        </nav>
+
+        <!-- Сообщения -->
+        {% if messages %}
+            <div class="messages-container" style="margin: 16px 24px 0 24px;">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Контент -->
+        <div class="admin-main">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <script src="{% static 'ticket/js/theme-switcher.js' %}"></script>
+    <script>
+        // Дополнительная инициализация темы для админки
+        (function() {
+            const THEME_KEY = 'cinema-theme';
+            let savedTheme = localStorage.getItem(THEME_KEY);
+
+            if (!savedTheme) {
+                savedTheme = 'dark';
+                localStorage.setItem(THEME_KEY, savedTheme);
+            }
+
+            // Применяем тему
+            if (savedTheme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                // Показываем солнце, скрываем луну
+                const lightIcons = document.querySelectorAll('.icon-light');
+                const darkIcons = document.querySelectorAll('.icon-dark');
+                lightIcons.forEach(icon => icon.style.display = 'inline-block');
+                darkIcons.forEach(icon => icon.style.display = 'none');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                // Показываем луну, скрываем солнце
+                const lightIcons = document.querySelectorAll('.icon-light');
+                const darkIcons = document.querySelectorAll('.icon-dark');
+                lightIcons.forEach(icon => icon.style.display = 'none');
+                darkIcons.forEach(icon => icon.style.display = 'inline-block');
+            }
+
+            // Переопределяем toggleTheme для админки
+            window.toggleTheme = function() {
+                const current = document.documentElement.getAttribute('data-theme');
+                const next = current === 'light' ? 'dark' : 'light';
+
+                document.documentElement.setAttribute('data-theme', next);
+                localStorage.setItem(THEME_KEY, next);
+
+                // Обновляем иконки
+                const lightIcons = document.querySelectorAll('.icon-light');
+                const darkIcons = document.querySelectorAll('.icon-dark');
+
+                if (next === 'light') {
+                    lightIcons.forEach(icon => icon.style.display = 'inline-block');
+                    darkIcons.forEach(icon => icon.style.display = 'none');
+                } else {
+                    lightIcons.forEach(icon => icon.style.display = 'none');
+                    darkIcons.forEach(icon => icon.style.display = 'inline-block');
+                }
+            };
+        })();
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

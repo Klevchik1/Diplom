@@ -1,0 +1,47 @@
+/* price-history.css */
+.old-price {
+    text-decoration: line-through;
+    color: var(--text-muted);
+}
+
+.new-price {
+    font-weight: bold;
+    color: var(--success-color);
+}
+
+.price-up {
+    color: var(--danger-color);
+    font-weight: 500;
+}
+
+.price-down {
+    color: var(--success-color);
+    font-weight: 500;
+}
+
+.price-equal {
+    color: var(--text-muted);
+}
+
+.diff-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.diff-positive {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.diff-negative {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.diff-zero {
+    background: var(--light-bg);
+    color: var(--text-secondary);
+}

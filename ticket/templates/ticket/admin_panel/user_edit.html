@@ -1,0 +1,98 @@
+{% extends 'ticket/admin_panel/base_admin.html' %}
+{% load static %}
+
+{% block title %}Редактирование пользователя | Админ-панель{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ticket/css/admin_panel/user-edit.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>✏️ Редактирование пользователя</h2>
+    <a href="{% url 'admin_panel_users' %}" class="btn-secondary">← Назад к списку</a>
+</div>
+
+<div class="form-container">
+    <form method="post" class="admin-form">
+        {% csrf_token %}
+
+        <div class="form-card">
+            <h3>Основная информация</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" name="email" value="{{ edit_user.email }}" class="form-control" readonly disabled>
+                    <small>Email нельзя изменить</small>
+                </div>
+            </div>
+            <div class="form-row two-cols">
+                <div class="form-group">
+                    <label>Имя</label>
+                    <input type="text" name="name" value="{{ edit_user.name }}" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Фамилия</label>
+                    <input type="text" name="surname" value="{{ edit_user.surname }}" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Телефон</label>
+                <input type="text" name="number" value="{{ edit_user.number }}" class="form-control">
+            </div>
+        </div>
+
+        <div class="form-card">
+            <h3>Статус и права</h3>
+            <div class="checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="is_active" {% if edit_user.is_active %}checked{% endif %}>
+                    <span>Активен (может входить в систему)</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" name="is_staff" {% if edit_user.is_staff %}checked{% endif %}>
+                    <span>Персонал (доступ к панели менеджера)</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" name="is_email_verified" {% if edit_user.is_email_verified %}checked{% endif %}>
+                    <span>Email подтверждён</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <h3>Группы (роли)</h3>
+            <div class="groups-list">
+                {% for group in groups %}
+                <label class="checkbox-label">
+                    <input type="checkbox" name="groups" value="{{ group.id }}" {% if group.id in user_groups %}checked{% endif %}>
+                    <span>{{ group.name }}</span>
+                </label>
+                {% empty %}
+                <p class="text-muted">Нет доступных групп</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-card">
+            <h3>Информация о регистрации</h3>
+            <div class="info-row">
+                <span class="info-label">Дата регистрации:</span>
+                <span class="info-value">{{ edit_user.date_joined|date:"d.m.Y H:i:s" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Последний вход:</span>
+                <span class="info-value">{{ edit_user.last_login|date:"d.m.Y H:i:s"|default:"Никогда" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">ID пользователя:</span>
+                <span class="info-value">{{ edit_user.id }}</span>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">💾 Сохранить изменения</button>
+            <a href="{% url 'admin_panel_users' %}" class="btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

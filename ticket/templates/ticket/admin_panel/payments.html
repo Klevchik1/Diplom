@@ -1,0 +1,116 @@
+{% extends 'ticket/admin_panel/base_admin.html' %}
+{% load static %}
+
+{% block title %}Платежи | Админ-панель{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>💳 Платежи (только просмотр)</h2>
+    <div class="total-count">Всего: {{ payments.paginator.count }}</div>
+</div>
+
+<!-- Фильтры -->
+<div class="filters-card">
+    <form method="get" class="filters-form">
+        <div class="filter-group">
+            <select name="status" class="filter-select">
+                <option value="">Все статусы</option>
+                <option value="pending" {% if filters.status == 'pending' %}selected{% endif %}>Ожидает оплаты</option>
+                <option value="waiting_for_capture" {% if filters.status == 'waiting_for_capture' %}selected{% endif %}>Ожидает подтверждения</option>
+                <option value="succeeded" {% if filters.status == 'succeeded' %}selected{% endif %}>Успешно оплачен</option>
+                <option value="canceled" {% if filters.status == 'canceled' %}selected{% endif %}>Отменён</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-filter">Применить</button>
+        <a href="{% url 'admin_panel_payments' %}" class="btn-reset">Сбросить</a>
+    </form>
+</div>
+
+<!-- Таблица платежей -->
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Платёж ID</th>
+                <th>Группа билетов</th>
+                <th>Пользователь</th>
+                <th>Сумма</th>
+                <th>Статус</th>
+                <th>Способ оплаты</th>
+                <th>Дата создания</th>
+                <th>Дата истечения</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in payments %}
+            <tr>
+                <td>{{ payment.id }}</td>
+                <td><code>{{ payment.payment_id|truncatechars:20 }}</code></td>
+                <td>
+                    <a href="#" title="Группа #{{ payment.ticket_group.id }}">
+                        #{{ payment.ticket_group.id }}
+                    </a>
+                    <br>
+                    <small>{{ payment.ticket_group.tickets_count }} бил.</small>
+                </td>
+                <td>
+                    {{ payment.ticket_group.user.email|truncatechars:25 }}
+                    <br>
+                    <small>{{ payment.ticket_group.user.name }} {{ payment.ticket_group.user.surname }}</small>
+                </td>
+                <td><strong>{{ payment.amount }} ₽</strong></td>
+                <td>
+                    {% if payment.status == 'succeeded' %}
+                        <span class="badge success">✅ Успешно</span>
+                    {% elif payment.status == 'pending' %}
+                        <span class="badge warning">⏳ Ожидает</span>
+                    {% elif payment.status == 'waiting_for_capture' %}
+                        <span class="badge info">🔄 Ожидает подтверждения</span>
+                    {% else %}
+                        <span class="badge danger">❌ Отменён</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if payment.payment_method %}
+                        {% if 'card' in payment.payment_method %}
+                            💳 Карта
+                            {% if payment.card_last4 %} ****{{ payment.card_last4 }}{% endif %}
+                        {% else %}
+                            {{ payment.payment_method }}
+                        {% endif %}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+                <td class="nowrap">{{ payment.created_at|date:"d.m.Y H:i" }}</td>
+                <td class="nowrap">{{ payment.expires_at|date:"d.m.Y H:i" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9" class="empty-row">Платежи не найдены</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Пагинация -->
+{% if payments.has_other_pages %}
+<div class="pagination">
+    {% if payments.has_previous %}
+        <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">« Первая</a>
+        <a href="?page={{ payments.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">‹ Назад</a>
+    {% endif %}
+
+    <span class="page-current">
+        Страница {{ payments.number }} из {{ payments.paginator.num_pages }}
+    </span>
+
+    {% if payments.has_next %}
+        <a href="?page={{ payments.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">Вперед ›</a>
+        <a href="?page={{ payments.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">Последняя »</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends 'ticket/admin_panel/base_admin.html' %}
+{% load static %}
+
+{% block title %}Возрастные рейтинги | Админ-панель{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>🔞 Возрастные рейтинги</h2>
+    <button class="btn-primary" onclick="openAddModal()">➕ Добавить рейтинг</button>
+</div>
+
+<!-- Фильтр и поиск -->
+<div class="filters-card">
+    <form method="get" class="filters-form" id="filter-form">
+        <div class="filter-group" style="flex: 2;">
+            <input type="text" name="search" placeholder="🔍 Поиск по названию..."
+                   value="{{ search|default:'' }}" class="filter-input" id="search-input">
+        </div>
+        <button type="submit" class="btn-filter">Найти</button>
+        {% if search %}
+        <a href="{% url 'admin_panel_age_ratings' %}" class="btn-reset">Сбросить</a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Название</th>
+                <th>Дата создания</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ar in age_ratings %}
+            <tr>
+                <td>{{ ar.id }}</td>
+                <td><strong>{{ ar.name }}</strong></td>
+                <td>{{ ar.created_at|date:"d.m.Y" }}</td>
+                <td class="actions-cell">
+                    <form method="post" action="{% url 'admin_panel_age_rating_delete' ar.id %}" style="display:inline"
+                          onsubmit="return confirm('Удалить рейтинг {{ ar.name }}? Все фильмы с этим рейтингом останутся без изменений.')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-icon delete" title="Удалить">🗑️</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="empty-row">
+                    {% if search %}По запросу "{{ search }}" ничего не найдено{% else %}Возрастные рейтинги не найдены{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Пагинация -->
+{% if age_ratings.has_other_pages %}
+<div class="pagination">
+    {% if age_ratings.has_previous %}
+        <a href="?page=1{% if search %}&search={{ search }}{% endif %}" class="page-link">« Первая</a>
+        <a href="?page={{ age_ratings.previous_page_number }}{% if search %}&search={{ search }}{% endif %}" class="page-link">‹ Назад</a>
+    {% endif %}
+
+    <span class="page-current">
+        Страница {{ age_ratings.number }} из {{ age_ratings.paginator.num_pages }}
+    </span>
+
+    {% if age_ratings.has_next %}
+        <a href="?page={{ age_ratings.next_page_number }}{% if search %}&search={{ search }}{% endif %}" class="page-link">Вперед ›</a>
+        <a href="?page={{ age_ratings.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}" class="page-link">Последняя »</a>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Модальное окно добавления -->
+<div id="add-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>➕ Добавить возрастной рейтинг</h3>
+            <button class="modal-close" onclick="closeAddModal()">&times;</button>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Название рейтинга *</label>
+                <input type="text" name="name" required class="form-control" placeholder="Например: 18+, 16+, 12+, 6+, 0+">
+                <small>Формат: число и знак "+" (например: 16+)</small>
+            </div>
+            <div class="modal-buttons">
+                <button type="submit" class="btn-primary">Создать</button>
+                <button type="button" class="btn-secondary" onclick="closeAddModal()">Отмена</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openAddModal() {
+    document.getElementById('add-modal').style.display = 'flex';
+}
+
+function closeAddModal() {
+    document.getElementById('add-modal').style.display = 'none';
+}
+
+// Поиск при вводе
+let searchTimeout;
+document.getElementById('search-input')?.addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        document.getElementById('filter-form').submit();
+    }, 500);
+});
+</script>
+{% endblock %}
