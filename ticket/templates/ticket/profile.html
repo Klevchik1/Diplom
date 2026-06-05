@@ -127,10 +127,10 @@
 
                     {% if group.group_uuid %}
                         {% if group.group_status == 'active' %}
-                            <a href="{% url 'download_ticket_group' group.group_uuid %}" class="btn-save"
-                               style="padding: 8px 15px; font-size: 14px;">
+                            <button onclick="openDownloadModal('{{ group.group_uuid }}')" class="btn-save"
+                                    style="padding: 8px 15px; font-size: 14px;">
                                 📥 Скачать билеты
-                            </a>
+                            </button>
                         {% endif %}
                     {% else %}
                         {% for seat in group.seats %}
@@ -248,8 +248,163 @@
         {% endif %}
     </div>
 </div>
+<div id="downloadModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Выберите формат билета</h3>
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p style="margin-bottom: 20px;">Выберите, как вы хотите получить билет(ы):</p>
 
+            <button onclick="downloadAsSingle()" class="btn-modal btn-modal-single">
+                📄 Один общий билет
+                <small>Все места на одном PDF-листе</small>
+            </button>
+
+            <button onclick="downloadAsSeparate()" class="btn-modal btn-modal-separate">
+                📁 Отдельные билеты на каждое место
+                <small>Каждый билет в отдельном файле (ZIP архив)</small>
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.modal-content {
+    background-color: #2d2d2d;
+    margin: auto;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    animation: modalSlideIn 0.3s ease-out;
+}
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+.modal-header {
+    padding: 20px 20px 10px 20px;
+    border-bottom: 1px solid #444;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.modal-header h3 {
+    margin: 0;
+    color: #ffcc00;
+}
+.modal-close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.modal-close:hover {
+    color: #fff;
+}
+.modal-body {
+    padding: 25px 20px 30px 20px;
+    text-align: center;
+}
+.btn-modal {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    background: #3d3d3d;
+    color: white;
+}
+.btn-modal small {
+    display: block;
+    font-size: 12px;
+    font-weight: normal;
+    color: #aaa;
+    margin-top: 5px;
+}
+.btn-modal-single {
+    background: linear-gradient(135deg, #2E86AB 0%, #1a5a7a 100%);
+}
+.btn-modal-single:hover {
+    background: linear-gradient(135deg, #3a9bc2 0%, #2a6a8a 100%);
+    transform: translateY(-2px);
+}
+.btn-modal-separate {
+    background: linear-gradient(135deg, #28A745 0%, #1a6e2e 100%);
+}
+.btn-modal-separate:hover {
+    background: linear-gradient(135deg, #34ce57 0%, #2a8a3e 100%);
+    transform: translateY(-2px);
+}
+</style>
 <script>
+    let currentGroupUuid = null;
+
+function openDownloadModal(groupUuid) {
+    currentGroupUuid = groupUuid;
+    const modal = document.getElementById('downloadModal');
+    modal.style.display = 'flex';
+    // Блокируем скролл body
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    const modal = document.getElementById('downloadModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+    currentGroupUuid = null;
+}
+
+function downloadAsSingle() {
+    if (currentGroupUuid) {
+        window.location.href = `/download-ticket-group/${currentGroupUuid}/`;
+    }
+    closeModal();
+}
+
+function downloadAsSeparate() {
+    if (currentGroupUuid) {
+        window.location.href = `/download-ticket-group-separate/${currentGroupUuid}/`;
+    }
+    closeModal();
+}
+
+// Закрыть модальное окно при клике вне его области
+window.onclick = function(event) {
+    const modal = document.getElementById('downloadModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+}
+
 function confirmRefund() {
     return confirm('Вы уверены, что хотите вернуть билет? Возврат возможен только за 30 минут до сеанса.');
 }

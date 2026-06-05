@@ -24,6 +24,8 @@ from django.views.decorators.csrf import csrf_exempt
 from .payment_service import YooKassaService
 from .models import Payment
 from django.core.files.base import ContentFile
+import zipfile
+from io import BytesIO
 
 from .email_utils import send_verification_email, send_welcome_email, send_password_reset_email, send_email_change_verification
 from .forms import (
@@ -38,7 +40,7 @@ from .models import (
     EmailChangeRequest, TicketStatus, ActionType, ModuleType,
     MovieDirector, MovieActor, Genre, MovieGenre
 )
-from .utils import generate_enhanced_ticket_pdf, generate_ticket_pdf
+from .utils import generate_enhanced_ticket_pdf, generate_ticket_pdf, generate_individual_tickets_zip
 from .report_utils import ReportGenerator
 from .logging_utils import OperationLogger
 from decimal import Decimal
@@ -940,6 +942,66 @@ def download_ticket_group(request, group_id):
     except Exception as e:
         logger.error(f"Ошибка генерации PDF: {str(e)}")
         messages.error(request, f"Ошибка при генерации билета: {str(e)}")
+        return redirect('profile')
+
+
+@login_required
+def download_ticket_group_separate(request, group_id):
+    """
+    Скачивание ОТДЕЛЬНЫХ билетов для группы (ZIP архив)
+    """
+    try:
+        ticket_group = TicketGroup.objects.get(group_uuid=group_id, user=request.user)
+        tickets = ticket_group.tickets.all().select_related(
+            'screening__movie', 'screening__hall', 'seat', 'status'
+        ).exclude(status__code='refunded')
+    except TicketGroup.DoesNotExist:
+        messages.error(request, "Билеты не найдены.")
+        return redirect('profile')
+
+    if not tickets.exists():
+        messages.error(request, "Нет доступных билетов для скачивания.")
+        return redirect('profile')
+
+    # Проверяем, нет ли возвращенных билетов
+    has_refunded = any(t.status and t.status.code == 'refunded' for t in tickets)
+    if has_refunded and not request.user.is_staff:
+        messages.error(request, 'В этой группе есть возвращённые билеты. Скачивание невозможно.')
+        return redirect('profile')
+
+    # Логируем операцию
+    try:
+        from .models import ActionType, ModuleType
+        action_type = ActionType.objects.get(code='EXPORT')
+        module_type = ModuleType.objects.get(code='TICKETS')
+
+        OperationLogger.log_operation(
+            request=request,
+            action_type=action_type,
+            module_type=module_type,
+            description=f'Скачивание ZIP архива с отдельными билетами для группы {group_id}',
+            object_id=tickets[0].id,
+            object_repr=f"Группа билетов {group_id} (отдельные файлы)",
+            additional_data={
+                'format': 'ZIP',
+                'movie': tickets[0].screening.movie.title,
+                'ticket_count': len(tickets),
+                'group_id': group_id,
+            }
+        )
+    except Exception as e:
+        logger.error(f"Logging error: {e}")
+
+    try:
+        zip_buffer = generate_individual_tickets_zip(tickets)
+
+        response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+        filename = f"билеты_{tickets[0].screening.movie.title}_{group_id[:8]}.zip"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+    except Exception as e:
+        logger.error(f"Ошибка генерации ZIP: {str(e)}")
+        messages.error(request, f"Ошибка при генерации билетов: {str(e)}")
         return redirect('profile')
 
 

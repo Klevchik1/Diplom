@@ -13,6 +13,9 @@ from django.utils import timezone
 import qrcode
 from PIL import Image as PILImage
 import tempfile
+import zipfile
+from io import BytesIO
+import re
 
 # Импорт модели TicketGroup, если используется в функциях
 from .models import TicketGroup
@@ -636,3 +639,33 @@ def generate_sales_table(data, has_custom_font):
         elements.append(Paragraph(f"<b>Доля популярного фильма:</b> {share_percent:.1f}% от всех продаж", share_style))
 
     return elements
+
+
+def generate_individual_tickets_zip(tickets):
+    """
+    Генерация ZIP-архива с отдельными PDF-билетами на каждое место
+
+    Args:
+        tickets: QuerySet или список объектов Ticket
+
+    Returns:
+        BytesIO: ZIP-архив в памяти
+    """
+    buffer = BytesIO()
+
+    with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for ticket in tickets:
+            # Генерируем PDF для одного билета
+            pdf_buffer = generate_enhanced_ticket_pdf([ticket])
+
+            # Формируем имя файла
+            seat_info = f"ряд{ticket.seat.row}_место{ticket.seat.number}"
+            movie_title = ticket.screening.movie.title
+            # Очищаем название от недопустимых символов для имени файла
+            safe_title = re.sub(r'[\\/*?:"<>|]', '', movie_title)
+            filename = f"{safe_title}_{seat_info}.pdf"
+
+            zip_file.writestr(filename, pdf_buffer.getvalue())
+
+    buffer.seek(0)
+    return buffer

@@ -25,6 +25,7 @@ urlpatterns = [
     path('ticket-group/<str:group_uuid>/refund/', views.request_group_refund, name='request_group_refund'),
     path('ticket/<int:ticket_id>/refund/', views.request_ticket_refund, name='request_ticket_refund'),
     path('ticket/<int:ticket_id>/cancel-refund/', views.cancel_refund_request, name='cancel_refund_request'),
+    path('download-ticket-group-separate/<str:group_id>/', views.download_ticket_group_separate, name='download_ticket_group_separate'),
 
     # Восстановление пароля и верификация
     path('verify-email/', views.verify_email, name='verify_email'),
