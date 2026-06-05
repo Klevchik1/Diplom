@@ -69,13 +69,15 @@
                     {% endif %}
                 </td>
                 <td>{{ movie.screenings.count }}</td>
-                <td class="actions-cell">
-                    <a href="{% url 'admin_panel_movie_edit' movie.id %}" class="btn-icon edit" title="Редактировать">✏️</a>
-                    <form method="post" action="{% url 'admin_panel_movie_delete' movie.id %}" style="display:inline"
-                          onsubmit="return confirm('Удалить фильм {{ movie.title }}? Это действие нельзя отменить.')">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-icon delete" title="Удалить">🗑️</button>
-                    </form>
+                <td class="actions-cell" style="vertical-align: middle; height: 100%;">
+                    <div style="display: flex; gap: 8px; align-items: center; justify-content: center; min-height: 100%;">
+                        <a href="{% url 'admin_panel_movie_edit' movie.id %}" class="btn-icon edit" title="Редактировать">✏️</a>
+                        <form method="post" action="{% url 'admin_panel_movie_delete' movie.id %}" style="display:inline" onsubmit="return confirm('Удалить фильм {{ movie.title }}? Это действие нельзя отменить.')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-icon delete" title="Удалить">🗑️</button>
+                        </form>
+                    </div>
+                    <br style="display: none;">
                 </td>
              </tr>
             {% empty %}

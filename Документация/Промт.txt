@@ -72,9 +72,9 @@ cinema-management-system/                                   # Корень пр�
 │   │   ├── development.py                                   # Настройки для локальной разработки
 │   │   └── production.py                                    # Настройки для продакшена
 │   ├── __init__.py
-│   ├── asgi.py                                              # ASGI конфигурация
+│   ├── asgi.py
 │   ├── urls.py                                              # Корневые URL-маршруты
-│   └── wsgi.py                                              # WSGI конфигурация
+│   └── wsgi.py
 │
 ├── media/                                                   # Медиафайлы (загружаемые пользователем)
 │   └── movie_posters/                                       # Постеры фильмов
@@ -85,7 +85,7 @@ cinema-management-system/                                   # Корень пр�
 │   └── supervisor.log
 │
 ├── run/                                                     # Файлы выполнения (продакшен)
-│   └── gunicorn.pid                                         # PID процесса Gunicorn
+│   └── gunicorn.pid
 │
 ├── staticfiles/                                             # Собранная статика (collectstatic)
 │
@@ -99,24 +99,25 @@ cinema-management-system/                                   # Корень пр�
 ├── ticket/                                                  # ОСНОВНОЕ ПРИЛОЖЕНИЕ DJANGO
 │   │
 │   ├── __init__.py
-│   ├── admin.py                                             # Регистрация моделей + LoggingModelAdmin
-│   ├── apps.py                                              # Конфигурация приложения TicketConfig
-│   ├── email_utils.py                                       # Отправка email (Yandex SMTP)
-│   ├── export_utils.py                                      # LogExporter (CSV/JSON/PDF)
-│   ├── forms.py                                             # Все формы приложения
-│   ├── logging_utils.py                                     # OperationLogger
-│   ├── middleware.py                                        # ManagerAccessMiddleware
+│   ├── admin.py
+│   ├── apps.py
+│   ├── email_utils.py
+│   ├── export_utils.py
+│   ├── forms.py
+│   ├── logging_utils.py
+│   ├── middleware.py
 │   ├── models.py                                            # Все модели (21+)
-│   ├── payment_service.py                                   # YooKassaService (платежи)
-│   ├── pdf_utils.py                                         # Генерация PDF-отчётов
-│   ├── phone_utils.py                                       # Форматирование и валидация телефона
-│   ├── report_utils.py                                      # ReportGenerator (статистика)
-│   ├── tests.py                                             # Тесты (стандартный, пустой)
-│   ├── tmdb_client.py                                       # Poiskkino.dev API клиент
-│   ├── urls.py                                              # URL-маршруты приложения
-│   ├── utils.py                                             # Генерация PDF билетов с QR-кодом
-│   ├── views.py                                             # Все контроллеры (вьюхи)
-│   ├── widgets.py                                           # TimePickerWidget
+│   ├── payment_service.py
+│   ├── pdf_utils.py
+│   ├── phone_utils.py
+│   ├── report_utils.py
+│   ├── tests.py
+│   ├── tmdb_client.py
+│   ├── urls.py
+│   ├── utils.py
+│   ├── views.py                                             # Все контроллеры
+│   ├── views_admin.py                                       # Доп. вьюхи для админки
+│   ├── widgets.py
 │   │
 │   ├── fonts/                                               # Шрифты для PDF
 │   │   ├── DejaVuSans.ttf
@@ -125,23 +126,23 @@ cinema-management-system/                                   # Корень пр�
 │   │   ├── DejaVuSans-ExtraLight.ttf
 │   │   └── DejaVuSans-Oblique.ttf
 │   │
-│   ├── management/                                          # Management-команды
+│   ├── management/
 │   │   ├── __init__.py
 │   │   └── commands/
 │   │       ├── __init__.py
-│   │       ├── auto_update_ticket_statuses.py               # Автообновление статуса билетов
-│   │       ├── big_populate_db.py                           # Заполнение тестовыми данными
-│   │       ├── cleanup_expired_registrations.py             # Очистка просроченных регистраций
-│   │       ├── create_manager.py                            # Создание менеджера
-│   │       ├── createsuperuser_custom.py                    # Создание суперпользователя
-│   │       ├── full_import.py                               # Полный импорт фильмов
-│   │       ├── import_kinopoisk_movies.py                   # Импорт фильмов из API (устаревший)
-│   │       ├── init_tokens.py                               # Инициализация API токенов
-│   │       ├── setup_manager_permissions.py                 # Настройка прав менеджера
-│   │       ├── smart_import.py                              # Умный импорт с контролем лимитов
-│   │       ├── test_cinema_system.py                        # Функциональные тесты
-│   │       ├── test_import_countries.py                     # Тест импорта стран
-│   │       ├── test_web_interface.py                        # Selenium тесты
+│   │       ├── auto_update_ticket_statuses.py
+│   │       ├── big_populate_db.py
+│   │       ├── cleanup_expired_registrations.py
+│   │       ├── create_manager.py
+│   │       ├── createsuperuser_custom.py
+│   │       ├── full_import.py
+│   │       ├── import_kinopoisk_movies.py
+│   │       ├── init_tokens.py
+│   │       ├── setup_manager_permissions.py
+│   │       ├── smart_import.py
+│   │       ├── test_cinema_system.py
+│   │       ├── test_import_countries.py
+│   │       ├── test_web_interface.py
 │   │       └── posters/                                     # Тестовые постеры
 │   │           ├── avatar.jpg
 │   │           ├── barbie.jpg
@@ -156,17 +157,17 @@ cinema-management-system/                                   # Корень пр�
 │   │           ├── spiderman.jpg
 │   │           └── transformers.jpg
 │   │
-│   ├── migrations/                                          # Миграции БД
+│   ├── migrations/
 │   │   ├── __init__.py
 │   │   ├── 0001_initial.py
 │   │   ├── 0002_remove_backupmanager_ticket_back_created_e79e64_idx_and_more.py
 │   │   ├── 0003_moviecountry_movie_countries.py
 │   │   └── 0004_alter_moviecountry_options_and_more.py
 │   │
-│   ├── static/                                              # Статические файлы
+│   ├── static/
 │   │   └── ticket/
-│   │       ├── css/                                         # Стили
-│   │       │   ├── admin/                                   # Админ-панель
+│   │       ├── css/
+│   │       │   ├── admin/                                   # Стили для админ-панели Django
 │   │       │   │   ├── admin-base.css
 │   │       │   │   ├── admin-login.css
 │   │       │   │   ├── dashboard.css
@@ -177,7 +178,15 @@ cinema-management-system/                                   # Корень пр�
 │   │       │   │   ├── reports.css
 │   │       │   │   ├── reports-light.css
 │   │       │   │   └── user-permissions-fix.css
-│   │       │   ├── manager/                                 # Панель менеджера
+│   │       │   ├── admin_panel/                             # Стили для кастомной админ-панели (из скриншотов)
+│   │       │   │   ├── admin-panel.css
+│   │       │   │   ├── hall-types.css
+│   │       │   │   ├── import-tasks.css
+│   │       │   │   ├── price-history.css
+│   │       │   │   ├── role-edit.css
+│   │       │   │   ├── ticket-statuses.css
+│   │       │   │   └── user-edit.css
+│   │       │   ├── manager/                                 # Стили для панели менеджера
 │   │       │   │   ├── api-import.css
 │   │       │   │   ├── api-tokens.css
 │   │       │   │   ├── manager-base.css
@@ -186,7 +195,7 @@ cinema-management-system/                                   # Корень пр�
 │   │       │   │   ├── modal.css
 │   │       │   │   ├── movie-form.css
 │   │       │   │   └── settings.css
-│   │       │   ├── user/                                    # Пользовательская часть
+│   │       │   ├── user/                                    # Стили пользовательской части
 │   │       │   │   ├── about.css
 │   │       │   │   ├── auth.css
 │   │       │   │   ├── base.css
@@ -198,18 +207,18 @@ cinema-management-system/                                   # Корень пр�
 │   │       │   │   ├── profile.css
 │   │       │   │   └── screenings.css
 │   │       │   └── theme-switcher.css
-│   │       └── js/                                          # JavaScript
-│   │           ├── admin/                                   # Админ-панель
+│   │       └── js/
+│   │           ├── admin/
 │   │           │   ├── admin-base.js
 │   │           │   └── movie-form-fix.js
-│   │           ├── manager/                                 # Панель менеджера
+│   │           ├── manager/
 │   │           │   ├── api-import.js
 │   │           │   ├── api-tokens.js
 │   │           │   ├── manager-base.js
 │   │           │   ├── manager-forms.js
 │   │           │   ├── manager-statistics.js
 │   │           │   └── movie-form.js
-│   │           ├── user/                                    # Пользовательская часть
+│   │           ├── user/
 │   │           │   ├── auth.js
 │   │           │   ├── base.js
 │   │           │   ├── home.js
@@ -218,18 +227,19 @@ cinema-management-system/                                   # Корень пр�
 │   │           │   └── screenings.js
 │   │           └── theme-switcher.js
 │   │
-│   ├── templates/                                           # HTML-шаблоны
+│   ├── templates/
 │   │   ├── __init__.py
-│   │   ├── admin/                                           # Админ-панель (кастомные шаблоны)
+│   │   │
+│   │   ├── admin/                                           # Кастомные шаблоны для стандартной админки Django
 │   │   │   ├── base_site.html
 │   │   │   ├── import_form.html
 │   │   │   ├── import_result.html
 │   │   │   ├── login.html
-│   │   │   └── ticket/                                      # Кастомные шаблоны админки
+│   │   │   └── ticket/                                      # Переопределённые шаблоны для моделей
 │   │   │       ├── apirequestlog/
 │   │   │       │   ├── change_list.html
 │   │   │       │   └── export_logs.html
-│   │   │       ├── backupmanager/                           # (удалено, но папка осталась)
+│   │   │       ├── backupmanager/                           # (остатки старой модели)
 │   │   │       │   └── change_list.html
 │   │   │       ├── operationlog/
 │   │   │       │   ├── change_form.html
@@ -238,7 +248,8 @@ cinema-management-system/                                   # Корень пр�
 │   │   │       │   └── change_form.html
 │   │   │       └── screening/
 │   │   │           └── change_form.html
-│   │   └── ticket/                                          # Пользовательские шаблоны
+│   │   │
+│   │   └── ticket/                                          # Пользовательские шаблоны приложения
 │   │       ├── __init__.py
 │   │       ├── about.html
 │   │       ├── admin_dashboard.html
@@ -264,15 +275,58 @@ cinema-management-system/                                   # Корень пр�
 │   │       ├── screening_partial.html
 │   │       ├── verify_email.html
 │   │       ├── welcome_email.html
-│   │       ├── admin/                                       # Шаблоны для админ-панели (отчёты)
+│   │       │
+│   │       ├── admin/                                       # Шаблоны кастомной админ-панели (из скриншотов)
 │   │       │   ├── export_logs.html
 │   │       │   ├── reports.html
-│   │       │   └── reports/
+│   │       │   └── reports/                                 # Шаблоны отчётов
 │   │       │       ├── halls_report.html
 │   │       │       ├── movies_report.html
 │   │       │       ├── revenue_report.html
 │   │       │       └── sales_report.html
-│   │       └── manager/                                     # Шаблоны панели менеджера
+│   │       │
+│   │       ├── admin_panel/                                 # Полноценная админ-панель (отдельное пространство)
+│   │       │   ├── action_type_form.html
+│   │       │   ├── action_types.html
+│   │       │   ├── actors.html
+│   │       │   ├── admin_hall_form.html
+│   │       │   ├── admin_halls.html
+│   │       │   ├── admin_movie_form.html
+│   │       │   ├── admin_movies.html
+│   │       │   ├── admin_screening_form.html
+│   │       │   ├── admin_screenings.html
+│   │       │   ├── age_ratings.html
+│   │       │   ├── api_logs.html
+│   │       │   ├── api_token_form.html
+│   │       │   ├── api_tokens.html
+│   │       │   ├── base_admin.html
+│   │       │   ├── countries.html
+│   │       │   ├── dashboard.html
+│   │       │   ├── directors.html
+│   │       │   ├── email_change_requests.html
+│   │       │   ├── genres.html
+│   │       │   ├── hall_type_edit.html
+│   │       │   ├── hall_types.html
+│   │       │   ├── import_cache.html
+│   │       │   ├── import_tasks.html
+│   │       │   ├── logs.html
+│   │       │   ├── module_type_form.html
+│   │       │   ├── module_types.html
+│   │       │   ├── password_reset_requests.html
+│   │       │   ├── payments.html
+│   │       │   ├── pending_registrations.html
+│   │       │   ├── price_history.html
+│   │       │   ├── role_edit.html
+│   │       │   ├── roles.html
+│   │       │   ├── seats.html
+│   │       │   ├── system_info.html
+│   │       │   ├── ticket_group_detail.html
+│   │       │   ├── ticket_groups.html
+│   │       │   ├── ticket_statuses.html
+│   │       │   ├── user_edit.html
+│   │       │   └── users.html
+│   │       │
+│   │       └── manager/                                     # Панель менеджера
 │   │           ├── base_manager.html
 │   │           ├── dashboard.html
 │   │           ├── movie_confirm_delete.html
@@ -284,38 +338,28 @@ cinema-management-system/                                   # Корень пр�
 │   │           ├── settings.html
 │   │           └── statistics.html
 │   │
-│   ├── templatetags/                                        # Кастомные теги шаблонов
+│   ├── templatetags/
 │   │   ├── __init__.py
-│   │   ├── custom_filters.py                                # multiply, div, mul
+│   │   ├── custom_filters.py
 │   │   ├── report_filters.py
 │   │   ├── ru_date.py
 │   │   └── ru_filters.py
 │   │
-│   └── tests/                                               # Модульные тесты
+│   └── tests/
 │       └── __init__.py
 │
-├── .env                                                     # Переменные окружения (локальная разработка)
-├── .env.development                                         # Переменные для разработки (если есть)
-├── .env.production                                          # Переменные для продакшена
-├── .gitignore                                               # Игнорируемые Git файлы
-├── create_smart_schedule.py                                 # Скрипт для создания расписания (smart)
-├── Crontab_instructions.md                                  # Инструкция по настройке cron
-├── deploy.sh                                                # Скрипт деплоя на сервер
-├── gunicorn_config.py                                       # Конфигурация Gunicorn
-├── manage.py                                                # Django management
-├── README.md                                                # Документация
-└── requirements.txt                                         # Python-зависимости📊 МОДЕЛИ ДАННЫХ (21+)
+├── .env
+├── .env.development
+├── .env.production
+├── .gitignore
+├── create_smart_schedule.py
+├── Crontab_instructions.md
+├── deploy.sh
+├── gunicorn_config.py
+├── manage.py
+├── README.md
+└── requirements.txt
 
-📊 СТАТИСТИКА СТРУКТУРЫ
-Категория	Количество
-Модели данных	21+
-Management-команды	15
-CSS файлы	26
-JS файлы	16
-HTML шаблоны	35+
-Миграции	4
-Fonts (шрифты)	5
-Тестовые постеры	12
 🔍 ВАЖНЫЕ ОСОБЕННОСТИ СТРУКТУРЫ
 ticket/static/ticket/ — статика разделена на три подкатегории: admin/, manager/, user/
 
