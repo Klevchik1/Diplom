@@ -1559,32 +1559,6 @@ class APIToken(models.Model):
         ordering = ['-is_active', 'label']
 
 
-class APIRequestLog(models.Model):
-    """Журнал запросов к API"""
-    token = models.ForeignKey(APIToken, on_delete=models.SET_NULL, null=True, verbose_name='Токен')
-    endpoint = models.CharField(max_length=100, verbose_name='Эндпоинт')
-    params = models.JSONField(default=dict, verbose_name='Параметры запроса')
-    status_code = models.IntegerField(null=True, verbose_name='HTTP статус')
-    success = models.BooleanField(default=False, verbose_name='Успешно')
-    response_size = models.IntegerField(null=True, verbose_name='Размер ответа (байт)')
-    duration_ms = models.IntegerField(null=True, verbose_name='Длительность (мс)')
-    error_message = models.TextField(blank=True, verbose_name='Ошибка')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Время запроса')
-
-    def __str__(self):
-        return f"{self.endpoint} — {'✅' if self.success else '❌'} {self.status_code}"
-
-    class Meta:
-        verbose_name = 'Лог API запроса'
-        verbose_name_plural = 'Логи API запросов'
-        ordering = ['-created_at']
-        indexes = [
-            models.Index(fields=['-created_at']),
-            models.Index(fields=['token', '-created_at']),
-            models.Index(fields=['success']),
-        ]
-
-
 class ImportTask(models.Model):
     """Задача импорта с сохранением прогресса"""
     STATUS_CHOICES = [

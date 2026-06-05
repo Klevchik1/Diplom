@@ -1942,8 +1942,8 @@ def api_remaining_requests(request):
 def api_token_info(request):
     """Получить детальную информацию о всех токенах"""
     try:
-        from ticket.models import APIToken, APIRequestLog
-        from django.conf import settings  # ← ДОБАВИТЬ
+        from ticket.models import APIToken
+        from django.conf import settings
 
         # ВСЕ токены, не только активные
         tokens = APIToken.objects.all()
@@ -1973,16 +1973,35 @@ def api_token_info(request):
                 'last_reset': t.last_reset_date.strftime('%d.%m.%Y') if t.last_reset_date else '—'
             })
 
-        last_requests = list(APIRequestLog.objects.select_related('token').order_by('-created_at')[:5].values(
-            'endpoint', 'success', 'status_code', 'created_at', 'token__label'
-        ))
+        # ✅ ИЗМЕНЕНИЕ: Получаем последние API запросы из OperationLog, а не из APIRequestLog
+        from .models import OperationLog, ActionType, ModuleType
+
+        # Получаем тип действия API_REQUEST
+        api_action_type = ActionType.objects.filter(code='API_REQUEST').first()
+
+        last_requests = []
+        if api_action_type:
+            last_requests = list(OperationLog.objects.filter(
+                action_type=api_action_type
+            ).order_by('-timestamp')[:5].values(
+                'description', 'additional_data', 'timestamp'
+            ))
+
+            # Форматируем для отображения
+            for req in last_requests:
+                req['endpoint'] = req.get('additional_data', {}).get('endpoint', 'неизвестно')
+                req['success'] = req.get('additional_data', {}).get('success', False)
+                req['status_code'] = req.get('additional_data', {}).get('status_code')
+                req['created_at'] = req.get('timestamp')
+                req['token__label'] = 'API'  # Токен не привязан к пользователю
 
         return JsonResponse({
             'success': True,
             'tokens': token_list,
             'tokens_count': len(token_list),
             'current_token_info': {
-                'key_preview': current_api_key[:8] + '...' + current_api_key[-4:] if current_api_key and len(current_api_key) > 12 else (current_api_key or 'Не задан'),
+                'key_preview': current_api_key[:8] + '...' + current_api_key[-4:] if current_api_key and len(
+                    current_api_key) > 12 else (current_api_key or 'Не задан'),
                 'is_from_db': current_token is not None,
                 'label': current_token.label if current_token else 'Из settings/.env'
             },

@@ -68,21 +68,50 @@ class KinopoiskDevClient:
                 logger.warning(f"Ошибка регистрации запроса: {e}")
 
     def _log_request(self, endpoint, params, status_code, success, duration_ms, response_size=None, error=None):
-        """Логировать запрос в БД"""
+        """Логировать запрос в OperationLog вместо APIRequestLog"""
         try:
-            from ticket.models import APIRequestLog
-            APIRequestLog.objects.create(
-                token=self._token_model,
-                endpoint=endpoint,
-                params=params or {},
-                status_code=status_code,
-                success=success,
-                response_size=response_size,
-                duration_ms=duration_ms,
-                error_message=error[:500] if error else ''
+            from ticket.models import ActionType, ModuleType, OperationLog
+
+            # Получаем или создаём тип действия для API запросов
+            action_type, _ = ActionType.objects.get_or_create(
+                code='API_REQUEST',
+                defaults={'name': 'API запрос', 'description': 'Запрос к внешнему API'}
             )
+
+            # Получаем или создаём тип модуля для импорта из API
+            module_type, _ = ModuleType.objects.get_or_create(
+                code='API_IMPORT',
+                defaults={'name': 'Импорт из API', 'description': 'Импорт данных через API Poiskkino.dev'}
+            )
+
+            # Подготавливаем дополнительные данные
+            additional_data = {
+                'endpoint': endpoint,
+                'params': params or {},
+                'status_code': status_code,
+                'success': success,
+                'duration_ms': duration_ms,
+                'response_size': response_size,
+            }
+
+            if error:
+                additional_data['error_message'] = error[:500] if error else ''
+
+            # Создаём запись в OperationLog
+            OperationLog.objects.create(
+                user=None,  # API запросы могут быть без авторизации
+                action_type=action_type,
+                module_type=module_type,
+                description=f"API запрос: {endpoint}",
+                ip_address=None,
+                user_agent=None,
+                object_id=None,
+                object_repr=None,
+                additional_data=additional_data
+            )
+
         except Exception as e:
-            logger.warning(f"Ошибка логирования запроса: {e}")
+            logger.warning(f"Ошибка логирования запроса в OperationLog: {e}")
 
     def _make_request(self, endpoint, params=None):
         """Базовый метод для выполнения запросов к API"""

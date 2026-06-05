@@ -12,7 +12,7 @@ from .models import (
     Report, OperationLog, AgeRating, TicketStatus, Country,
     HallType, Director, Actor, MovieDirector, MovieActor,
     TicketGroup, ActionType, ModuleType, EmailChangeRequest,
-    MovieGenre, ImportCache, ImportTask, APIRequestLog, APIToken, PriceHistory,
+    MovieGenre, ImportCache, ImportTask, APIToken, PriceHistory,
     MovieCountry
 )
 from .models import Hall, Movie, Screening, Seat, Ticket, User, Genre
@@ -1419,110 +1419,3 @@ class SmartImportForm(forms.Form):
         help_text='Импорт остановится при достижении лимита',
         widget=forms.NumberInput(attrs={'class': 'form-control'})
     )
-
-# ═══════════════════════════════════════════════
-# АДМИНКА ДЛЯ API ЛОГОВ С ЭКСПОРТОМ
-# ═══════════════════════════════════════════════
-
-@admin.register(APIRequestLog)
-class APIRequestLogAdmin(admin.ModelAdmin):
-    list_display = ('created_at', 'token_label', 'endpoint', 'success_status', 'status_code', 'duration_ms')
-    list_filter = ('success', 'token', 'endpoint', 'created_at')
-    search_fields = ('endpoint', 'error_message')
-    readonly_fields = ('token', 'endpoint', 'params', 'status_code', 'success', 'response_size', 'duration_ms', 'error_message', 'created_at')
-    date_hierarchy = 'created_at'
-
-    def token_label(self, obj):
-        return obj.token.label if obj.token else '—'
-    token_label.short_description = 'Токен'
-
-    def success_status(self, obj):
-        return '✅' if obj.success else '❌'
-    success_status.short_description = ''
-
-    def has_add_permission(self, request):
-        return False
-
-    actions = ['export_as_json', 'export_as_pdf']
-
-    def export_as_json(self, request, queryset):
-        """Экспорт выбранных API логов в JSON"""
-        from .export_utils import LogExporter
-        return LogExporter.export_api_logs_to_json(queryset)
-    export_as_json.short_description = '📊 Экспорт выбранных API логов (JSON)'
-
-    def export_as_pdf(self, request, queryset):
-        """Экспорт выбранных API логов в PDF"""
-        from .export_utils import LogExporter
-        return LogExporter.export_api_logs_to_pdf(queryset)
-    export_as_pdf.short_description = '📄 Экспорт выбранных API логов (PDF)'
-
-    def get_urls(self):
-        from django.urls import path
-        urls = super().get_urls()
-        custom_urls = [
-            path('export-logs/', self.admin_site.admin_view(self.export_logs_view), name='ticket_apirequestlog_export'),
-        ]
-        return custom_urls + urls
-
-    def export_logs_view(self, request):
-        """Страница экспорта API логов"""
-        from .forms import APIRequestLogExportForm
-
-        form = APIRequestLogExportForm(request.GET or None)
-        context = {
-            'form': form,
-            'title': 'Экспорт логов API запросов',
-            'opts': self.model._meta,
-            **self.admin_site.each_context(request),
-        }
-
-        if form.is_valid():
-            queryset = self.get_export_queryset(form.cleaned_data)
-            format_type = form.cleaned_data['format_type']
-
-            from .logging_utils import OperationLogger
-            OperationLogger.log_operation(
-                request=request,
-                action_type='EXPORT',
-                module_type='SYSTEM',
-                description=f'Экспорт API логов в формате {format_type.upper()}',
-                additional_data={
-                    'start_date': str(form.cleaned_data.get('start_date')) if form.cleaned_data.get('start_date') else None,
-                    'end_date': str(form.cleaned_data.get('end_date')) if form.cleaned_data.get('end_date') else None,
-                }
-            )
-
-            if format_type == 'json':
-                return LogExporter.export_api_logs_to_json(queryset)
-            elif format_type == 'pdf':
-                return LogExporter.export_api_logs_to_pdf(queryset)
-
-        return render(request, 'admin/ticket/apirequestlog/export_logs.html', context)
-
-    def get_export_queryset(self, filters):
-        """Получение queryset для экспорта API логов"""
-        queryset = APIRequestLog.objects.all().select_related('token')
-
-        if filters.get('start_date'):
-            queryset = queryset.filter(created_at__date__gte=filters['start_date'])
-        if filters.get('end_date'):
-            queryset = queryset.filter(created_at__date__lte=filters['end_date'])
-
-        if filters.get('success') is not None and filters.get('success') != '':
-            queryset = queryset.filter(success=filters['success'])
-
-        if filters.get('token'):
-            queryset = queryset.filter(token=filters['token'])
-
-        return queryset.order_by('-created_at')
-
-    def changelist_view(self, request, extra_context=None):
-        """Добавляем кнопку экспорта в changelist"""
-        if extra_context is None:
-            extra_context = {}
-        extra_context['export_url'] = '/admin/ticket/apirequestlog/export-logs/'
-        return super().changelist_view(request, extra_context=extra_context)
-
-    def has_change_permission(self, request, obj=None):
-        return False

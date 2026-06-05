@@ -32,7 +32,7 @@ from datetime import datetime, timedelta
 
 from .models import (
     User, HallType, AgeRating, Genre, Country, Director, Actor,
-    OperationLog, APIRequestLog, APIToken, TicketStatus, PriceHistory,
+    OperationLog, APIToken, TicketStatus, PriceHistory,
     ImportTask, ImportCache, Payment, TicketGroup, Ticket, Screening, Movie, Hall,
     ActionType, ModuleType, PasswordResetRequest, EmailChangeRequest,
     Seat  # <-- ДОБАВЬТЕ ЭТУ СТРОКУ
@@ -70,10 +70,6 @@ def admin_dashboard(request):
     week_ago = timezone.now() - timedelta(days=7)
     logs_last_week = OperationLog.objects.filter(timestamp__gte=week_ago).count()
 
-    # API статистика
-    total_api_requests = APIRequestLog.objects.count()
-    successful_api_requests = APIRequestLog.objects.filter(success=True).count()
-
     # Активные задачи импорта
     active_imports = ImportTask.objects.filter(status__in=['pending', 'running']).count()
 
@@ -90,9 +86,6 @@ def admin_dashboard(request):
         'total_tickets': total_tickets,
         'total_revenue': total_revenue,
         'logs_last_week': logs_last_week,
-        'total_api_requests': total_api_requests,
-        'successful_api_requests': successful_api_requests,
-        'success_rate': int((successful_api_requests / total_api_requests * 100)) if total_api_requests > 0 else 0,
         'active_imports': active_imports,
         'total_payments': total_payments,
         'successful_payments': successful_payments,
@@ -1399,42 +1392,6 @@ def export_logs_pdf(request, logs):
 
 
 @staff_member_required
-def admin_api_logs(request):
-    """Просмотр логов API запросов"""
-    if not request.user.is_superuser:
-        messages.error(request, 'У вас нет доступа к админ-панели.')
-        return redirect('manager_dashboard')
-
-    # Фильтры
-    success = request.GET.get('success', '')
-    token_id = request.GET.get('token_id', '')
-
-    logs = APIRequestLog.objects.select_related('token').all().order_by('-created_at')
-
-    if success == 'yes':
-        logs = logs.filter(success=True)
-    elif success == 'no':
-        logs = logs.filter(success=False)
-    if token_id:
-        logs = logs.filter(token_id=token_id)
-
-    paginator = Paginator(logs, 100)
-    page_number = request.GET.get('page', 1)
-    page_obj = paginator.get_page(page_number)
-
-    tokens = APIToken.objects.all()
-
-    return render(request, 'ticket/admin_panel/api_logs.html', {
-        'logs': page_obj,
-        'tokens': tokens,
-        'filters': {
-            'success': success,
-            'token_id': token_id,
-        }
-    })
-
-
-@staff_member_required
 def admin_ticket_statuses(request):
     """Управление статусами билетов"""
     if not request.user.is_superuser:
@@ -1540,7 +1497,6 @@ def admin_system_info(request):
         'tickets': Ticket.objects.count(),
         'payments': Payment.objects.count(),
         'logs': OperationLog.objects.count(),
-        'api_logs': APIRequestLog.objects.count(),
     }
 
     # Запросы по типам

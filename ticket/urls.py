@@ -90,7 +90,6 @@ urlpatterns = [
         path('actors/<int:actor_id>/delete/', views_admin.admin_actor_delete, name='admin_panel_actor_delete'),
         path('logs/', views_admin.admin_logs, name='admin_panel_logs'),
         path('logs/export/', views_admin.admin_logs_export, name='admin_panel_logs_export'),
-        path('api-logs/', views_admin.admin_api_logs, name='admin_panel_api_logs'),
         path('ticket-statuses/', views_admin.admin_ticket_statuses, name='admin_panel_ticket_statuses'),
         path('price-history/', views_admin.admin_price_history, name='admin_panel_price_history'),
         path('import-tasks/', views_admin.admin_import_tasks, name='admin_panel_import_tasks'),
