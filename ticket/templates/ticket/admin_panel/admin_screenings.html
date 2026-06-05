@@ -1,0 +1,108 @@
+{% extends 'ticket/admin_panel/base_admin.html' %}
+{% load static %}
+
+{% block title %}Сеансы | Админ-панель{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>🎫 Управление сеансами</h2>
+    <a href="{% url 'admin_panel_screening_add' %}" class="btn-primary">➕ Добавить сеанс</a>
+</div>
+
+<div class="filters-card">
+    <form method="get" class="filters-form" id="filter-form">
+        <div class="filter-group">
+            <select name="status" class="filter-select">
+                <option value="upcoming" {% if status_filter == 'upcoming' %}selected{% endif %}>Предстоящие</option>
+                <option value="past" {% if status_filter == 'past' %}selected{% endif %}>Прошедшие</option>
+                <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Все</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <select name="movie" class="filter-select">
+                <option value="">Все фильмы</option>
+                {% for movie in movies %}
+                <option value="{{ movie.id }}" {% if selected_movie|add:"0" == movie.id %}selected{% endif %}>{{ movie.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <select name="hall" class="filter-select">
+                <option value="">Все залы</option>
+                {% for hall in halls %}
+                <option value="{{ hall.id }}" {% if selected_hall|add:"0" == hall.id %}selected{% endif %}>{{ hall.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn-filter">Применить</button>
+        <a href="{% url 'admin_panel_screenings' %}" class="btn-reset">Сбросить</a>
+    </form>
+</div>
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 50px;">ID</th>
+                <th>Фильм</th>
+                <th style="width: 150px;">Зал</th>
+                <th style="width: 150px;">Дата и время</th>
+                <th style="width: 80px;">Цена билета</th>
+                <th style="width: 100px;">Билетов продано</th>
+                <th style="width: 100px;">Доход</th>
+                <th style="width: 100px;">Статус</th>
+                <th style="width: 100px;">Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for screening in screenings %}
+            <tr>
+                <td>{{ screening.id }}</td>
+                <td><strong>{{ screening.movie.title }}</strong></td>
+                <td>{{ screening.hall.name }} ({{
+                    screening.hall.hall_type.name }})</td>
+                <td class="nowrap">{{ screening.start_time|date:"d.m.Y H:i" }} -<br>{{ screening.end_time|date:"H:i" }}</td>
+                <td class="nowrap">{{ screening.ticket_price }} ₽</td>
+                <td>{{ screening.tickets.count }}</td>
+                <td class="nowrap">{{ screening.tickets.count|default:0|add:screening.ticket_price|floatformat:0 }} ₽</td>
+                <td>
+                    {% if screening.start_time > now %}
+                        <span class="badge success">🟢 Предстоит</span>
+                    {% elif screening.start_time <= now and screening.end_time >= now %}
+                        <span class="badge warning">🟡 Идёт сейчас</span>
+                    {% else %}
+                        <span class="badge danger">⚫ Завершён</span>
+                    {% endif %}
+                </td>
+                <td class="actions-cell">
+                    <a href="{% url 'admin_panel_screening_edit' screening.id %}" class="btn-icon edit" title="Редактировать">✏️</a>
+                    <form method="post" action="{% url 'admin_panel_screening_delete' screening.id %}" style="display:inline"
+                          onsubmit="return confirm('Удалить сеанс {{ screening.movie.title }} от {{ screening.start_time|date:'d.m.Y H:i' }}?')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-icon delete" title="Удалить">🗑️</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9" class="empty-row">Сеансы не найдены</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="pagination">
+    {% if screenings.has_previous %}
+        <a href="?page=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if selected_movie %}&movie={{ selected_movie }}{% endif %}{% if selected_hall %}&hall={{ selected_hall }}{% endif %}" class="page-link">« Первая</a>
+        <a href="?page={{ screenings.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if selected_movie %}&movie={{ selected_movie }}{% endif %}{% if selected_hall %}&hall={{ selected_hall }}{% endif %}" class="page-link">‹ Назад</a>
+    {% endif %}
+
+    <span class="page-current">Страница {{ screenings.number }} из {{ screenings.paginator.num_pages }}</span>
+
+    {% if screenings.has_next %}
+        <a href="?page={{ screenings.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if selected_movie %}&movie={{ selected_movie }}{% endif %}{% if selected_hall %}&hall={{ selected_hall }}{% endif %}" class="page-link">Вперед ›</a>
+        <a href="?page={{ screenings.paginator.num_pages }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if selected_movie %}&movie={{ selected_movie }}{% endif %}{% if selected_hall %}&hall={{ selected_hall }}{% endif %}" class="page-link">Последняя »</a>
+    {% endif %}
+</div>
+{% endblock %}

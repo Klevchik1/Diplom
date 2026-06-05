@@ -9,15 +9,17 @@
     <h2>📝 Логи операций</h2>
     <div class="header-actions">
         <div class="export-buttons">
-            <a href="?{% for key, value in request.GET.items %}{% if key != 'format' %}&{{ key }}={{ value }}{% endif %}{% endfor %}&format=csv" class="btn-export csv">📄 CSV</a>
-            <a href="?{% for key, value in request.GET.items %}{% if key != 'format' %}&{{ key }}={{ value }}{% endif %}{% endfor %}&format=json" class="btn-export json">📋 JSON</a>
+            <button class="btn-export csv" onclick="exportLogs('csv')">📄 CSV</button>
+            <button class="btn-export xlsx" onclick="exportLogs('xlsx')">📊 Excel</button>
+            <button class="btn-export json" onclick="exportLogs('json')">📋 JSON</button>
+            <button class="btn-export pdf" onclick="exportLogs('pdf')">📑 PDF</button>
         </div>
     </div>
 </div>
 
 <!-- Фильтры -->
 <div class="filters-card">
-    <form method="get" class="filters-form">
+    <form method="get" class="filters-form" id="filter-form">
         <div class="filter-group">
             <select name="action_type" class="filter-select">
                 <option value="">Все действия</option>
@@ -129,4 +131,70 @@
     {% endif %}
 </div>
 {% endif %}
+
+<script>
+function exportLogs(format) {
+    // Собираем все текущие параметры фильтрации
+    const actionType = document.querySelector('select[name="action_type"]').value;
+    const moduleType = document.querySelector('select[name="module_type"]').value;
+    const userId = document.querySelector('select[name="user_id"]').value;
+    const dateFrom = document.querySelector('input[name="date_from"]').value;
+    const dateTo = document.querySelector('input[name="date_to"]').value;
+
+    // Строим URL с параметрами
+    let url = `/admin-panel/logs/export/?format=${format}`;
+    if (actionType) url += `&action_type=${actionType}`;
+    if (moduleType) url += `&module_type=${moduleType}`;
+    if (userId) url += `&user_id=${userId}`;
+    if (dateFrom) url += `&date_from=${dateFrom}`;
+    if (dateTo) url += `&date_to=${dateTo}`;
+
+    // Открываем в новой вкладке или скачиваем
+    window.location.href = url;
+}
+
+// Подтверждение экспорта при большом количестве записей
+const totalCount = {{ logs.paginator.count|default:0 }};
+if (totalCount > 1000) {
+    const originalExport = exportLogs;
+    window.exportLogs = function(format) {
+        if (confirm(`⚠️ Внимание! Вы экспортируете ${totalCount} записей.\n\nФайл может быть большим. Продолжить?`)) {
+            originalExport(format);
+        }
+    };
+}
+</script>
+
+<style>
+.btn-export {
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+}
+.btn-export.csv {
+    background: #10b981;
+    color: white;
+}
+.btn-export.csv:hover {
+    background: #059669;
+}
+.btn-export.json {
+    background: #3b82f6;
+    color: white;
+}
+.btn-export.json:hover {
+    background: #2563eb;
+}
+.btn-export.pdf {
+    background: #ef4444;
+    color: white;
+}
+.btn-export.pdf:hover {
+    background: #dc2626;
+}
+</style>
 {% endblock %}

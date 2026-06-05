@@ -1,0 +1,106 @@
+{% extends 'ticket/admin_panel/base_admin.html' %}
+{% load static %}
+
+{% block title %}Детали группы билетов | Админ-панель{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>📦 Детали группы билетов #{{ group.id }}</h2>
+    <a href="{% url 'admin_panel_ticket_groups' %}" class="btn-secondary">← Назад к списку</a>
+</div>
+
+<div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 24px;">
+    <div class="stat-card">
+        <h3>UUID группы</h3>
+        <div class="stat-value" style="font-size: 18px; word-break: break-all;">{{ group.group_uuid }}</div>
+    </div>
+    <div class="stat-card">
+        <h3>Статус оплаты</h3>
+        <div class="stat-value" style="font-size: 18px;">
+            {% if group.payment_status == 'paid' %}
+                <span class="badge success">✅ Оплачено</span>
+            {% elif group.payment_status == 'pending_payment' %}
+                <span class="badge warning">⏳ Ожидает оплаты</span>
+            {% else %}
+                <span class="badge danger">❌ Отменено</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px;">
+    <div class="stat-card">
+        <h3>Пользователь</h3>
+        <div class="stat-value" style="font-size: 16px;">{{ group.user.email }}</div>
+        <div class="stat-details">{{ group.user.name }} {{ group.user.surname }}</div>
+    </div>
+    <div class="stat-card">
+        <h3>Фильм</h3>
+        <div class="stat-value" style="font-size: 16px;">{{ group.screening.movie.title }}</div>
+        <div class="stat-details">{{ group.screening.movie.release_year }} г.</div>
+    </div>
+    <div class="stat-card">
+        <h3>Зал и время</h3>
+        <div class="stat-value" style="font-size: 16px;">{{ group.screening.hall.name }}</div>
+        <div class="stat-details">{{ group.screening.start_time|date:"d.m.Y H:i" }}</div>
+    </div>
+    <div class="stat-card">
+        <h3>Сумма и билеты</h3>
+        <div class="stat-value">{{ group.total_amount }} ₽</div>
+        <div class="stat-details">{{ group.tickets_count }} билетов</div>
+    </div>
+</div>
+
+<div class="table-container">
+    <h3 style="padding: 16px; margin: 0; border-bottom: 1px solid var(--border-color);">🎫 Билеты в группе</h3>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Место</th>
+                <th>Цена</th>
+                <th>Статус</th>
+                <th>QR код</th>
+                <th>Дата создания</th>
+             </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+            <tr>
+                <td>{{ ticket.id }}</td>
+                <td>Ряд {{ ticket.seat.row }}, Место {{ ticket.seat.number }}</td>
+                <td>{{ ticket.price }} ₽</td>
+                <td>
+                    {% if ticket.status.code == 'active' %}
+                        <span class="badge success">🟢 Активен</span>
+                    {% elif ticket.status.code == 'used' %}
+                        <span class="badge info">📌 Использован</span>
+                    {% elif ticket.status.code == 'refunded' %}
+                        <span class="badge danger">↩️ Возвращён</span>
+                    {% else %}
+                        <span class="badge default">{{ ticket.status.name }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if ticket.qr_code %}
+                        <span class="badge success">✅ Сгенерирован</span>
+                    {% else %}
+                        <span class="badge warning">⏳ Не сгенерирован</span>
+                    {% endif %}
+                </td>
+                <td class="nowrap">{{ ticket.created_at|date:"d.m.Y H:i" }}</td>
+             </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="info-box" style="margin-top: 20px;">
+    <p><strong>📅 Информация о покупке:</strong></p>
+    <p>Дата покупки: {{ group.purchase_date|date:"d.m.Y H:i:s" }}</p>
+    <p>Дата создания записи: {{ group.created_at|date:"d.m.Y H:i:s" }}</p>
+    {% if group.expires_at %}
+    <p>Бронь истекает: {{ group.expires_at|date:"d.m.Y H:i:s" }}</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends 'ticket/admin_panel/base_admin.html' %}
+{% load static %}
+
+{% block title %}Фильмы | Админ-панель{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>🎥 Управление фильмами</h2>
+    <a href="{% url 'admin_panel_movie_add' %}" class="btn-primary">➕ Добавить фильм</a>
+</div>
+
+<div class="filters-card">
+    <form method="get" class="filters-form" id="filter-form">
+        <div class="filter-group" style="flex: 2;">
+            <input type="text" name="search" placeholder="🔍 Поиск по названию..." 
+                   value="{{ search|default:'' }}" class="filter-input">
+        </div>
+        <div class="filter-group">
+            <select name="year" class="filter-select">
+                <option value="">Все годы</option>
+                {% for y in years %}
+                <option value="{{ y }}" {% if selected_year|add:"0" == y %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn-filter">Найти</button>
+        {% if search or selected_year %}
+        <a href="{% url 'admin_panel_movies' %}" class="btn-reset">Сбросить</a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 50px;">ID</th>
+                <th style="width: 70px;">Постер</th>
+                <th>Название</th>
+                <th style="width: 70px;">Год</th>
+                <th style="width: 100px;">Длительность</th>
+                <th style="width: 70px;">Рейтинг</th>
+                <th>Жанры</th>
+                <th style="width: 80px;">Сеансов</th>
+                <th style="width: 100px;">Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for movie in movies %}
+            <tr>
+                <td>{{ movie.id }}</td>
+                <td>
+                    {% if movie.poster %}
+                        <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" style="width: 40px; height: 60px; object-fit: cover; border-radius: 4px;">
+                    {% else %}
+                        <span style="color: var(--text-muted);">—</span>
+                    {% endif %}
+                </td>
+                <td><strong>{{ movie.title }}</strong></td>
+                <td>{{ movie.release_year }}</td>
+                <td>{{ movie.get_duration_display }}</td>
+                <td>{{ movie.age_rating.name }}</td>
+                <td>
+                    {% for genre in movie.genres.all|slice:":2" %}
+                        <span class="badge default">{{ genre.name }}</span>
+                    {% endfor %}
+                    {% if movie.genres.count > 2 %}
+                        <span class="badge default">+{{ movie.genres.count|add:"-2" }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ movie.screenings.count }}</td>
+                <td class="actions-cell">
+                    <a href="{% url 'admin_panel_movie_edit' movie.id %}" class="btn-icon edit" title="Редактировать">✏️</a>
+                    <form method="post" action="{% url 'admin_panel_movie_delete' movie.id %}" style="display:inline"
+                          onsubmit="return confirm('Удалить фильм {{ movie.title }}? Это действие нельзя отменить.')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-icon delete" title="Удалить">🗑️</button>
+                    </form>
+                </td>
+             </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9" class="empty-row">
+                    {% if search %}По запросу "{{ search }}" ничего не найдено{% else %}Фильмы не найдены{% endif %}
+                </td>
+             </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="pagination">
+    {% if movies.has_previous %}
+        <a href="?page=1{% if search %}&search={{ search }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}" class="page-link">« Первая</a>
+        <a href="?page={{ movies.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}" class="page-link">‹ Назад</a>
+    {% endif %}
+
+    <span class="page-current">Страница {{ movies.number }} из {{ movies.paginator.num_pages }}</span>
+
+    {% if movies.has_next %}
+        <a href="?page={{ movies.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}" class="page-link">Вперед ›</a>
+        <a href="?page={{ movies.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}" class="page-link">Последняя »</a>
+    {% endif %}
+</div>
+{% endblock %}

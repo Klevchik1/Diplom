@@ -1,0 +1,50 @@
+{% extends 'ticket/admin_panel/base_admin.html' %}
+{% load static %}
+
+{% block title %}{% if action == 'add' %}Добавление{% else %}Редактирование{% endif %} типа действия | Админ-панель{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>{% if action == 'add' %}➕ Добавление типа действия{% else %}✏️ Редактирование: {{ action_type.name }}{% endif %}</h2>
+    <a href="{% url 'admin_panel_action_types' %}" class="btn-secondary">← Назад к списку</a>
+</div>
+
+<div class="form-container" style="max-width: 600px; margin: 0 auto;">
+    <form method="post" class="admin-form">
+        {% csrf_token %}
+        
+        <div class="form-card">
+            <div class="form-group">
+                <label>Код действия *</label>
+                <input type="text" name="code" value="{{ action_type.code|default:'' }}" class="form-control" required 
+                       placeholder="CREATE, UPDATE, DELETE, VIEW...">
+                <small>Уникальный идентификатор, только заглавные буквы и подчёркивания</small>
+            </div>
+            
+            <div class="form-group">
+                <label>Название *</label>
+                <input type="text" name="name" value="{{ action_type.name|default:'' }}" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Описание</label>
+                <textarea name="description" class="form-control" rows="4">{{ action_type.description|default:'' }}</textarea>
+            </div>
+            
+            <div class="form-actions" style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 24px;">
+                <button type="submit" class="btn-primary">💾 Сохранить</button>
+                <a href="{% url 'admin_panel_action_types' %}" class="btn-secondary">Отмена</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+.form-card {
+    background: var(--header-bg);
+    border-radius: var(--radius);
+    padding: 24px;
+    border: 1px solid var(--border-color);
+}
+</style>
+{% endblock %}

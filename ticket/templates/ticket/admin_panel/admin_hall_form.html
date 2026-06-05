@@ -1,0 +1,98 @@
+{% extends 'ticket/admin_panel/base_admin.html' %}
+{% load static %}
+
+{% block title %}{% if hall %}Редактирование{% else %}Добавление{% endif %} зала | Админ-панель{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>{% if hall %}✏️ Редактирование зала: {{ hall.name }}{% else %}➕ Добавление зала{% endif %}</h2>
+    <a href="{% url 'admin_panel_halls' %}" class="btn-secondary">← Назад к списку</a>
+</div>
+
+<div class="form-container" style="max-width: 600px; margin: 0 auto;">
+    <form method="post" class="admin-form">
+        {% csrf_token %}
+        
+        <div class="form-card">
+            <div class="form-group">
+                <label>Название зала *</label>
+                <input type="text" name="name" value="{{ hall.name|default:'' }}" class="form-control" required 
+                       placeholder="Например: Красный зал, Синий зал, VIP зал">
+            </div>
+            
+            <div class="form-group">
+                <label>Тип зала *</label>
+                <select name="hall_type" class="form-control" required>
+                    <option value="">-- Выберите тип --</option>
+                    {% for ht in hall_types %}
+                    <option value="{{ ht.id }}" {% if hall.hall_type.id == ht.id %}selected{% endif %}>
+                        {{ ht.name }} (базовая цена: {{ ht.base_price }} ₽, коэф: {{ ht.price_coefficient }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-row two-cols">
+                <div class="form-group">
+                    <label>Количество рядов *</label>
+                    <input type="number" name="rows" value="{{ hall.rows|default:'' }}" class="form-control" required min="1" max="15">
+                    <small>Максимум 15 рядов</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Мест в ряду *</label>
+                    <input type="number" name="seats_per_row" value="{{ hall.seats_per_row|default:'' }}" class="form-control" required min="1" max="20">
+                    <small>Максимум 20 мест в ряду</small>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Описание</label>
+                <textarea name="description" class="form-control" rows="4">{{ hall.description|default:'' }}</textarea>
+                <small>Дополнительная информация о зале</small>
+            </div>
+            
+            <div class="info-box" style="margin-top: 16px;">
+                <p><strong>📊 Предварительный расчёт:</strong></p>
+                <p>Всего мест: <strong id="total-seats-preview">{% if hall %}{{ hall.total_seats }}{% else %}—{% endif %}</strong></p>
+                <p>Стоимость билета в этом зале: от <strong id="price-preview">—</strong> ₽ (в зависимости от времени)</p>
+            </div>
+            
+            <div class="form-actions" style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 24px;">
+                <button type="submit" class="btn-primary">💾 Сохранить</button>
+                <a href="{% url 'admin_panel_halls' %}" class="btn-secondary">Отмена</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+// Предварительный расчёт количества мест
+const rowsInput = document.querySelector('input[name="rows"]');
+const seatsInput = document.querySelector('input[name="seats_per_row"]');
+const totalPreview = document.getElementById('total-seats-preview');
+
+function updateTotalSeats() {
+    const rows = parseInt(rowsInput?.value) || 0;
+    const seats = parseInt(seatsInput?.value) || 0;
+    totalPreview.textContent = rows * seats || '—';
+}
+
+rowsInput?.addEventListener('input', updateTotalSeats);
+seatsInput?.addEventListener('input', updateTotalSeats);
+</script>
+
+<style>
+.form-card {
+    background: var(--header-bg);
+    border-radius: var(--radius);
+    padding: 24px;
+    border: 1px solid var(--border-color);
+}
+.form-row.two-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+</style>
+{% endblock %}

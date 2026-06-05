@@ -184,6 +184,15 @@ class HallType(models.Model):
     def clean(self):
         """Валидация: коэффициент должен быть > 0"""
         from django.core.exceptions import ValidationError
+        from decimal import Decimal
+
+        # Преобразуем в Decimal если пришло строкой
+        if isinstance(self.price_coefficient, str):
+            try:
+                self.price_coefficient = Decimal(self.price_coefficient)
+            except:
+                pass
+
         if self.price_coefficient <= 0:
             raise ValidationError({'price_coefficient': 'Коэффициент стоимости должен быть больше 0'})
 

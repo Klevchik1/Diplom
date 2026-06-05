@@ -1,0 +1,105 @@
+{% extends 'ticket/admin_panel/base_admin.html' %}
+{% load static %}
+
+{% block title %}{% if screening %}Редактирование{% else %}Добавление{% endif %} сеанса | Админ-панель{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>{% if screening %}✏️ Редактирование сеанса{% else %}➕ Добавление сеанса{% endif %}</h2>
+    <a href="{% url 'admin_panel_screenings' %}" class="btn-secondary">← Назад к списку</a>
+</div>
+
+<div class="form-container" style="max-width: 600px; margin: 0 auto;">
+    <form method="post" class="admin-form">
+        {% csrf_token %}
+        
+        <div class="form-card">
+            <div class="form-group">
+                <label>Фильм *</label>
+                <select name="movie" class="form-control" required>
+                    <option value="">-- Выберите фильм --</option>
+                    {% for movie in movies %}
+                    <option value="{{ movie.id }}" {% if screening.movie.id == movie.id %}selected{% endif %}>
+                        {{ movie.title }} ({{ movie.release_year }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Зал *</label>
+                <select name="hall" class="form-control" required>
+                    <option value="">-- Выберите зал --</option>
+                    {% for hall in halls %}
+                    <option value="{{ hall.id }}" {% if screening.hall.id == hall.id %}selected{% endif %}>
+                        {{ hall.name }} ({{ hall.hall_type.name }}) - {{ hall.rows }}×{{ hall.seats_per_row }} мест
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Дата и время начала *</label>
+                <input type="datetime-local" name="start_time" 
+                       value="{% if screening.start_time %}{{ screening.start_time|date:'Y-m-d\\TH:i' }}{% endif %}" 
+                       class="form-control" required>
+                <small>Время работы кинотеатра: с 8:00 до 23:00</small>
+            </div>
+            
+            {% if screening %}
+            <div class="info-box" style="margin-top: 16px;">
+                <p><strong>ℹ️ Информация о сеансе:</strong></p>
+                <p>Автоматически рассчитанная цена: <strong>{{ screening.ticket_price }} ₽</strong></p>
+                <p>Длительность фильма: {{ screening.movie.duration }} мин.</p>
+                <p>Окончание сеанса: {{ screening.end_time|date:"d.m.Y H:i" }}</p>
+            </div>
+            {% endif %}
+            
+            <div class="form-actions" style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 24px;">
+                <button type="submit" class="btn-primary">💾 Сохранить</button>
+                <a href="{% url 'admin_panel_screenings' %}" class="btn-secondary">Отмена</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+// Автоматический расчёт цены при выборе зала и времени (AJAX)
+document.querySelectorAll('select[name="hall"], input[name="start_time"]').forEach(el => {
+    el.addEventListener('change', function() {
+        const hallId = document.querySelector('select[name="hall"]').value;
+        const startTime = document.querySelector('input[name="start_time"]').value;
+        
+        if (hallId && startTime) {
+            fetch('/manager/api/calculate-price/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ hall_id: hallId, time: startTime })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const priceDisplay = document.querySelector('.info-box strong');
+                    if (priceDisplay) {
+                        priceDisplay.textContent = data.price + ' ₽';
+                    }
+                }
+            })
+            .catch(e => console.error('Error:', e));
+        }
+    });
+});
+</script>
+
+<style>
+.form-card {
+    background: var(--header-bg);
+    border-radius: var(--radius);
+    padding: 24px;
+    border: 1px solid var(--border-color);
+}
+</style>
+{% endblock %}

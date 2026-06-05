@@ -1,0 +1,78 @@
+{% extends 'ticket/admin_panel/base_admin.html' %}
+{% load static %}
+
+{% block title %}Типы действий | Админ-панель{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>🏷️ Типы действий</h2>
+    <a href="{% url 'admin_panel_action_type_add' %}" class="btn-primary">➕ Добавить тип действия</a>
+</div>
+
+<div class="filters-card">
+    <form method="get" class="filters-form" id="filter-form">
+        <div class="filter-group" style="flex: 2;">
+            <input type="text" name="search" placeholder="🔍 Поиск по коду, названию или описанию..." 
+                   value="{{ search|default:'' }}" class="filter-input">
+        </div>
+        <button type="submit" class="btn-filter">Найти</button>
+        {% if search %}
+        <a href="{% url 'admin_panel_action_types' %}" class="btn-reset">Сбросить</a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 60px;">ID</th>
+                <th style="width: 100px;">Код</th>
+                <th>Название</th>
+                <th>Описание</th>
+                <th style="width: 150px;">Дата создания</th>
+                <th style="width: 100px;">Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for at in action_types %}
+            <tr>
+                <td>{{ at.id }}</td>
+                <td><code>{{ at.code }}</code></td>
+                <td><strong>{{ at.name }}</strong></td>
+                <td>{{ at.description|truncatechars:50|default:"—" }}</td>
+                <td>{{ at.created_at|date:"d.m.Y H:i" }}</td>
+                <td class="actions-cell">
+                    <a href="{% url 'admin_panel_action_type_edit' at.id %}" class="btn-icon edit" title="Редактировать">✏️</a>
+                    <form method="post" action="{% url 'admin_panel_action_type_delete' at.id %}" style="display:inline"
+                          onsubmit="return confirm('Удалить тип действия {{ at.name }}? Это может затронуть логи операций.')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-icon delete" title="Удалить">🗑️</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="empty-row">
+                    {% if search %}По запросу "{{ search }}" ничего не найдено{% else %}Типы действий не найдены{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="pagination">
+    {% if action_types.has_previous %}
+        <a href="?page=1{% if search %}&search={{ search }}{% endif %}" class="page-link">« Первая</a>
+        <a href="?page={{ action_types.previous_page_number }}{% if search %}&search={{ search }}{% endif %}" class="page-link">‹ Назад</a>
+    {% endif %}
+
+    <span class="page-current">Страница {{ action_types.number }} из {{ action_types.paginator.num_pages }}</span>
+
+    {% if action_types.has_next %}
+        <a href="?page={{ action_types.next_page_number }}{% if search %}&search={{ search }}{% endif %}" class="page-link">Вперед ›</a>
+        <a href="?page={{ action_types.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}" class="page-link">Последняя »</a>
+    {% endif %}
+</div>
+{% endblock %}

@@ -2,8 +2,52 @@
 {% load static %}
 
 {% block title %}Статусы билетов | Админ-панель{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'ticket/css/admin_panel/ticket-statuses.css' %}">
+<style>
+    /* Стили ТОЛЬКО для предупреждения, без !important */
+    .status-warning-box {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 16px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    .status-warning-box strong {
+        color: #856404;
+        font-size: 14px;
+    }
+
+    .status-warning-box ul {
+        margin-left: 20px;
+        margin-top: 8px;
+    }
+
+    .status-warning-box li {
+        margin-bottom: 4px;
+        color: #856404;
+    }
+
+    /* Тёмная тема - только для предупреждения */
+    [data-theme="dark"] .status-warning-box {
+        background: #1e293b;
+        border-left: 4px solid #3b82f6;
+    }
+
+    [data-theme="dark"] .status-warning-box strong {
+        color: #60a5fa;
+    }
+
+    [data-theme="dark"] .status-warning-box li {
+        color: #94a3b8;
+    }
+
+    [data-theme="dark"] .status-warning-box {
+        color: #cbd5e1;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -51,8 +95,9 @@
     </table>
 </div>
 
+<!-- Предупреждение -->
 <div class="status-warning-box">
-    <strong>⚠️ ВНИМАНИЕ!</strong><br>
+    <strong>⚠️ ВНИМАНИЕ!</strong><br><br>
     Изменение статусов билетов может повлиять на логику работы системы:
     <ul>
         <li><strong>active</strong> - активный билет (может быть возвращён, скачан)</li>

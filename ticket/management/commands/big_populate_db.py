@@ -15,7 +15,7 @@ from ticket.models import (
     TicketStatus, Country, HallType, Director, Actor,
     MovieDirector, MovieActor, MovieGenre, ActionType, ModuleType,
     Ticket, TicketGroup, PendingRegistration, PasswordResetRequest,
-    EmailChangeRequest, BackupManager, OperationLog
+    EmailChangeRequest, OperationLog
 )
 
 fake = Faker('ru_RU')
@@ -222,7 +222,6 @@ class Command(BaseCommand):
             ('Временных регистраций', PendingRegistration),
             ('Запросов сброса пароля', PasswordResetRequest),
             ('Запросов смены email', EmailChangeRequest),
-            ('Бэкапов', BackupManager),
         ]
 
         for name, model in models_to_clear:
@@ -324,7 +323,6 @@ class Command(BaseCommand):
             {'code': 'EXPORT', 'name': 'Экспорт', 'description': 'Экспорт данных'},
             {'code': 'LOGIN', 'name': 'Вход', 'description': 'Вход в систему'},
             {'code': 'LOGOUT', 'name': 'Выход', 'description': 'Выход из системы'},
-            {'code': 'BACKUP', 'name': 'Бэкап', 'description': 'Создание бэкапа'},
             {'code': 'REPORT', 'name': 'Отчет', 'description': 'Генерация отчета'},
             {'code': 'OTHER', 'name': 'Другое', 'description': 'Другое действие'},
         ]
@@ -344,7 +342,6 @@ class Command(BaseCommand):
             {'code': 'SCREENINGS', 'name': 'Сеансы', 'description': 'Управление сеансами'},
             {'code': 'TICKETS', 'name': 'Билеты', 'description': 'Управление билетами'},
             {'code': 'REPORTS', 'name': 'Отчеты', 'description': 'Генерация отчетов'},
-            {'code': 'BACKUPS', 'name': 'Бэкапы', 'description': 'Управление бэкапами'},
             {'code': 'SYSTEM', 'name': 'Система', 'description': 'Системные операции'},
             {'code': 'AUTH', 'name': 'Аутентификация', 'description': 'Вход и выход из системы'},
         ]

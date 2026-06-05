@@ -88,6 +88,42 @@
                 </div>
             </div>
 
+            <div class="nav-dropdown">
+                <a href="javascript:void(0)">⚙️ Системные справочники ▼</a>
+                <div class="dropdown-content">
+                    <a href="{% url 'admin_panel_action_types' %}">🏷️ Типы действий</a>
+                    <a href="{% url 'admin_panel_module_types' %}">📦 Типы модулей</a>
+                    <a href="{% url 'admin_panel_api_tokens' %}">🔑 API токены</a>
+                    <a href="{% url 'admin_panel_import_cache' %}">💾 Кэш импорта</a>
+                </div>
+            </div>
+
+            <div class="nav-dropdown">
+                <a href="javascript:void(0)">🎟️ Билеты и брони ▼</a>
+                <div class="dropdown-content">
+                    <a href="{% url 'admin_panel_ticket_groups' %}">📦 Группы билетов</a>
+                    <a href="{% url 'admin_panel_seats' %}">💺 Места</a>
+                </div>
+            </div>
+
+            <div class="nav-dropdown">
+                <a href="javascript:void(0)">📝 Регистрации ▼</a>
+                <div class="dropdown-content">
+                    <a href="{% url 'admin_panel_pending_registrations' %}">⏳ Ожидающие регистрации</a>
+                    <a href="{% url 'admin_panel_password_reset_requests' %}">🔐 Восстановление пароля</a>
+                    <a href="{% url 'admin_panel_email_change_requests' %}">📧 Смена email</a>
+                </div>
+            </div>
+
+            <div class="nav-dropdown">
+                <a href="javascript:void(0)">🎬 Кинотеатр ▼</a>
+                <div class="dropdown-content">
+                    <a href="{% url 'admin_panel_movies' %}">🎥 Фильмы</a>
+                    <a href="{% url 'admin_panel_screenings' %}">🎫 Сеансы</a>
+                    <a href="{% url 'admin_panel_halls' %}">🏢 Залы</a>
+                </div>
+            </div>
+
             <a href="{% url 'admin_panel_import_tasks' %}">📥 Импорт</a>
             <a href="{% url 'admin_panel_system_info' %}">🖥️ Система</a>
 

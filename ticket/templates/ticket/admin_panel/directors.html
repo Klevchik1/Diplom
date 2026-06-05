@@ -40,6 +40,7 @@
                 <th>Фамилия</th>
                 <th>Страна</th>
                 <th>Дата рождения</th>
+                <th>Возраст</th>
                 <th>Фильмов</th>
                 <th>Действия</th>
             </tr>
@@ -51,7 +52,16 @@
                 <td><strong>{{ director.name }}</strong></td>
                 <td>{{ director.surname }}</td>
                 <td>{{ director.country.name|default:"—" }}</td>
-                <td>{{ director.birth_date|default:"—" }}</td>
+                <td>{{ director.birth_date|date:"d.m.Y"|default:"—" }}</td>
+                <td>
+                    {% if director.birth_date %}
+                        {% with age=director.birth_date|timesince %}
+                            {{ age|cut:" "|cut:"," }}
+                        {% endwith %}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
                 <td>{{ director.movies.count }}</td>
                 <td class="actions-cell">
                     <form method="post" action="{% url 'admin_panel_director_delete' director.id %}" style="display:inline"
@@ -63,7 +73,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="7" class="empty-row">
+                <td colspan="8" class="empty-row">
                     {% if search %}По запросу "{{ search }}" ничего не найдено{% else %}Режиссёры не найдены{% endif %}
                 </td>
             </tr>
@@ -98,7 +108,7 @@
             <h3>➕ Добавить режиссёра</h3>
             <button class="modal-close" onclick="closeAddModal()">&times;</button>
         </div>
-        <form method="post">
+        <form method="post" id="add-director-form">
             {% csrf_token %}
             <div class="form-row two-cols">
                 <div class="form-group">
@@ -122,7 +132,9 @@
                 </div>
                 <div class="form-group">
                     <label>Дата рождения</label>
-                    <input type="date" name="birth_date" class="form-control">
+                    <input type="date" name="birth_date" class="form-control" id="birth-date"
+                           max="2008-06-05" min="1800-01-01">
+                    <small class="hint-text">⚠️ Минимальный возраст: 18 лет (не позже 05.06.2008)</small>
                 </div>
             </div>
             <div class="form-group">
@@ -137,14 +149,69 @@
     </div>
 </div>
 
+<style>
+.form-row.two-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.hint-text {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--warning-color);
+}
+
+.age-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    background: var(--hover-bg);
+}
+</style>
+
 <script>
 function openAddModal() {
     document.getElementById('add-modal').style.display = 'flex';
+    // Устанавливаем максимальную дату (18 лет назад от сегодня)
+    const today = new Date();
+    const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+    const maxDateStr = maxDate.toISOString().split('T')[0];
+    document.getElementById('birth-date').max = maxDateStr;
 }
 
 function closeAddModal() {
     document.getElementById('add-modal').style.display = 'none';
 }
+
+// Валидация формы перед отправкой
+document.getElementById('add-director-form')?.addEventListener('submit', function(e) {
+    const birthDate = document.getElementById('birth-date').value;
+
+    if (birthDate) {
+        const birth = new Date(birthDate);
+        const today = new Date();
+        const minDate = new Date(1800, 0, 1);
+        const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+
+        if (birth < minDate) {
+            e.preventDefault();
+            alert('❌ Ошибка: Дата рождения не может быть раньше 1800 года!');
+            return false;
+        }
+
+        if (birth > maxDate) {
+            e.preventDefault();
+            const maxDateStr = maxDate.toLocaleDateString('ru-RU');
+            alert(`❌ Ошибка: Режиссёру должно быть не менее 18 лет!\n\nМаксимальная допустимая дата рождения: ${maxDateStr}`);
+            return false;
+        }
+    }
+
+    return true;
+});
 
 // Поиск при вводе
 let searchTimeout;

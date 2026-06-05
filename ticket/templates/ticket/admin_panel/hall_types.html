@@ -111,8 +111,8 @@
             </div>
             <div class="form-group">
                 <label>Коэффициент *</label>
-                <input type="number" name="price_coefficient" step="0.1" value="1.0" class="form-control" placeholder="1.0">
-                <small>Влияет на итоговую цену. Стандарт = 1.0, VIP = 1.5 и т.д.</small>
+                <input type="number" name="price_coefficient" step="0.1" min="0.1" max="9.99" value="1.0" class="form-control" placeholder="1.0">
+                <small>⚠️ Допустимые значения: от 0.1 до 9.99. Влияет на итоговую цену.</small>
             </div>
             <div class="form-group">
                 <label>Описание</label>
@@ -154,6 +154,21 @@ document.getElementById('search-input')?.addEventListener('input', function() {
     searchTimeout = setTimeout(() => {
         document.getElementById('filter-form').submit();
     }, 500);
+});
+
+// Добавьте в скрипты в конце hall_types.html перед закрывающим тегом
+document.querySelector('#add-modal form')?.addEventListener('submit', function(e) {
+    const coeff = parseFloat(this.querySelector('[name="price_coefficient"]').value);
+    if (coeff > 9.99) {
+        e.preventDefault();
+        alert('⚠️ Коэффициент не может быть больше 9.99! Максимальное значение: 9.99');
+        return false;
+    }
+    if (coeff <= 0) {
+        e.preventDefault();
+        alert('⚠️ Коэффициент должен быть больше 0!');
+        return false;
+    }
 });
 </script>
 {% endblock %}

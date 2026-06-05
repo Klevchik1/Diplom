@@ -1,0 +1,152 @@
+{% extends 'ticket/admin_panel/base_admin.html' %}
+{% load static %}
+
+{% block title %}{% if movie %}Редактирование{% else %}Добавление{% endif %} фильма | Админ-панель{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>{% if movie %}✏️ Редактирование: {{ movie.title }}{% else %}➕ Добавление фильма{% endif %}</h2>
+    <a href="{% url 'admin_panel_movies' %}" class="btn-secondary">← Назад к списку</a>
+</div>
+
+<div class="form-container" style="max-width: 800px; margin: 0 auto;">
+    <form method="post" class="admin-form" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="form-card">
+            <h3>Основная информация</h3>
+            <div class="form-group">
+                <label>Название *</label>
+                <input type="text" name="title" value="{{ movie.title|default:'' }}" class="form-control" required>
+            </div>
+
+            <div class="form-row two-cols">
+                <div class="form-group">
+                    <label>Год выпуска *</label>
+                    <input type="number" name="release_year" value="{{ movie.release_year|default:'' }}" class="form-control" required min="1900" max="2026">
+                </div>
+                <div class="form-group">
+                    <label>Длительность (минуты) *</label>
+                    <input type="number" name="duration" value="{{ movie.duration|default:'' }}" class="form-control" required min="1" max="600">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Возрастной рейтинг *</label>
+                <select name="age_rating" class="form-control" required>
+                    {% for ar in age_ratings %}
+                    <option value="{{ ar.id }}" {% if movie.age_rating.id == ar.id %}selected{% endif %}>{{ ar.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <h3>Описание</h3>
+            <div class="form-group">
+                <label>Короткое описание</label>
+                <textarea name="short_description" class="form-control" rows="2">{{ movie.short_description|default:'' }}</textarea>
+                <small>Максимум 200 символов</small>
+            </div>
+
+            <div class="form-group">
+                <label>Полное описание *</label>
+                <textarea name="description" class="form-control" rows="5" required>{{ movie.description|default:'' }}</textarea>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <h3>Жанры</h3>
+            <div class="checkbox-group" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                {% for genre in genres %}
+                <label class="checkbox-label">
+                    <input type="checkbox" name="genres" value="{{ genre.id }}"
+                           {% if genre in movie.genres.all %}checked{% endif %}>
+                    <span>{{ genre.name }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-card">
+            <h3>Страны</h3>
+            <div class="checkbox-group" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                {% for country in countries %}
+                <label class="checkbox-label">
+                    <input type="checkbox" name="countries" value="{{ country.id }}"
+                           {% if country in movie.countries.all %}checked{% endif %}>
+                    <span>{{ country.name }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-card">
+            <h3>Режиссёры</h3>
+            <select name="directors" multiple class="form-control" size="5">
+                {% for director in directors %}
+                <option value="{{ director.id }}" {% if director in movie.directors.all %}selected{% endif %}>
+                    {{ director.surname }} {{ director.name }}
+                </option>
+                {% endfor %}
+            </select>
+            <small>Зажмите Ctrl для выбора нескольких</small>
+        </div>
+
+        <div class="form-card">
+            <h3>Актёры</h3>
+            <select name="actors" multiple class="form-control" size="5">
+                {% for actor in actors %}
+                <option value="{{ actor.id }}" {% if actor in movie.actors.all %}selected{% endif %}>
+                    {{ actor.surname }} {{ actor.name }}
+                </option>
+                {% endfor %}
+            </select>
+            <small>Зажмите Ctrl для выбора нескольких</small>
+        </div>
+
+        <div class="form-card">
+            <h3>Постер</h3>
+            {% if movie.poster %}
+            <div style="margin-bottom: 10px;">
+                <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" style="max-width: 150px; border-radius: 8px;">
+            </div>
+            {% endif %}
+            <div class="form-group">
+                <input type="file" name="poster" accept="image/*" class="form-control">
+            </div>
+        </div>
+
+        <div class="form-actions" style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 24px;">
+            <button type="submit" class="btn-primary">💾 Сохранить</button>
+            <a href="{% url 'admin_panel_movies' %}" class="btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.form-card {
+    background: var(--header-bg);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border-color);
+}
+.form-card h3 {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+.form-row.two-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+</style>
+{% endblock %}
