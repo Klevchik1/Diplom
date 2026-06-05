@@ -12,7 +12,7 @@ from .models import (
     Report, OperationLog, AgeRating, TicketStatus, Country,
     HallType, Director, Actor, MovieDirector, MovieActor,
     TicketGroup, ActionType, ModuleType, EmailChangeRequest,
-    MovieGenre, ImportCache, ImportTask, APIToken, PriceHistory,
+    MovieGenre, ImportCache, APIToken,
     MovieCountry
 )
 from .models import Hall, Movie, Screening, Seat, Ticket, User, Genre

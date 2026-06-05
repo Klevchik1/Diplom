@@ -15,7 +15,7 @@ from django.core.files.base import ContentFile
 from ticket.models import (
     Movie, Genre, AgeRating, Director, Actor, Country,
     MovieDirector, MovieActor, MovieGenre, Hall, Screening,
-    APIToken, APIRequestLog, ImportTask, ImportCache,
+    APIToken, ImportCache,
     MovieCountry
 )
 from ticket.tmdb_client import KinopoiskDevClient
@@ -27,7 +27,6 @@ class SmartImporter:
     """Умный импортёр с контролем лимитов"""
 
     def __init__(self, task=None, verbosity=1):
-        self.task = task
         self.verbosity = verbosity
         self.stats = {
             'movies_new': 0, 'movies_updated': 0, 'movies_skipped': 0,
@@ -184,7 +183,7 @@ class SmartImporter:
             return 'skipped'
 
         # Проверяем существование
-        if self.task and self.task.skip_existing and title in self.existing_movies:
+        if title in self.existing_movies:
             self.stats['movies_skipped'] += 1
             return 'skipped'
 
@@ -406,7 +405,6 @@ class Command(BaseCommand):
         parser.add_argument('--year-to', type=int, default=2025, help='Год до')
         parser.add_argument('--no-posters', action='store_true', help='Без постеров')
         parser.add_argument('--no-persons', action='store_true', help='Без персон')
-        parser.add_argument('--task-id', type=int, help='ID задачи импорта')
         parser.add_argument('--token-info', action='store_true', help='Показать информацию о токенах')
 
     def handle(self, *args, **options):

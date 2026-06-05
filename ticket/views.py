@@ -36,7 +36,7 @@ from .models import (
     Screening, Ticket, Seat, Movie, Hall, User,
     Director, Actor, Country, HallType, TicketGroup,
     EmailChangeRequest, TicketStatus, ActionType, ModuleType,
-    MovieDirector, MovieActor, Genre, MovieGenre, PriceHistory
+    MovieDirector, MovieActor, Genre, MovieGenre
 )
 from .utils import generate_enhanced_ticket_pdf, generate_ticket_pdf
 from .report_utils import ReportGenerator
@@ -1424,19 +1424,6 @@ def screening_edit(request, screening_id):
 
             updated_screening.save()
 
-            if updated_screening.ticket_price != old_price:
-                PriceHistory.objects.create(
-                    screening=updated_screening,
-                    old_price=old_price,
-                    new_price=updated_screening.ticket_price,
-                    changed_by=request.user,
-                    reason='Изменение через админ-панель'
-                )
-                OperationLogger.log_price_change(
-                    updated_screening, old_price, updated_screening.ticket_price,
-                    request.user
-                )
-
             OperationLogger.log_operation(
                 request=request,
                 action_type='UPDATE',
@@ -2588,20 +2575,6 @@ def manager_screening_edit(request, screening_id):
             try:
                 updated_screening.clean()
                 updated_screening.save()
-
-                # Сохраняем историю изменения цены
-                if updated_screening.ticket_price != old_price:
-                    PriceHistory.objects.create(
-                        screening=updated_screening,
-                        old_price=old_price,
-                        new_price=updated_screening.ticket_price,
-                        changed_by=request.user,
-                        reason='Изменение через панель менеджера'
-                    )
-                    OperationLogger.log_price_change(
-                        updated_screening, old_price, updated_screening.ticket_price,
-                        request.user
-                    )
 
                 OperationLogger.log_operation(
                     request=request,
