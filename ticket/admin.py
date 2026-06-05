@@ -8,7 +8,7 @@ from .export_utils import LogExporter
 from .forms import ReportFilterForm, MovieForm, ScreeningAdminForm
 from .logging_utils import OperationLogger
 from .models import (
-    PasswordResetRequest, PendingRegistration,
+    PasswordResetRequest,
     Report, OperationLog, AgeRating, TicketStatus, Country,
     HallType, Director, Actor, MovieDirector, MovieActor,
     TicketGroup, ActionType, ModuleType, EmailChangeRequest,
@@ -968,28 +968,6 @@ class TicketAdmin(LoggingModelAdmin):
         self.message_user(request, f'✅ Отменено запросов на возврат: {cancelled}')
 
     cancel_refunds.short_description = "❌ Отменить запросы возврата"
-
-
-@admin.register(PendingRegistration)
-class PendingRegistrationAdmin(LoggingModelAdmin):
-    list_display = ('email', 'name', 'surname', 'created_at', 'is_expired')
-    list_filter = ('created_at',)
-    search_fields = ('email', 'name', 'surname')
-    readonly_fields = ('created_at',)
-
-    # Запрещаем добавление новых ожидающих регистраций
-    def has_add_permission(self, request):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-
-    def is_expired(self, obj):
-        return obj.is_expired()
-
-    is_expired.boolean = True
-    is_expired.short_description = 'Просрочен'
-
 
 @admin.register(PasswordResetRequest)
 class PasswordResetRequestAdmin(LoggingModelAdmin):

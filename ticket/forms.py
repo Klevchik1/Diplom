@@ -11,7 +11,7 @@ from .models import (
     User, Movie, Hall, Screening, OperationLog,
     Genre, AgeRating, Director, Actor, Country, HallType,
     ActionType, ModuleType, TicketStatus, TicketGroup,
-    EmailChangeRequest, PendingRegistration, PasswordResetRequest,
+    EmailChangeRequest, PasswordResetRequest,
     MovieDirector, MovieActor, MovieGenre, APIToken
 )
 from django import forms
@@ -98,9 +98,33 @@ class RegistrationForm(forms.Form):
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        # Проверяем, не занят ли email подтвержденным пользователем
-        if User.objects.filter(email=email, is_email_verified=True).exists():
-            raise ValidationError('Пользователь с таким email уже существует')
+
+        # Проверяем, существует ли пользователь с таким email
+        existing_user = User.objects.filter(email=email).first()
+
+        if existing_user:
+            # Если пользователь уже подтверждён
+            if existing_user.is_email_verified:
+                raise ValidationError('Пользователь с таким email уже существует')
+
+            # Если пользователь неподтверждённый, но не истёк срок
+            if not existing_user.is_verification_code_expired():
+                # Сохраняем ID в сессию для перенаправления
+                self.request = getattr(self, 'request', None)
+                if self.request:
+                    self.request.session['existing_unverified_user_id'] = existing_user.id
+                    self.request.session['existing_unverified_email'] = email
+                raise ValidationError(
+                    'Вы уже зарегистрированы, но не подтвердили email. '
+                    'Проверьте почту или запросите новый код.'
+                )
+
+            # Если пользователь неподтверждённый и просрочен — удаляем его
+            # (это будет сделано в view, здесь только предупреждение)
+            self.request = getattr(self, 'request', None)
+            if self.request:
+                self.request.session['pending_email_to_cleanup'] = email
+
         return email
 
     def clean(self):
@@ -138,6 +162,10 @@ class RegistrationForm(forms.Form):
             raise ValidationError('Номер телефона должен содержать 11 цифр')
 
         return cleaned_number
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
 
 
 class LoginForm(forms.Form):

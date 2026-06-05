@@ -164,7 +164,6 @@ class OperationLogger:
             'SEAT': 'HALLS',
             'TICKETSTATUS': 'TICKETS',
             'OPERATIONLOG': 'SYSTEM',
-            'PENDINGREGISTRATION': 'AUTH',
             'PASSWORDRESETREQUEST': 'AUTH',
             'EMAILCHANGEREQUEST': 'AUTH',
             'REPORT': 'REPORTS'

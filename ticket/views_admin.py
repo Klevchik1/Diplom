@@ -34,7 +34,7 @@ from .models import (
     User, HallType, AgeRating, Genre, Country, Director, Actor,
     OperationLog, APIRequestLog, APIToken, TicketStatus, PriceHistory,
     ImportTask, ImportCache, Payment, TicketGroup, Ticket, Screening, Movie, Hall,
-    ActionType, ModuleType, PendingRegistration, PasswordResetRequest, EmailChangeRequest,
+    ActionType, ModuleType, PasswordResetRequest, EmailChangeRequest,
     Seat  # <-- ДОБАВЬТЕ ЭТУ СТРОКУ
 )
 from .logging_utils import OperationLogger
@@ -2049,48 +2049,6 @@ def admin_email_change_request_delete(request, ec_id):
 
     messages.success(request, 'Запрос удалён')
     return redirect('admin_panel_email_change_requests')
-
-
-# ==================== ОЖИДАЮЩИЕ РЕГИСТРАЦИИ ====================
-
-@staff_member_required
-def admin_pending_registrations(request):
-    """Просмотр ожидающих регистраций"""
-    if not request.user.is_superuser:
-        messages.error(request, 'У вас нет доступа к админ-панели.')
-        return redirect('manager_dashboard')
-
-    search = request.GET.get('search', '')
-
-    registrations = PendingRegistration.objects.all().order_by('-created_at')
-
-    if search:
-        registrations = registrations.filter(
-            Q(email__icontains=search) | Q(name__icontains=search) | Q(surname__icontains=search)
-        )
-
-    paginator = Paginator(registrations, 30)
-    page_number = request.GET.get('page', 1)
-    page_obj = paginator.get_page(page_number)
-
-    return render(request, 'ticket/admin_panel/pending_registrations.html', {
-        'registrations': page_obj,
-        'search': search,
-    })
-
-
-@require_POST
-def admin_pending_registration_delete(request, pr_id):
-    """Удаление ожидающей регистрации"""
-    if not request.user.is_superuser:
-        messages.error(request, 'У вас нет доступа к админ-панели.')
-        return redirect('manager_dashboard')
-
-    pr = get_object_or_404(PendingRegistration, id=pr_id)
-    pr.delete()
-
-    messages.success(request, 'Запись удалена')
-    return redirect('admin_panel_pending_registrations')
 
 
 # ==================== API ТОКЕНЫ ====================

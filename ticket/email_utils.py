@@ -53,6 +53,44 @@ def send_verification_email(pending_registration):
         return False
 
 
+def send_verification_email_to_user(user, code):
+    """Отправка кода подтверждения существующему пользователю"""
+    subject = 'Подтверждение email - Кинотеатр Премьера'
+
+    html_message = render_to_string('ticket/email_verification.html', {
+        'user': user,
+        'verification_code': code,
+        'expires_in': '10 минут'
+    })
+
+    plain_message = f"""
+    Здравствуйте, {user.name} {user.surname}!
+
+    Ваш код подтверждения email: {code}
+
+    Код действителен в течение 10 минут.
+
+    Если вы не регистрировались в кинотеатре "Премьера", просто проигнорируйте это письмо.
+
+    С уважением,
+    Администрация кинотеатра "Премьера"
+    """
+
+    try:
+        send_mail(
+            subject,
+            plain_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send verification email to {user.email}: {e}")
+        return False
+
+
 def send_welcome_email(user):
     """Отправка приветственного письма после подтверждения"""
     try:

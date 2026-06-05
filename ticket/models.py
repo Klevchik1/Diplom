@@ -1445,58 +1445,6 @@ class OperationLog(models.Model):
         return "-"
 
 
-
-class PendingRegistration(models.Model):
-    """Временное хранение данных регистрации до подтверждения email"""
-    email = models.EmailField(max_length=50, unique=True, verbose_name='Электронная почта')
-    name = models.CharField(max_length=20, verbose_name='Имя')
-    surname = models.CharField(max_length=20, verbose_name='Фамилия')
-    number = models.CharField(max_length=20, verbose_name='Номер телефона')
-    password = models.CharField(max_length=128, verbose_name='Хэшированный пароль')
-    verification_code = models.CharField(max_length=6, verbose_name='Код подтверждения')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата и время создания')
-
-    def is_expired(self):
-        """Проверка истечения срока действия (30 минут)"""
-        from django.utils import timezone
-        expiration_time = self.created_at + timezone.timedelta(minutes=30)
-        return timezone.now() > expiration_time
-
-    def create_user(self):
-        """Создание пользователя после подтверждения"""
-        # Проверяем, существует ли уже пользователь
-        existing_user = User.objects.filter(email=self.email).first()
-
-        if existing_user:
-            # Если существует - обновляем его данные и подтверждаем email
-            existing_user.name = self.name
-            existing_user.surname = self.surname
-            existing_user.number = self.number
-            existing_user.is_email_verified = True
-            existing_user.save()
-            return existing_user
-
-        # Если не существует - создаем нового
-        user = User(
-            email=self.email,
-            name=self.name,
-            surname=self.surname,
-            number=self.number,
-            password=self.password,
-            is_email_verified=True
-        )
-        user.save()
-        return user
-
-    class Meta:
-        verbose_name = "Ожидающая регистрация"
-        verbose_name_plural = "Ожидающие регистрации"
-        indexes = [
-            models.Index(fields=['email']),
-            models.Index(fields=['-created_at']),
-        ]
-
-
 class PasswordResetRequest(models.Model):
     """Модель для хранения запросов на восстановление пароля"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', related_name='password_reset_requests')
