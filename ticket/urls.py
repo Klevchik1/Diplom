@@ -136,6 +136,7 @@ urlpatterns = [
         path('halls/add/', views_admin.admin_hall_add, name='admin_panel_hall_add'),
         path('halls/<int:hall_id>/edit/', views_admin.admin_hall_edit, name='admin_panel_hall_edit'),
         path('halls/<int:hall_id>/delete/', views_admin.admin_hall_delete, name='admin_panel_hall_delete'),
+        path('reports/', views_admin.admin_reports, name='admin_panel_reports'),
     ])),
 ]
 

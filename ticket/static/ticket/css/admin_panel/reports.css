@@ -1,0 +1,600 @@
+/* ===== ПЕРЕМЕННЫЕ ДЛЯ ТЕМ ===== */
+:root {
+    --reports-card-bg: rgba(30, 30, 30, 0.95);
+    --reports-card-bg-light: #ffffff;
+    --reports-border: #ff0000;
+    --reports-border-light: #e0e0e0;
+    --reports-text-primary: #ffffff;
+    --reports-text-primary-light: #1a1a1a;
+    --reports-text-secondary: #aaaaaa;
+    --reports-text-secondary-light: #666666;
+    --reports-input-bg: rgba(20, 20, 20, 0.8);
+    --reports-input-bg-light: #ffffff;
+    --reports-stat-bg: rgba(0, 0, 0, 0.3);
+    --reports-stat-bg-light: #f5f5f5;
+    --reports-hall-bg: rgba(0, 0, 0, 0.3);
+    --reports-hall-bg-light: #fafafa;
+    --reports-table-header-bg: rgba(255, 0, 0, 0.1);
+    --reports-table-header-bg-light: #f0f0f0;
+    --reports-info-bg: rgba(255, 0, 0, 0.05);
+    --reports-info-bg-light: #f5f5f5;
+}
+
+/* Тёмная тема (по умолчанию) */
+[data-theme="dark"] {
+    --reports-card-bg: rgba(30, 30, 30, 0.95);
+    --reports-border: #ff0000;
+    --reports-text-primary: #ffffff;
+    --reports-text-secondary: #aaaaaa;
+    --reports-input-bg: rgba(20, 20, 20, 0.8);
+    --reports-stat-bg: rgba(0, 0, 0, 0.3);
+    --reports-hall-bg: rgba(0, 0, 0, 0.3);
+    --reports-table-header-bg: rgba(255, 0, 0, 0.1);
+    --reports-info-bg: rgba(255, 0, 0, 0.05);
+}
+
+/* Светлая тема */
+[data-theme="light"] {
+    --reports-card-bg: #ffffff;
+    --reports-border: #e0e0e0;
+    --reports-text-primary: #1a1a1a;
+    --reports-text-secondary: #666666;
+    --reports-input-bg: #ffffff;
+    --reports-stat-bg: #f5f5f5;
+    --reports-hall-bg: #fafafa;
+    --reports-table-header-bg: #f0f0f0;
+    --reports-info-bg: #f5f5f5;
+}
+
+/* ===== КОНТЕЙНЕР ===== */
+.reports-container {
+    padding: 20px;
+}
+
+.reports-header {
+    margin-bottom: 24px;
+}
+
+.reports-header h2 {
+    font-size: 24px;
+    color: var(--cinema-yellow);
+    margin-bottom: 8px;
+}
+
+.reports-header p {
+    color: var(--reports-text-secondary);
+    font-size: 14px;
+}
+
+/* ===== ФИЛЬТРЫ ===== */
+.report-filters {
+    background: var(--reports-card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1px solid var(--reports-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-end;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 180px;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--cinema-yellow);
+    font-size: 13px;
+}
+
+.filter-group select,
+.filter-group input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--reports-border);
+    border-radius: 8px;
+    background: var(--reports-input-bg);
+    color: var(--reports-text-primary);
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+    outline: none;
+    border-color: var(--cinema-red);
+    box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.2);
+}
+
+.filter-group select option {
+    background: var(--reports-input-bg);
+    color: var(--reports-text-primary);
+}
+
+.btn-generate {
+    background: linear-gradient(135deg, var(--cinema-red) 0%, var(--cinema-dark-red) 100%);
+    color: white;
+    border: none;
+    padding: 10px 28px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    height: 42px;
+}
+
+.btn-generate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 10px rgba(255, 0, 0, 0.4);
+}
+
+/* ===== ИНФО-БЛОК ===== */
+.report-header-info {
+    background: var(--reports-info-bg);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    border-left: 4px solid var(--cinema-red);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.report-title-section h3 {
+    font-size: 18px;
+    color: var(--cinema-yellow);
+    margin-bottom: 4px;
+}
+
+.report-title-section p {
+    font-size: 13px;
+    color: var(--reports-text-secondary);
+}
+
+.report-meta {
+    text-align: right;
+    font-size: 12px;
+    color: var(--reports-text-secondary);
+}
+
+.report-meta div {
+    margin-bottom: 4px;
+}
+
+/* ===== КНОПКИ ЭКСПОРТА ===== */
+.export-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    justify-content: flex-end;
+}
+
+.btn-export-pdf {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-export-pdf:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 10px rgba(220, 53, 69, 0.4);
+}
+
+/* ===== ОБЩИЕ СТИЛИ ДЛЯ ОТЧЁТОВ ===== */
+.report-content {
+    background: var(--reports-card-bg);
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid var(--reports-border);
+}
+
+.revenue-report h2,
+.movies-report h2,
+.halls-report h2,
+.sales-report h2 {
+    font-size: 20px;
+    color: var(--cinema-yellow);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--reports-border);
+}
+
+/* ===== СТАТИСТИКА ===== */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: var(--reports-stat-bg);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s;
+    border: 1px solid transparent;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--cinema-red);
+}
+
+.stat-label {
+    font-size: 13px;
+    color: var(--reports-text-secondary);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.stat-number {
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--cinema-yellow);
+    margin-bottom: 4px;
+}
+
+.stat-sub {
+    font-size: 12px;
+    color: var(--reports-text-secondary);
+}
+
+/* ===== ТАБЛИЦЫ ===== */
+.table-wrapper {
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.report-table thead th {
+    background: var(--reports-table-header-bg);
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--cinema-yellow);
+    border-bottom: 2px solid var(--cinema-red);
+}
+
+.report-table tbody td {
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--reports-border);
+    color: var(--reports-text-primary);
+}
+
+.report-table tbody tr:hover td {
+    background: rgba(255, 0, 0, 0.05);
+}
+
+.report-table tfoot td {
+    padding: 12px 15px;
+    font-weight: 600;
+    background: var(--reports-stat-bg);
+    border-top: 1px solid var(--cinema-red);
+    color: var(--reports-text-primary);
+}
+
+/* ===== БЭДЖИ ===== */
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge.success {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    border: 1px solid #4CAF50;
+}
+
+.badge.warning {
+    background: rgba(255, 152, 0, 0.2);
+    color: #FF9800;
+    border: 1px solid #FF9800;
+}
+
+.badge.info {
+    background: rgba(33, 150, 243, 0.2);
+    color: #2196F3;
+    border: 1px solid #2196F3;
+}
+
+.badge.primary {
+    background: rgba(255, 0, 0, 0.2);
+    color: var(--cinema-red);
+    border: 1px solid var(--cinema-red);
+}
+
+/* ===== АЛЕРТЫ ===== */
+.alert {
+    padding: 15px 20px;
+    border-radius: 8px;
+    text-align: center;
+    background: var(--reports-stat-bg);
+    border: 1px solid var(--reports-border);
+    color: var(--reports-text-secondary);
+}
+
+/* ===== ОТЧЁТ ПО ВЫРУЧКЕ ===== */
+.period {
+    font-weight: 500;
+    color: var(--reports-text-primary);
+}
+
+.revenue {
+    color: #4CAF50;
+    font-weight: 600;
+}
+
+.avg-price {
+    color: #2196F3;
+}
+
+/* ===== ОТЧЁТ ПО ФИЛЬМАМ ===== */
+.movie-title {
+    font-weight: 600;
+    color: var(--reports-text-primary);
+}
+
+.movie-meta {
+    font-size: 11px;
+    color: var(--reports-text-secondary);
+    margin-top: 4px;
+}
+
+.rank-number {
+    font-weight: bold;
+    color: var(--cinema-yellow);
+    text-align: center;
+}
+
+.popularity {
+    position: relative;
+}
+
+/* ===== ОТЧЁТ ПО ЗАЛАМ ===== */
+.hall-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.hall-card {
+    background: var(--reports-hall-bg);
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid var(--reports-border);
+    transition: all 0.3s;
+}
+
+.hall-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--cinema-red);
+}
+
+.hall-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--reports-border);
+}
+
+.hall-header h3 {
+    font-size: 18px;
+    color: var(--cinema-yellow);
+}
+
+.hall-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat .stat-label {
+    font-size: 11px;
+    margin-bottom: 4px;
+}
+
+.stat .stat-value {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--reports-text-primary);
+}
+
+.stat .stat-value.revenue {
+    color: #4CAF50;
+}
+
+.hall-detail {
+    font-size: 11px;
+    color: var(--reports-text-secondary);
+    margin-top: 10px;
+    text-align: center;
+}
+
+.hall-name {
+    font-weight: 600;
+    color: var(--reports-text-primary);
+}
+
+.occupancy {
+    font-weight: 600;
+}
+
+/* ===== ОТЧЁТ ПО ПРОДАЖАМ ===== */
+.sales-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.detail-card {
+    background: var(--reports-hall-bg);
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid var(--reports-border);
+}
+
+.detail-card h3 {
+    font-size: 16px;
+    color: var(--cinema-yellow);
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--reports-border);
+}
+
+.detail-card table {
+    width: 100%;
+}
+
+.detail-card td {
+    padding: 8px 0;
+    color: var(--reports-text-primary);
+}
+
+.detail-card td.value {
+    text-align: right;
+    font-weight: 600;
+}
+
+.detail-card td.value.revenue {
+    color: #4CAF50;
+}
+
+.percentage-circle {
+    text-align: center;
+    padding: 20px;
+}
+
+.percentage {
+    font-size: 48px;
+    font-weight: bold;
+    color: var(--cinema-yellow);
+    margin-bottom: 10px;
+}
+
+.percentage-detail {
+    text-align: center;
+    font-size: 13px;
+    color: var(--reports-text-secondary);
+}
+
+.table-footer {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--reports-border);
+}
+
+.table-footer h3 {
+    font-size: 16px;
+    color: var(--cinema-yellow);
+    margin-bottom: 15px;
+}
+
+.footer-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+}
+
+.footer-stats .stat-label {
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.footer-stats .stat-number {
+    font-size: 20px;
+}
+
+/* ===== АДАПТИВНОСТЬ ===== */
+@media (max-width: 768px) {
+    .reports-container {
+        padding: 12px;
+    }
+
+    .filter-row {
+        flex-direction: column;
+    }
+
+    .filter-group {
+        width: 100%;
+    }
+
+    .report-header-info {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .report-meta {
+        text-align: center;
+    }
+
+    .export-buttons {
+        justify-content: center;
+    }
+
+    .stat-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hall-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sales-details {
+        grid-template-columns: 1fr;
+    }
+
+    .footer-stats {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .report-table {
+        font-size: 12px;
+    }
+
+    .report-table thead th,
+    .report-table tbody td {
+        padding: 8px 10px;
+    }
+}

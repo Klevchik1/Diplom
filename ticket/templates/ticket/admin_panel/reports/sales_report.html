@@ -1,0 +1,92 @@
+<!-- ticket/templates/ticket/admin_panel/reports/sales_report.html -->
+{% load report_filters %}
+<div class="sales-report">
+    <h2>💰 Статистика продаж</h2>
+
+    {% if report_data %}
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-label">Всего продано</div>
+                <div class="stat-number">{{ report_data.total_tickets }}</div>
+                <div class="stat-sub">билетов</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Общая выручка</div>
+                <div class="stat-number">{{ report_data.total_revenue|floatformat:2 }} ₽</div>
+                <div class="stat-sub">рублей</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Средний чек</div>
+                <div class="stat-number">{{ report_data.avg_ticket_price|floatformat:2 }} ₽</div>
+                <div class="stat-sub">на билет</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Топ фильм</div>
+                <div class="stat-number" style="font-size: 18px;">{{ report_data.popular_movie|truncatechars:20 }}</div>
+                <div class="stat-sub">{{ report_data.popular_movie_tickets }} билетов</div>
+            </div>
+        </div>
+
+        <div class="sales-details">
+            <div class="detail-card">
+                <h3>📋 Детальная статистика</h3>
+                <table>
+                    <tr>
+                        <td><strong>Всего продано билетов:</strong></td>
+                        <td class="value">{{ report_data.total_tickets }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Общая выручка:</strong></td>
+                        <td class="value revenue">{{ report_data.total_revenue|floatformat:2 }} ₽</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Средняя цена билета:</strong></td>
+                        <td class="value">{{ report_data.avg_ticket_price|floatformat:2 }} ₽</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Самый популярный фильм:</strong></td>
+                        <td class="value">{{ report_data.popular_movie }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Билетов на популярный фильм:</strong></td>
+                        <td class="value">{{ report_data.popular_movie_tickets }}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="detail-card">
+                <h3>📈 Доля популярного фильма</h3>
+                {% if report_data.total_tickets > 0 %}
+                    {% widthratio report_data.popular_movie_tickets report_data.total_tickets 100 as popularity_percent %}
+                    <div class="percentage-circle">
+                        <div class="percentage">{{ popularity_percent }}%</div>
+                        <div>от всех продаж</div>
+                    </div>
+                    <div class="percentage-detail">{{ report_data.popular_movie_tickets }} из {{ report_data.total_tickets }} билетов</div>
+                {% else %}
+                    <div class="alert">Нет данных для расчета доли</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="table-footer">
+            <h3>📊 Общая статистика</h3>
+            <div class="footer-stats">
+                <div>
+                    <div class="stat-label">Общая выручка</div>
+                    <div class="stat-number" style="font-size: 20px;">{{ report_data.total_revenue|floatformat:2 }} ₽</div>
+                </div>
+                <div>
+                    <div class="stat-label">Средний чек</div>
+                    <div class="stat-number" style="font-size: 20px;">{{ report_data.avg_ticket_price|floatformat:2 }} ₽</div>
+                </div>
+                <div>
+                    <div class="stat-label">Продано билетов</div>
+                    <div class="stat-number" style="font-size: 20px;">{{ report_data.total_tickets }}</div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert">ℹ️ Нет данных по продажам за выбранный период.</div>
+    {% endif %}
+</div>

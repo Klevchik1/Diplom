@@ -73,49 +73,170 @@ def generate_qr_code(data):
         return None
 
 
-def generate_pdf_report(data, report_type, title, filters):
-    """Генерация PDF отчета"""
+def generate_pdf_report(data, report_type, title, filters, user=None):
+    """
+    Генерация PDF отчета с метаданными (без эмодзи)
+    data - данные отчета
+    report_type - тип отчета (revenue, movies, halls, sales)
+    title - название отчета
+    filters - словарь с фильтрами (период, даты)
+    user - пользователь, сформировавший отчет (опционально)
+    """
+    from django.contrib.auth import get_user_model
+    from datetime import datetime
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib import colors
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    from reportlab.lib.units import mm
+    import os
+    from django.conf import settings
+
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4,
-                            rightMargin=15 * mm, leftMargin=15 * mm,
-                            topMargin=20 * mm, bottomMargin=20 * mm)
+
+    # Определяем ориентацию страницы
+    if report_type == 'halls':
+        pagesize = landscape(A4)
+    else:
+        pagesize = A4
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=pagesize,
+        rightMargin=15 * mm,
+        leftMargin=15 * mm,
+        topMargin=25 * mm,
+        bottomMargin=20 * mm
+    )
     elements = []
 
+    # Регистрируем шрифты
     has_custom_font = register_custom_fonts()
     font_name = 'DejaVuSans' if has_custom_font else 'Helvetica'
     font_name_bold = 'DejaVuSans-Bold' if has_custom_font else 'Helvetica-Bold'
 
-    # Заголовок
+    # ============================================================
+    # ШАПКА ДОКУМЕНТА С МЕТАДАННЫМИ (БЕЗ ЭМОДЗИ)
+    # ============================================================
+
+    # 1. Заголовок
     title_style = ParagraphStyle(
         name='CustomTitle',
         fontName=font_name_bold,
+        fontSize=16,
+        spaceAfter=8,
+        alignment=TA_CENTER,
+        textColor=colors.HexColor('#2E86AB')
+    )
+    elements.append(Paragraph(f"<b>КИНОТЕАТР «ПРЕМЬЕРА»</b>", title_style))
+
+    # 2. Название отчета
+    report_title_style = ParagraphStyle(
+        name='ReportTitle',
+        fontName=font_name_bold,
         fontSize=14,
-        spaceAfter=20,
+        spaceAfter=15,
         alignment=TA_CENTER,
         textColor=colors.black
     )
 
-    title_text = Paragraph(f"<b>Отчет кинотеатра: {title}</b>", title_style)
-    elements.append(title_text)
+    # Маппинг типов отчётов
+    title_map = {
+        'revenue': 'Отчёт по выручке',
+        'movies': 'Отчёт по популярности фильмов',
+        'halls': 'Отчёт по загруженности залов',
+        'sales': 'Отчёт по продажам'
+    }
+    report_display_name = title_map.get(report_type, title)
+    elements.append(Paragraph(f"<b>{report_display_name}</b>", report_title_style))
 
-    # Информация о фильтрах
-    if filters.get('start_date') or filters.get('end_date'):
-        filter_text = "<b>Период:</b> "
-        if filters.get('start_date'):
-            filter_text += f"с {filters['start_date']} "
-        if filters.get('end_date'):
-            filter_text += f"по {filters['end_date']}"
+    elements.append(Spacer(1, 5 * mm))
 
-        filter_style = ParagraphStyle(
-            name='FilterStyle',
-            fontName=font_name,
-            fontSize=9,
-            spaceAfter=15,
-            alignment=TA_CENTER
-        )
-        elements.append(Paragraph(filter_text, filter_style))
+    # 3. Информационная таблица с метаданными (без эмодзи)
+    # Создаём стили для ячеек
+    meta_label_style = ParagraphStyle(
+        name='MetaLabel',
+        fontName=font_name_bold,
+        fontSize=10,
+        alignment=TA_LEFT,
+        textColor=colors.HexColor('#2E86AB')
+    )
 
-    # Генерация таблицы в зависимости от типа отчета
+    meta_value_style = ParagraphStyle(
+        name='MetaValue',
+        fontName=font_name,
+        fontSize=10,
+        alignment=TA_LEFT,
+        textColor=colors.black
+    )
+
+    # Формируем данные для таблицы метаданных (без эмодзи)
+    meta_data = [
+        [Paragraph("<b>Название отчёта:</b>", meta_label_style), Paragraph(report_display_name, meta_value_style)],
+        [Paragraph("<b>Дата формирования:</b>", meta_label_style),
+         Paragraph(datetime.now().strftime('%d.%m.%Y %H:%M:%S'), meta_value_style)],
+    ]
+
+    # Добавляем информацию о периоде
+    period_text = ""
+    if filters.get('period'):
+        period_map = {
+            'daily': 'по дням',
+            'weekly': 'по неделям',
+            'monthly': 'по месяцам'
+        }
+        period_text = period_map.get(filters.get('period'), filters.get('period'))
+
+    if filters.get('start_date') and filters.get('end_date'):
+        date_text = f"с {filters['start_date']} по {filters['end_date']}"
+        if period_text:
+            date_text = f"{period_text}, {date_text}"
+    elif filters.get('start_date'):
+        date_text = f"с {filters['start_date']}"
+        if period_text:
+            date_text = f"{date_text} (период: {period_text})"
+    elif filters.get('end_date'):
+        date_text = f"по {filters['end_date']}"
+        if period_text:
+            date_text = f"{date_text} (период: {period_text})"
+    else:
+        date_text = f"период: {period_text}" if period_text else "за всё время"
+
+    meta_data.append([Paragraph("<b>Период:</b>", meta_label_style), Paragraph(date_text, meta_value_style)])
+
+    # Добавляем информацию о пользователе
+    if user:
+        # Формируем ФИО пользователя
+        if user.name and user.surname:
+            user_full_name = f"{user.name} {user.surname}"
+        elif user.name:
+            user_full_name = user.name
+        elif user.surname:
+            user_full_name = user.surname
+        else:
+            user_full_name = user.email
+
+        meta_data.append(
+            [Paragraph("<b>Сформировал:</b>", meta_label_style), Paragraph(user_full_name, meta_value_style)])
+        meta_data.append([Paragraph("<b>Email:</b>", meta_label_style), Paragraph(user.email, meta_value_style)])
+
+    # Создаём таблицу метаданных (2 колонки)
+    meta_table = Table(meta_data, colWidths=[50 * mm, 100 * mm])
+    meta_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#F0F8FF')),
+    ]))
+
+    elements.append(meta_table)
+    elements.append(Spacer(1, 8 * mm))
+
+    # Генерация основной таблицы в зависимости от типа отчета
     if report_type == 'revenue':
         elements.extend(generate_revenue_table(data, has_custom_font, filters.get('period')))
     elif report_type == 'movies':
@@ -124,6 +245,23 @@ def generate_pdf_report(data, report_type, title, filters):
         elements.extend(generate_halls_table(data, has_custom_font))
     elif report_type == 'sales':
         elements.extend(generate_sales_table(data, has_custom_font))
+
+    # Подвал документа (без эмодзи)
+    elements.append(Spacer(1, 10 * mm))
+
+    footer_style = ParagraphStyle(
+        name='Footer',
+        fontName=font_name,
+        fontSize=8,
+        alignment=TA_CENTER,
+        textColor=colors.grey
+    )
+
+    elements.append(Paragraph("-" * 60, footer_style))
+    elements.append(Paragraph(
+        f"Отчёт сгенерирован автоматически системой управления кинотеатром «Премьера» | {datetime.now().strftime('%d.%m.%Y')}",
+        footer_style
+    ))
 
     doc.build(elements)
     buffer.seek(0)
@@ -235,7 +373,7 @@ def generate_revenue_table(data, has_custom_font, period):
 
 
 def generate_movies_table(data, has_custom_font):
-    """Генерация таблицы популярных фильмов с полным переносом текста"""
+    """Генерация таблицы популярных фильмов (без эмодзи)"""
     elements = []
     font_name = 'DejaVuSans' if has_custom_font else 'Helvetica'
     font_name_bold = 'DejaVuSans-Bold' if has_custom_font else 'Helvetica-Bold'
@@ -246,7 +384,7 @@ def generate_movies_table(data, has_custom_font):
 
     # Заголовки таблицы
     table_data = [[
-        create_wrapped_text('№', font_name_bold, 9, TA_CENTER),
+        create_wrapped_text('Номер', font_name_bold, 9, TA_CENTER),
         create_wrapped_text('Фильм', font_name_bold, 9, TA_CENTER),
         create_wrapped_text('Жанр', font_name_bold, 9, TA_CENTER),
         create_wrapped_text('Продано билетов', font_name_bold, 9, TA_CENTER),
@@ -271,7 +409,7 @@ def generate_movies_table(data, has_custom_font):
             create_wrapped_text(f"{popularity:.1f}", font_name, 8, TA_CENTER)
         ])
 
-    table = Table(table_data, colWidths=[15 * mm, 55 * mm, 30 * mm, 35 * mm, 40 * mm, 30 * mm])
+    table = Table(table_data, colWidths=[20 * mm, 55 * mm, 30 * mm, 35 * mm, 40 * mm, 30 * mm])
 
     table_style = TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#28A745')),
@@ -397,7 +535,7 @@ def generate_halls_table(data, has_custom_font):
 
 
 def generate_sales_table(data, has_custom_font):
-    """Генерация таблицы общей статистики с полным переносом текста"""
+    """Генерация таблицы общей статистики (без эмодзи)"""
     elements = []
     font_name = 'DejaVuSans' if has_custom_font else 'Helvetica'
     font_name_bold = 'DejaVuSans-Bold' if has_custom_font else 'Helvetica-Bold'
@@ -406,7 +544,6 @@ def generate_sales_table(data, has_custom_font):
         elements.append(Paragraph("Нет данных для отображения", getSampleStyleSheet()['Normal']))
         return elements
 
-    # Стиль для ячеек с переносом текста
     cell_style = ParagraphStyle(
         name='CellStyle',
         fontName=font_name,

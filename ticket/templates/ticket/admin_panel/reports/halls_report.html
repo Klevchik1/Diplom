@@ -1,0 +1,100 @@
+<!-- ticket/templates/ticket/admin_panel/reports/halls_report.html -->
+{% load report_filters %}
+<div class="halls-report">
+    <h2>🏛️ Загруженность залов</h2>
+
+    {% if report_data %}
+        {% with aggregated=report_data|aggregate_halls_stats %}
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-label">Средняя загруженность</div>
+                <div class="stat-number">{{ aggregated.avg_occupancy }}%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Общая выручка</div>
+                <div class="stat-number">{{ aggregated.total_revenue|floatformat:2 }} ₽</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Всего билетов</div>
+                <div class="stat-number">{{ aggregated.total_tickets }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Всего залов</div>
+                <div class="stat-number">{{ report_data|length }}</div>
+            </div>
+        </div>
+
+        <div class="hall-grid">
+            {% for hall in report_data %}
+            <div class="hall-card">
+                <div class="hall-header">
+                    <h3>{{ hall.name }}</h3>
+                    <span class="badge {% if hall.occupancy_percent >= 70 %}success{% elif hall.occupancy_percent >= 40 %}warning{% else %}info{% endif %}">
+                        {{ hall.occupancy_percent|floatformat:1 }}%
+                    </span>
+                </div>
+
+                <div class="hall-stats">
+                    <div class="stat">
+                        <div class="stat-label">🪑 Всего мест</div>
+                        <div class="stat-value">{{ hall.total_seats|default:"0" }}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">🎬 Сеансов</div>
+                        <div class="stat-value">{{ hall.total_screenings|default:"0" }}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">🎫 Продано</div>
+                        <div class="stat-value">{{ hall.sold_tickets|default:"0" }}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">💰 Выручка</div>
+                        <div class="stat-value revenue">{{ hall.total_revenue|default:"0"|floatformat:0 }} ₽</div>
+                    </div>
+                </div>
+
+                <div class="hall-detail">
+                    {{ hall.sold_tickets|default:"0" }} из {{ hall.total_seats|default:"0" }} мест × {{ hall.total_screenings|default:"0" }} сеансов
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="table-wrapper">
+            <h3>📋 Сводная таблица залов</h3>
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Зал</th>
+                        <th>Загруженность</th>
+                        <th>Выручка</th>
+                        <th>Продажи</th>
+                        <th>Сеансы</th>
+                        <th>Места</th>
+                        <th>Рейтинг</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hall in report_data|dictsortreversed:"sold_tickets" %}
+                    <tr>
+                        <td class="hall-name">{{ hall.name }}</td>
+                        <td class="occupancy">{{ hall.occupancy_percent|floatformat:1 }}%</td>
+                        <td class="revenue">{{ hall.total_revenue|floatformat:2 }} ₽</td>
+                        <td><span class="badge info">{{ hall.sold_tickets }}</span></td>
+                        <td>{{ hall.total_screenings }}</td>
+                        <td>{{ hall.total_seats }}</td>
+                        <td>
+                            <span class="badge {% if forloop.counter == 1 %}success{% elif forloop.counter <= 3 %}warning{% else %}info{% endif %}">
+                                {{ forloop.counter }} место
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endwith %}
+    {% else %}
+        <div class="alert">ℹ️ Нет данных по загруженности залов за выбранный период.</div>
+    {% endif %}
+</div>

@@ -1,0 +1,126 @@
+<!-- ticket/templates/ticket/admin_panel/reports.html -->
+{% extends 'ticket/admin_panel/base_admin.html' %}
+{% load static %}
+{% load report_filters %}
+
+{% block title %}Отчёты | Админ-панель{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ticket/css/admin_panel/reports.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="reports-container">
+    <div class="reports-header">
+        <h2>📊 Отчёты кинотеатра "Премьера"</h2>
+        <p>Аналитика продаж, популярность фильмов и загруженность залов</p>
+    </div>
+
+    <!-- Форма фильтров -->
+    <div class="report-filters">
+        <form method="get" id="report-form">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="report_type">📋 Тип отчёта</label>
+                    <select name="report_type" id="report_type">
+                        <option value="revenue" {% if report_type == 'revenue' %}selected{% endif %}>💰 Выручка</option>
+                        <option value="movies" {% if report_type == 'movies' %}selected{% endif %}>🎬 Популярность фильмов</option>
+                        <option value="halls" {% if report_type == 'halls' %}selected{% endif %}>🏛️ Загруженность залов</option>
+                        <option value="sales" {% if report_type == 'sales' %}selected{% endif %}>📈 Общая статистика продаж</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="period">📅 Период</label>
+                    <select name="period" id="period">
+                        <option value="daily" {% if period == 'daily' %}selected{% endif %}>По дням</option>
+                        <option value="weekly" {% if period == 'weekly' %}selected{% endif %}>По неделям</option>
+                        <option value="monthly" {% if period == 'monthly' %}selected{% endif %}>По месяцам</option>
+                    </select>
+                </div>
+
+                <div class="filter-group date-range">
+                    <div style="flex: 1">
+                        <label for="start_date">📆 Начальная дата</label>
+                        <input type="date" name="start_date" id="start_date" value="{{ start_date|default:'' }}">
+                    </div>
+                    <div style="flex: 1">
+                        <label for="end_date">📆 Конечная дата</label>
+                        <input type="date" name="end_date" id="end_date" value="{{ end_date|default:'' }}">
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="btn-generate">📈 Сформировать отчёт</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {% if report_data %}
+        <!-- Информация об отчёте -->
+        <div class="report-header-info">
+            <div class="report-title-section">
+                <h3>
+                    {% if report_type == 'revenue' %}💰 Отчёт по выручке
+                    {% elif report_type == 'movies' %}🎬 Отчёт по популярности фильмов
+                    {% elif report_type == 'halls' %}🏛️ Отчёт по загруженности залов
+                    {% elif report_type == 'sales' %}📈 Отчёт по продажам
+                    {% endif %}
+                </h3>
+                <p>
+                    {% if start_date and end_date %}
+                        Период: с {{ start_date }} по {{ end_date }}
+                    {% elif start_date %}
+                        Период: с {{ start_date }}
+                    {% elif end_date %}
+                        Период: по {{ end_date }}
+                    {% else %}
+                        Период: {% if period == 'daily' %}по дням{% elif period == 'weekly' %}по неделям{% else %}по месяцам{% endif %}
+                    {% endif %}
+                </p>
+            </div>
+            <div class="report-meta">
+                <div>📅 Дата формирования: {{ now|date:"d.m.Y H:i:s" }}</div>
+                <div>👤 Сформировал: {{ user.name }} {{ user.surname }} ({{ user.email }})</div>
+            </div>
+        </div>
+
+        <!-- Кнопки экспорта -->
+        <div class="export-buttons">
+            <form method="post" id="export-form">
+                {% csrf_token %}
+                <input type="hidden" name="report_type" value="{{ report_type }}">
+                <input type="hidden" name="period" value="{{ period }}">
+                <input type="hidden" name="start_date" value="{{ start_date|default:'' }}">
+                <input type="hidden" name="end_date" value="{{ end_date|default:'' }}">
+                <button type="submit" name="export_pdf" class="btn-export-pdf">
+                    📥 Экспорт в PDF
+                </button>
+            </form>
+        </div>
+
+        <!-- Содержимое отчёта -->
+        <div class="report-content">
+            {% if report_type == 'revenue' %}
+                {% include 'ticket/admin_panel/reports/revenue_report.html' %}
+            {% elif report_type == 'movies' %}
+                {% include 'ticket/admin_panel/reports/movies_report.html' %}
+            {% elif report_type == 'halls' %}
+                {% include 'ticket/admin_panel/reports/halls_report.html' %}
+            {% elif report_type == 'sales' %}
+                {% include 'ticket/admin_panel/reports/sales_report.html' %}
+            {% endif %}
+        </div>
+    {% elif report_type %}
+        <div class="alert">
+            ⚠️ Нет данных для отображения по выбранным фильтрам.
+        </div>
+    {% else %}
+        <div class="alert">
+            📋 Выберите тип отчёта и нажмите "Сформировать отчёт"
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

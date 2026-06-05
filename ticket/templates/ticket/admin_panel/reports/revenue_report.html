@@ -1,0 +1,72 @@
+<!-- ticket/templates/ticket/admin_panel/reports/revenue_report.html -->
+{% load report_filters %}
+<div class="revenue-report">
+    <h2>📈 Финансовая статистика</h2>
+
+    {% if report_data %}
+        {% with total_revenue=report_data|sum_revenue total_tickets=report_data|sum_tickets total_avg=report_data|total_avg_ticket_price %}
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-label">Общая выручка</div>
+                <div class="stat-number">{{ total_revenue|floatformat:2 }} ₽</div>
+                <div class="stat-sub">За весь период</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Всего билетов</div>
+                <div class="stat-number">{{ total_tickets }}</div>
+                <div class="stat-sub">Продано</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Средний чек</div>
+                <div class="stat-number">{{ total_avg|floatformat:2 }} ₽</div>
+                <div class="stat-sub">На билет</div>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Период</th>
+                        <th>Выручка (₽)</th>
+                        <th>Продано билетов</th>
+                        <th>Средний чек</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in report_data %}
+                    <tr>
+                        <td class="period">
+                            {% if item.date %}
+                                {{ item.date|date:"d.m.Y" }}
+                            {% elif item.week %}
+                                Неделя {{ item.week }}, {{ item.year }}
+                            {% else %}
+                                {{ item.month }}/{{ item.year }}
+                            {% endif %}
+                        </td>
+                        <td class="revenue">{{ item.revenue|default:0|floatformat:2 }} ₽</td>
+                        <td><span class="badge info">{{ item.tickets_sold }}</span></td>
+                        <td class="avg-price">{{ item|avg_ticket_price|floatformat:2 }} ₽</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td><strong>Итого:</strong></td>
+                        <td class="revenue"><strong>{{ total_revenue|floatformat:2 }} ₽</strong></td>
+                        <td><span class="badge primary"><strong>{{ total_tickets }}</strong></span></td>
+                        <td class="avg-price"><strong>{{ total_avg|floatformat:2 }} ₽</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="table-footer">
+            <p>📅 Отчёт сгенерирован за {{ report_data|length }} {% if period == 'daily' %}дней{% elif period == 'weekly' %}недель{% else %}месяцев{% endif %}</p>
+        </div>
+        {% endwith %}
+    {% else %}
+        <div class="alert">ℹ️ Нет данных по выручке за выбранный период.</div>
+    {% endif %}
+</div>

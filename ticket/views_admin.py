@@ -25,6 +25,10 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import os
 from django.conf import settings
+from .report_utils import ReportGenerator
+from .pdf_utils import generate_pdf_report
+from django.utils import timezone
+from datetime import datetime, timedelta
 
 from .models import (
     User, HallType, AgeRating, Genre, Country, Director, Actor,
@@ -2701,3 +2705,158 @@ def admin_hall_add(request):
         'hall': None,
         'hall_types': hall_types,
     })
+
+
+@staff_member_required
+def admin_reports(request):
+    """Страница отчётов в админ-панели"""
+    if not request.user.is_superuser:
+        messages.error(request, 'У вас нет доступа к админ-панели.')
+        return redirect('manager_dashboard')
+
+    report_type = request.GET.get('report_type', 'revenue')
+    period = request.GET.get('period', 'daily')
+    start_date = request.GET.get('start_date', '')
+    end_date = request.GET.get('end_date', '')
+
+    report_data = None
+
+    # Преобразуем строки в даты
+    start_date_obj = None
+    end_date_obj = None
+
+    if start_date:
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+        except ValueError:
+            pass
+
+    if end_date:
+        try:
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+        except ValueError:
+            pass
+
+    # Генерируем отчёт в зависимости от типа
+    if report_type == 'revenue':
+        report_data = ReportGenerator.get_revenue_stats(
+            period=period,
+            start_date=start_date_obj,
+            end_date=end_date_obj
+        )
+    elif report_type == 'movies':
+        report_data = ReportGenerator.get_popular_movies(
+            limit=20,
+            start_date=start_date_obj,
+            end_date=end_date_obj
+        )
+    elif report_type == 'halls':
+        report_data = ReportGenerator.get_hall_occupancy(
+            start_date=start_date_obj,
+            end_date=end_date_obj
+        )
+    elif report_type == 'sales':
+        report_data = ReportGenerator.get_sales_statistics(
+            start_date=start_date_obj,
+            end_date=end_date_obj
+        )
+
+    # Обработка POST запроса для экспорта PDF
+    if request.method == 'POST' and 'export_pdf' in request.POST:
+        report_type = request.POST.get('report_type', 'revenue')
+        period = request.POST.get('period', 'daily')
+        start_date = request.POST.get('start_date', '')
+        end_date = request.POST.get('end_date', '')
+
+        # Снова получаем данные для экспорта
+        start_date_obj = None
+        end_date_obj = None
+
+        if start_date:
+            try:
+                start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            except ValueError:
+                pass
+
+        if end_date:
+            try:
+                end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+            except ValueError:
+                pass
+
+        if report_type == 'revenue':
+            export_data = ReportGenerator.get_revenue_stats(
+                period=period,
+                start_date=start_date_obj,
+                end_date=end_date_obj
+            )
+        elif report_type == 'movies':
+            export_data = ReportGenerator.get_popular_movies(
+                limit=20,
+                start_date=start_date_obj,
+                end_date=end_date_obj
+            )
+        elif report_type == 'halls':
+            export_data = ReportGenerator.get_hall_occupancy(
+                start_date=start_date_obj,
+                end_date=end_date_obj
+            )
+        elif report_type == 'sales':
+            export_data = ReportGenerator.get_sales_statistics(
+                start_date=start_date_obj,
+                end_date=end_date_obj
+            )
+        else:
+            export_data = None
+
+        if export_data:
+            # Название отчёта
+            title_map = {
+                'revenue': 'Выручка',
+                'movies': 'Популярность фильмов',
+                'halls': 'Загруженность залов',
+                'sales': 'Продажи'
+            }
+            title = title_map.get(report_type, 'Отчёт')
+
+            # Фильтры для PDF
+            filters = {
+                'period': period,
+                'start_date': start_date_obj.strftime('%d.%m.%Y') if start_date_obj else None,
+                'end_date': end_date_obj.strftime('%d.%m.%Y') if end_date_obj else None,
+            }
+
+            # Генерируем PDF с передачей пользователя
+            pdf_buffer = generate_pdf_report(export_data, report_type, title, filters, user=request.user)
+
+            # Логируем экспорт
+            OperationLogger.log_operation(
+                request=request,
+                action_type='EXPORT',
+                module_type='REPORTS',
+                description=f'Экспорт отчёта "{title}" в PDF',
+                additional_data={
+                    'report_type': report_type,
+                    'period': period,
+                    'start_date': start_date,
+                    'end_date': end_date,
+                    'user': request.user.email
+                }
+            )
+
+            # Отдаём PDF
+            response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
+            filename = f"report_{report_type}_{timezone.now().strftime('%Y%m%d_%H%M')}.pdf"
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
+
+    context = {
+        'report_type': report_type,
+        'period': period,
+        'start_date': start_date,
+        'end_date': end_date,
+        'report_data': report_data,
+        'now': timezone.now(),
+    }
+
+    return render(request, 'ticket/admin_panel/reports.html', context)
