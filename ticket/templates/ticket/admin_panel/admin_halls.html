@@ -1,3 +1,4 @@
+{# ticket/templates/ticket/admin_panel/admin_halls.html #}
 {% extends 'ticket/admin_panel/base_admin.html' %}
 {% load static %}
 
@@ -7,6 +8,30 @@
 <div class="page-header">
     <h2>🏢 Управление залами</h2>
     <a href="{% url 'admin_panel_hall_add' %}" class="btn-primary">➕ Добавить зал</a>
+</div>
+
+<!-- Фильтры и поиск -->
+<div class="filters-card">
+    <form method="get" class="filters-form" id="filter-form">
+        <div class="filter-group" style="flex: 2;">
+            <input type="text" name="search" placeholder="🔍 Поиск по названию зала..."
+                   value="{{ search|default:'' }}" class="filter-input" id="search-input">
+        </div>
+        <div class="filter-group">
+            <select name="hall_type" class="filter-select" id="hall-type-select">
+                <option value="">Все типы залов</option>
+                {% for hall_type in hall_types %}
+                <option value="{{ hall_type.id }}" {% if selected_hall_type|add:"0" == hall_type.id %}selected{% endif %}>
+                    {{ hall_type.name }} (коэф. {{ hall_type.price_coefficient }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn-filter">Найти</button>
+        {% if search or selected_hall_type %}
+        <a href="{% url 'admin_panel_halls' %}" class="btn-reset">Сбросить</a>
+        {% endif %}
+    </form>
 </div>
 
 <div class="table-container">
@@ -43,21 +68,66 @@
                             <button type="submit" class="btn-icon delete" title="Удалить">🗑️</button>
                         </form>
                     </div>
-                    <br style="display: none;">
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="9" class="empty-row">Залы не найдены</td>
+                <td colspan="9" class="empty-row">
+                    {% if search %}По запросу "{{ search }}" ничего не найдено{% else %}Залы не найдены{% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 
+<!-- Пагинация -->
+{% if halls.has_other_pages %}
+<div class="pagination">
+    {% if halls.has_previous %}
+        <a href="?page=1{% if search %}&search={{ search }}{% endif %}{% if selected_hall_type %}&hall_type={{ selected_hall_type }}{% endif %}" class="page-link">« Первая</a>
+        <a href="?page={{ halls.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if selected_hall_type %}&hall_type={{ selected_hall_type }}{% endif %}" class="page-link">‹ Назад</a>
+    {% endif %}
+
+    <span class="page-current">
+        Страница {{ halls.number }} из {{ halls.paginator.num_pages }}
+        <span class="total-count">(всего: {{ halls.paginator.count }})</span>
+    </span>
+
+    {% if halls.has_next %}
+        <a href="?page={{ halls.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if selected_hall_type %}&hall_type={{ selected_hall_type }}{% endif %}" class="page-link">Вперед ›</a>
+        <a href="?page={{ halls.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if selected_hall_type %}&hall_type={{ selected_hall_type }}{% endif %}" class="page-link">Последняя »</a>
+    {% endif %}
+</div>
+{% endif %}
+
 <div class="info-box">
     <p><strong>ℹ️ О залах:</strong></p>
     <p>Количество мест в зале = Ряды × Мест в ряду. Места создаются автоматически при создании зала.</p>
     <p>Тип зала влияет на стоимость билета (базовая цена × коэффициент типа зала).</p>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Автоматическая отправка формы при изменении select
+    const hallTypeSelect = document.getElementById('hall-type-select');
+    if (hallTypeSelect) {
+        hallTypeSelect.addEventListener('change', function() {
+            document.getElementById('filter-form').submit();
+        });
+    }
+
+    // Задержка для поиска (debounce)
+    const searchInput = document.getElementById('search-input');
+    let timeout = null;
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                document.getElementById('filter-form').submit();
+            }, 500);
+        });
+    }
+});
+</script>
 {% endblock %}

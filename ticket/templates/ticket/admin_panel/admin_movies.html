@@ -1,3 +1,4 @@
+{# ticket/templates/ticket/admin_panel/admin_movies.html #}
 {% extends 'ticket/admin_panel/base_admin.html' %}
 {% load static %}
 
@@ -9,25 +10,152 @@
     <a href="{% url 'admin_panel_movie_add' %}" class="btn-primary">➕ Добавить фильм</a>
 </div>
 
+<!-- Расширенные фильтры -->
 <div class="filters-card">
     <form method="get" class="filters-form" id="filter-form">
-        <div class="filter-group" style="flex: 2;">
-            <input type="text" name="search" placeholder="🔍 Поиск по названию..." 
-                   value="{{ search|default:'' }}" class="filter-input">
+        <!-- Основной поиск -->
+        <div class="filter-row">
+            <div class="filter-group" style="flex: 2;">
+                <label>🔍 Название фильма</label>
+                <input type="text" name="search" placeholder="Поиск по названию..."
+                       value="{{ filters.search|default:'' }}" class="filter-input">
+            </div>
+            <div class="filter-group">
+                <label>📅 Год от</label>
+                <input type="number" name="year_from" placeholder="От"
+                       value="{{ filters.year_from|default:'' }}" class="filter-input" min="1900" max="2030">
+            </div>
+            <div class="filter-group">
+                <label>📅 Год до</label>
+                <input type="number" name="year_to" placeholder="До"
+                       value="{{ filters.year_to|default:'' }}" class="filter-input" min="1900" max="2030">
+            </div>
         </div>
-        <div class="filter-group">
-            <select name="year" class="filter-select">
-                <option value="">Все годы</option>
-                {% for y in years %}
-                <option value="{{ y }}" {% if selected_year|add:"0" == y %}selected{% endif %}>{{ y }}</option>
-                {% endfor %}
-            </select>
+
+        <div class="filter-row">
+            <div class="filter-group">
+                <label>🔞 Возрастной рейтинг</label>
+                <select name="age_rating" class="filter-select">
+                    <option value="">Все</option>
+                    {% for ar in age_ratings %}
+                    <option value="{{ ar.id }}" {% if filters.age_rating|add:"0" == ar.id %}selected{% endif %}>
+                        {{ ar.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>🎭 Жанр</label>
+                <select name="genre" class="filter-select">
+                    <option value="">Все жанры</option>
+                    {% for genre in genres %}
+                    <option value="{{ genre.id }}" {% if filters.genre|add:"0" == genre.id %}selected{% endif %}>
+                        {{ genre.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>🌍 Страна</label>
+                <select name="country" class="filter-select">
+                    <option value="">Все страны</option>
+                    {% for country in countries %}
+                    <option value="{{ country.id }}" {% if filters.country|add:"0" == country.id %}selected{% endif %}>
+                        {{ country.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
-        <button type="submit" class="btn-filter">Найти</button>
-        {% if search or selected_year %}
-        <a href="{% url 'admin_panel_movies' %}" class="btn-reset">Сбросить</a>
-        {% endif %}
+
+        <div class="filter-row">
+            <div class="filter-group">
+                <label>🎬 Режиссёр</label>
+                <select name="director" class="filter-select">
+                    <option value="">Все режиссёры</option>
+                    {% for director in directors %}
+                    <option value="{{ director.id }}" {% if filters.director|add:"0" == director.id %}selected{% endif %}>
+                        {{ director.surname }} {{ director.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>🖼️ Постер</label>
+                <select name="has_poster" class="filter-select">
+                    <option value="">Все</option>
+                    <option value="yes" {% if filters.has_poster == 'yes' %}selected{% endif %}>Есть постер</option>
+                    <option value="no" {% if filters.has_poster == 'no' %}selected{% endif %}>Нет постера</option>
+                </select>
+            </div>
+            <div class="filter-group filter-actions">
+                <label>&nbsp;</label>
+                <div>
+                    <button type="submit" class="btn-filter">🔍 Применить фильтры</button>
+                    {% if filters.search or filters.year_from or filters.year_to or filters.age_rating or filters.genre or filters.country or filters.director or filters.has_poster %}
+                    <a href="{% url 'admin_panel_movies' %}" class="btn-reset">🗑️ Сбросить все</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </form>
+</div>
+
+<!-- Активные фильтры (теги) -->
+{% if filters.search or filters.year_from or filters.year_to or filters.age_rating or filters.genre or filters.country or filters.director or filters.has_poster %}
+<div class="active-filters">
+    <span class="active-filters-label">Активные фильтры:</span>
+    {% if filters.search %}
+    <span class="filter-tag">🔍 Название: "{{ filters.search }}"
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'search' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="remove-filter">✖</a>
+    </span>
+    {% endif %}
+    {% if filters.year_from %}
+    <span class="filter-tag">📅 Год от: {{ filters.year_from }}
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'year_from' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="remove-filter">✖</a>
+    </span>
+    {% endif %}
+    {% if filters.year_to %}
+    <span class="filter-tag">📅 Год до: {{ filters.year_to }}
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'year_to' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="remove-filter">✖</a>
+    </span>
+    {% endif %}
+    {% if filters.age_rating %}
+    <span class="filter-tag">🔞 Возрастной рейтинг: {{ movies.0.age_rating.name|default:"..." }}
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'age_rating' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="remove-filter">✖</a>
+    </span>
+    {% endif %}
+    {% if filters.genre %}
+    <span class="filter-tag">🎭 Жанр ID: {{ filters.genre }}
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'genre' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="remove-filter">✖</a>
+    </span>
+    {% endif %}
+    {% if filters.country %}
+    <span class="filter-tag">🌍 Страна ID: {{ filters.country }}
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'country' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="remove-filter">✖</a>
+    </span>
+    {% endif %}
+    {% if filters.director %}
+    <span class="filter-tag">🎬 Режиссёр ID: {{ filters.director }}
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'director' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="remove-filter">✖</a>
+    </span>
+    {% endif %}
+    {% if filters.has_poster == 'yes' %}
+    <span class="filter-tag">🖼️ Есть постер
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'has_poster' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="remove-filter">✖</a>
+    </span>
+    {% endif %}
+    {% if filters.has_poster == 'no' %}
+    <span class="filter-tag">🖼️ Нет постера
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'has_poster' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="remove-filter">✖</a>
+    </span>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Статистика результатов -->
+<div class="results-stats">
+    <span>📊 Найдено фильмов: <strong>{{ movies.paginator.count }}</strong></span>
 </div>
 
 <div class="table-container">
@@ -38,70 +166,291 @@
                 <th style="width: 70px;">Постер</th>
                 <th>Название</th>
                 <th style="width: 70px;">Год</th>
+                <th style="width: 80px;">Рейтинг</th>
                 <th style="width: 100px;">Длительность</th>
-                <th style="width: 70px;">Рейтинг</th>
                 <th>Жанры</th>
+                <th>Страны</th>
                 <th style="width: 80px;">Сеансов</th>
                 <th style="width: 100px;">Действия</th>
             </tr>
         </thead>
         <tbody>
             {% for movie in movies %}
-            <tr>
+            <tr class="movie-row">
                 <td>{{ movie.id }}</td>
                 <td>
                     {% if movie.poster %}
-                        <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" style="width: 40px; height: 60px; object-fit: cover; border-radius: 4px;">
+                        <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" class="movie-poster">
                     {% else %}
-                        <span style="color: var(--text-muted);">—</span>
+                        <div class="no-poster">—</div>
                     {% endif %}
                 </td>
-                <td><strong>{{ movie.title }}</strong></td>
-                <td>{{ movie.release_year }}</td>
-                <td>{{ movie.get_duration_display }}</td>
-                <td>{{ movie.age_rating.name }}</td>
                 <td>
-                    {% for genre in movie.genres.all|slice:":2" %}
-                        <span class="badge default">{{ genre.name }}</span>
-                    {% endfor %}
-                    {% if movie.genres.count > 2 %}
-                        <span class="badge default">+{{ movie.genres.count|add:"-2" }}</span>
+                    <strong>{{ movie.title }}</strong>
+                    {% if movie.short_description %}
+                    <div class="movie-short-desc">{{ movie.short_description|truncatechars:60 }}</div>
                     {% endif %}
                 </td>
-                <td>{{ movie.screenings.count }}</td>
-                <td class="actions-cell" style="vertical-align: middle; height: 100%;">
-                    <div style="display: flex; gap: 8px; align-items: center; justify-content: center; min-height: 100%;">
+                <td>{{ movie.release_year }}</td>
+                <td><span class="age-badge">{{ movie.age_rating.name|default:"—" }}</span></td>
+                <td>{{ movie.get_duration_display }}</td>
+                <td>
+                    <div class="genre-list">
+                        {% for genre in movie.genres.all|slice:":3" %}
+                            <span class="badge genre-badge">{{ genre.name }}</span>
+                        {% endfor %}
+                        {% if movie.genres.count > 3 %}
+                            <span class="badge genre-badge">+{{ movie.genres.count|add:"-3" }}</span>
+                        {% endif %}
+                    </div>
+                </td>
+                <td>
+                    <div class="country-list">
+                        {% for country in movie.countries.all|slice:":2" %}
+                            <span class="badge country-badge">{{ country.name }}</span>
+                        {% endfor %}
+                    </div>
+                </td>
+                <td>
+                    <span class="screenings-count">{{ movie.screenings.count }}</span>
+                </td>
+                <td class="actions-cell">
+                    <div class="action-buttons">
                         <a href="{% url 'admin_panel_movie_edit' movie.id %}" class="btn-icon edit" title="Редактировать">✏️</a>
-                        <form method="post" action="{% url 'admin_panel_movie_delete' movie.id %}" style="display:inline" onsubmit="return confirm('Удалить фильм {{ movie.title }}? Это действие нельзя отменить.')">
+                        <form method="post" action="{% url 'admin_panel_movie_delete' movie.id %}" style="display:inline"
+                              onsubmit="return confirm('Удалить фильм «{{ movie.title }}»? Это действие нельзя отменить.')">
                             {% csrf_token %}
                             <button type="submit" class="btn-icon delete" title="Удалить">🗑️</button>
                         </form>
                     </div>
-                    <br style="display: none;">
                 </td>
-             </tr>
+            </tr>
             {% empty %}
             <tr>
-                <td colspan="9" class="empty-row">
-                    {% if search %}По запросу "{{ search }}" ничего не найдено{% else %}Фильмы не найдены{% endif %}
+                <td colspan="10" class="empty-row">
+                    {% if filters.search or filters.year_from or filters.year_to or filters.age_rating or filters.genre or filters.country or filters.director %}
+                        По заданным критериям ничего не найдено. <a href="{% url 'admin_panel_movies' %}">Сбросить фильтры</a>
+                    {% else %}
+                        Фильмы не найдены. <a href="{% url 'admin_panel_movie_add' %}">Добавьте первый фильм</a>
+                    {% endif %}
                 </td>
-             </tr>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 
+<!-- Пагинация -->
+{% if movies.has_other_pages %}
 <div class="pagination">
     {% if movies.has_previous %}
-        <a href="?page=1{% if search %}&search={{ search }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}" class="page-link">« Первая</a>
-        <a href="?page={{ movies.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}" class="page-link">‹ Назад</a>
+        <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">« Первая</a>
+        <a href="?page={{ movies.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">‹ Назад</a>
     {% endif %}
 
-    <span class="page-current">Страница {{ movies.number }} из {{ movies.paginator.num_pages }}</span>
+    <span class="page-current">
+        Страница {{ movies.number }} из {{ movies.paginator.num_pages }}
+    </span>
 
     {% if movies.has_next %}
-        <a href="?page={{ movies.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}" class="page-link">Вперед ›</a>
-        <a href="?page={{ movies.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}" class="page-link">Последняя »</a>
+        <a href="?page={{ movies.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">Вперед ›</a>
+        <a href="?page={{ movies.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">Последняя »</a>
     {% endif %}
 </div>
+{% endif %}
+
+<style>
+/* Стили для расширенных фильтров */
+.filter-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.filter-row:last-child {
+    margin-bottom: 0;
+}
+
+.filter-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: var(--text-muted);
+}
+
+.filter-actions {
+    display: flex;
+    align-items: flex-end;
+}
+
+.filter-actions div {
+    display: flex;
+    gap: 10px;
+}
+
+/* Активные фильтры (теги) */
+.active-filters {
+    background: var(--bg-secondary);
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.active-filters-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.filter-tag {
+    background: var(--primary-color);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-tag .remove-filter {
+    color: white;
+    text-decoration: none;
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.filter-tag .remove-filter:hover {
+    opacity: 1;
+}
+
+/* Результаты */
+.results-stats {
+    background: var(--bg-secondary);
+    padding: 8px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 13px;
+}
+
+/* Постеры */
+.movie-poster {
+    width: 40px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.no-poster {
+    width: 40px;
+    height: 60px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.movie-short-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    max-width: 250px;
+}
+
+.age-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    background: #ff6b6b;
+    color: white;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.genre-badge, .country-badge {
+    background: var(--bg-secondary);
+    color: var(--text-color);
+    font-size: 10px;
+    padding: 2px 6px;
+}
+
+.screenings-count {
+    display: inline-block;
+    text-align: center;
+    font-weight: 600;
+    background: var(--primary-color);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+}
+
+.genre-list, .country-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.movie-row:hover {
+    background: var(--bg-secondary);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Автоматическая отправка формы при изменении select
+    const autoSubmitSelects = ['age_rating', 'genre', 'country', 'director', 'has_poster'];
+    autoSubmitSelects.forEach(function(selectName) {
+        const select = document.querySelector(`select[name="${selectName}"]`);
+        if (select) {
+            select.addEventListener('change', function() {
+                document.getElementById('filter-form').submit();
+            });
+        }
+    });
+
+    // Задержка для поиска (debounce) для текстовых полей
+    const searchInput = document.querySelector('input[name="search"]');
+    let timeout = null;
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                document.getElementById('filter-form').submit();
+            }, 500);
+        });
+    }
+
+    // Debounce для year_from и year_to
+    const yearFrom = document.querySelector('input[name="year_from"]');
+    const yearTo = document.querySelector('input[name="year_to"]');
+
+    function debounceSubmit() {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            document.getElementById('filter-form').submit();
+        , 800});
+    }
+
+    if (yearFrom) yearFrom.addEventListener('input', debounceSubmit);
+    if (yearTo) yearTo.addEventListener('input', debounceSubmit);
+});
+</script>
 {% endblock %}

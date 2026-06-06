@@ -1389,12 +1389,27 @@ def export_logs_pdf(request, logs):
 
 @staff_member_required
 def admin_ticket_statuses(request):
-    """Управление статусами билетов"""
+    """Управление статусами билетов с поиском"""
     if not request.user.is_superuser:
         messages.error(request, 'У вас нет доступа к админ-панели.')
         return redirect('manager_dashboard')
 
+    # Параметры поиска
+    search = request.GET.get('search', '')
+
     statuses = TicketStatus.objects.all().order_by('id')
+
+    if search:
+        statuses = statuses.filter(
+            Q(name__icontains=search) |
+            Q(code__icontains=search) |
+            Q(description__icontains=search)
+        )
+
+    # Пагинация (50 элементов на страницу)
+    paginator = Paginator(statuses, 50)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
 
     if request.method == 'POST':
         status_id = request.POST.get('status_id')
@@ -1420,7 +1435,46 @@ def admin_ticket_statuses(request):
                          f'⚠️ Статус билета "{status.name}" обновлён. Будьте осторожны: изменение статусов может повлиять на логику работы системы!')
         return redirect('admin_panel_ticket_statuses')
 
-    return render(request, 'ticket/admin_panel/ticket_statuses.html', {'statuses': statuses})
+    return render(request, 'ticket/admin_panel/ticket_statuses.html', {
+        'statuses': page_obj,
+        'search': search,
+    })
+
+
+@staff_member_required
+@require_POST
+def admin_ticket_status_delete(request, ts_id):
+    """Удаление статуса билета (только для несистемных статусов)"""
+    if not request.user.is_superuser:
+        messages.error(request, 'У вас нет доступа к админ-панели.')
+        return redirect('manager_dashboard')
+
+    status = get_object_or_404(TicketStatus, id=ts_id)
+
+    # Запрещаем удаление системных статусов
+    if status.code in ['active', 'refunded', 'used', 'archived']:
+        messages.error(request, f'Нельзя удалить системный статус "{status.name}"')
+        return redirect('admin_panel_ticket_statuses')
+
+    # Проверка на связанные билеты
+    if Ticket.objects.filter(status=status).exists():
+        messages.error(request, f'Нельзя удалить статус "{status.name}", так как есть билеты с этим статусом')
+        return redirect('admin_panel_ticket_statuses')
+
+    name = status.name
+    status.delete()
+
+    OperationLogger.log_operation(
+        request=request,
+        action_type='DELETE',
+        module_type='SYSTEM',
+        description=f'Удалён статус билета: {name}',
+        object_id=ts_id,
+        object_repr=name
+    )
+
+    messages.success(request, f'Статус билета "{name}" удалён')
+    return redirect('admin_panel_ticket_statuses')
 
 
 @staff_member_required
@@ -1978,14 +2032,40 @@ def admin_email_change_request_delete(request, ec_id):
 
 @staff_member_required
 def admin_api_tokens(request):
-    """Управление API токенами"""
+    """Управление API токенами с поиском и фильтрацией"""
     if not request.user.is_superuser:
         messages.error(request, 'У вас нет доступа к админ-панели.')
         return redirect('manager_dashboard')
 
+    # Параметры фильтрации
+    search = request.GET.get('search', '')
+    is_active = request.GET.get('is_active', '')
+
     tokens = APIToken.objects.all().order_by('-is_active', 'label')
 
-    return render(request, 'ticket/admin_panel/api_tokens.html', {'tokens': tokens})
+    # Поиск по метке или части токена
+    if search:
+        tokens = tokens.filter(
+            Q(label__icontains=search) |
+            Q(token__icontains=search)
+        )
+
+    # Фильтр по статусу активности
+    if is_active == 'yes':
+        tokens = tokens.filter(is_active=True)
+    elif is_active == 'no':
+        tokens = tokens.filter(is_active=False)
+
+    # Пагинация (50 элементов на страницу)
+    paginator = Paginator(tokens, 50)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'ticket/admin_panel/api_tokens.html', {
+        'tokens': page_obj,
+        'search': search,
+        'is_active_filter': is_active,
+    })
 
 
 @staff_member_required
@@ -2120,34 +2200,89 @@ def admin_import_cache_delete(request, cache_id):
 
 @staff_member_required
 def admin_movies(request):
-    """Управление фильмами"""
+    """Управление фильмами с расширенной фильтрацией"""
     if not request.user.is_superuser:
         messages.error(request, 'У вас нет доступа к админ-панели.')
         return redirect('manager_dashboard')
 
+    # Параметры фильтрации
     search = request.GET.get('search', '')
-    year = request.GET.get('year', '')
+    year_from = request.GET.get('year_from', '')
+    year_to = request.GET.get('year_to', '')
+    age_rating_id = request.GET.get('age_rating', '')
+    genre_id = request.GET.get('genre', '')
+    country_id = request.GET.get('country', '')
+    director_id = request.GET.get('director', '')
+    has_poster = request.GET.get('has_poster', '')
 
-    movies = Movie.objects.select_related('age_rating').prefetch_related('genres', 'directors',
-                                                                         'actors').all().order_by('-release_year',
-                                                                                                  'title')
+    movies = Movie.objects.select_related('age_rating').prefetch_related(
+        'genres', 'directors', 'actors', 'countries'
+    ).all().order_by('-release_year', 'title')
 
+    # Поиск по названию
     if search:
         movies = movies.filter(title__icontains=search)
-    if year:
-        movies = movies.filter(release_year=year)
 
-    paginator = Paginator(movies, 30)
+    # Фильтр по диапазону годов
+    if year_from:
+        movies = movies.filter(release_year__gte=year_from)
+    if year_to:
+        movies = movies.filter(release_year__lte=year_to)
+
+    # Фильтр по возрастному рейтингу
+    if age_rating_id:
+        movies = movies.filter(age_rating_id=age_rating_id)
+
+    # Фильтр по жанру
+    if genre_id:
+        movies = movies.filter(genres__id=genre_id)
+
+    # Фильтр по стране
+    if country_id:
+        movies = movies.filter(countries__id=country_id)
+
+    # Фильтр по режиссёру
+    if director_id:
+        movies = movies.filter(directors__id=director_id)
+
+    # Фильтр по наличию постера
+    if has_poster == 'yes':
+        movies = movies.exclude(poster='')
+    elif has_poster == 'no':
+        movies = movies.filter(poster='')
+
+    # Пагинация (50 элементов на страницу)
+    paginator = Paginator(movies, 50)
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
 
+    # Данные для фильтров
     years = Movie.objects.values_list('release_year', flat=True).distinct().order_by('-release_year')
+    age_ratings = AgeRating.objects.all().order_by('name')
+    genres = Genre.objects.all().order_by('name')
+    countries = Country.objects.all().order_by('name')
+    directors = Director.objects.all().order_by('surname', 'name')
+
+    # Сохраняем фильтры для шаблона
+    filters = {
+        'search': search,
+        'year_from': year_from,
+        'year_to': year_to,
+        'age_rating': age_rating_id,
+        'genre': genre_id,
+        'country': country_id,
+        'director': director_id,
+        'has_poster': has_poster,
+    }
 
     return render(request, 'ticket/admin_panel/admin_movies.html', {
         'movies': page_obj,
-        'search': search,
-        'selected_year': year,
         'years': years,
+        'age_ratings': age_ratings,
+        'genres': genres,
+        'countries': countries,
+        'directors': directors,
+        'filters': filters,
     })
 
 
@@ -2416,14 +2551,39 @@ def admin_screening_delete(request, screening_id):
 
 @staff_member_required
 def admin_halls(request):
-    """Управление залами"""
+    """Управление залами с поиском и фильтрацией"""
     if not request.user.is_superuser:
         messages.error(request, 'У вас нет доступа к админ-панели.')
         return redirect('manager_dashboard')
 
+    # Параметры фильтрации
+    search = request.GET.get('search', '')
+    hall_type_id = request.GET.get('hall_type', '')
+
     halls = Hall.objects.select_related('hall_type').all().order_by('name')
 
-    return render(request, 'ticket/admin_panel/admin_halls.html', {'halls': halls})
+    # Поиск по названию зала
+    if search:
+        halls = halls.filter(name__icontains=search)
+
+    # Фильтр по типу зала
+    if hall_type_id:
+        halls = halls.filter(hall_type_id=hall_type_id)
+
+    # Пагинация (50 элементов на страницу)
+    paginator = Paginator(halls, 50)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    # Список типов залов для фильтра
+    hall_types = HallType.objects.all().order_by('name')
+
+    return render(request, 'ticket/admin_panel/admin_halls.html', {
+        'halls': page_obj,
+        'hall_types': hall_types,
+        'search': search,
+        'selected_hall_type': hall_type_id,
+    })
 
 
 @staff_member_required

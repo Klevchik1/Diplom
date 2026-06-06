@@ -1,110 +1,144 @@
+{# ticket/templates/ticket/admin_panel/ticket_statuses.html #}
 {% extends 'ticket/admin_panel/base_admin.html' %}
 {% load static %}
 
 {% block title %}Статусы билетов | Админ-панель{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'ticket/css/admin_panel/ticket-statuses.css' %}">
-<style>
-    /* Стили ТОЛЬКО для предупреждения, без !important */
-    .status-warning-box {
-        background: #fff3cd;
-        border-left: 4px solid #ffc107;
-        padding: 16px;
-        border-radius: 8px;
-        margin-top: 20px;
-    }
-
-    .status-warning-box strong {
-        color: #856404;
-        font-size: 14px;
-    }
-
-    .status-warning-box ul {
-        margin-left: 20px;
-        margin-top: 8px;
-    }
-
-    .status-warning-box li {
-        margin-bottom: 4px;
-        color: #856404;
-    }
-
-    /* Тёмная тема - только для предупреждения */
-    [data-theme="dark"] .status-warning-box {
-        background: #1e293b;
-        border-left: 4px solid #3b82f6;
-    }
-
-    [data-theme="dark"] .status-warning-box strong {
-        color: #60a5fa;
-    }
-
-    [data-theme="dark"] .status-warning-box li {
-        color: #94a3b8;
-    }
-
-    [data-theme="dark"] .status-warning-box {
-        color: #cbd5e1;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="page-header">
-    <h2>🏷️ Управление статусами билетов</h2>
-    <div class="warning-badge">⚠️ Будьте осторожны при изменении!</div>
+    <h2>🎫 Статусы билетов</h2>
+</div>
+
+<!-- Поиск -->
+<div class="filters-card">
+    <form method="get" class="filters-form" id="filter-form">
+        <div class="filter-group" style="flex: 2;">
+            <input type="text" name="search" placeholder="🔍 Поиск по названию, коду или описанию..."
+                   value="{{ search|default:'' }}" class="filter-input" id="search-input">
+        </div>
+        <button type="submit" class="btn-filter">Найти</button>
+        {% if search %}
+        <a href="{% url 'admin_panel_ticket_statuses' %}" class="btn-reset">Сбросить</a>
+        {% endif %}
+    </form>
 </div>
 
 <div class="table-container">
     <table class="data-table">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Код</th>
+                <th style="width: 80px;">Код</th>
                 <th>Название</th>
                 <th>Описание</th>
-                <th>Активен</th>
-                <th>Возврат возможен</th>
-                <th>Действия</th>
+                <th style="width: 100px;">Активен</th>
+                <th style="width: 120px;">Возврат возможен</th>
+                <th style="width: 160px;">Действия</th>
             </tr>
         </thead>
         <tbody>
             {% for status in statuses %}
             <tr>
+                <td><code>{{ status.code }}</code></td>
                 <form method="post">
                     {% csrf_token %}
                     <input type="hidden" name="status_id" value="{{ status.id }}">
-                    <td class="nowrap">{{ status.id }}</td>
-                    <td><code>{{ status.code }}</code></td>
-                    <td><input type="text" name="name" value="{{ status.name }}" class="form-control-sm" required></td>
-                    <td><input type="text" name="description" value="{{ status.description|default:'' }}" class="form-control-sm"></td>
-                    <td class="text-center">
-                        <input type="checkbox" name="is_active" {% if status.is_active %}checked{% endif %}>
+                    <td>
+                        <input type="text" name="name" value="{{ status.name }}" class="form-input" style="width: 100%;">
                     </td>
-                    <td class="text-center">
-                        <input type="checkbox" name="can_be_refunded" {% if status.can_be_refunded %}checked{% endif %}>
+                    <td>
+                        <input type="text" name="description" value="{{ status.description|default:'' }}" class="form-input" style="width: 100%;">
+                    </td>
+                    <td style="text-align: center;">
+                        <input type="checkbox" name="is_active" {% if status.is_active %}checked{% endif %} class="form-checkbox">
+                    </td>
+                    <td style="text-align: center;">
+                        <input type="checkbox" name="can_be_refunded" {% if status.can_be_refunded %}checked{% endif %} class="form-checkbox">
                     </td>
                     <td class="actions-cell">
-                        <button type="submit" class="btn-icon save" title="Сохранить">💾</button>
-                    </td>
+                        <button type="submit" class="btn-icon edit" title="Сохранить изменения">💾</button>
                 </form>
+                {% if status.code != 'active' and status.code != 'refunded' and status.code != 'used' and status.code != 'archived' %}
+                <form method="post" action="{% url 'admin_panel_ticket_status_delete' status.id %}" style="display:inline"
+                      onsubmit="return confirm('Удалить статус {{ status.name }}? Это действие нельзя отменить.')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-icon delete" title="Удалить">🗑️</button>
+                </form>
+                {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="empty-row">
+                    {% if search %}По запросу "{{ search }}" ничего не найдено{% else %}Статусы не найдены{% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 
-<!-- Предупреждение -->
-<div class="status-warning-box">
-    <strong>⚠️ ВНИМАНИЕ!</strong><br><br>
-    Изменение статусов билетов может повлиять на логику работы системы:
-    <ul>
-        <li><strong>active</strong> - активный билет (может быть возвращён, скачан)</li>
-        <li><strong>used</strong> - использованный билет (сеанс прошёл)</li>
-        <li><strong>refunded</strong> - возвращённый билет</li>
-        <li><strong>archived</strong> - архивный (место перепродано)</li>
-    </ul>
-    Рекомендуется не изменять стандартные статусы без крайней необходимости.
+<!-- Пагинация -->
+{% if statuses.has_other_pages %}
+<div class="pagination">
+    {% if statuses.has_previous %}
+        <a href="?page=1{% if search %}&search={{ search }}{% endif %}" class="page-link">« Первая</a>
+        <a href="?page={{ statuses.previous_page_number }}{% if search %}&search={{ search }}{% endif %}" class="page-link">‹ Назад</a>
+    {% endif %}
+
+    <span class="page-current">
+        Страница {{ statuses.number }} из {{ statuses.paginator.num_pages }}
+        <span class="total-count">(всего: {{ statuses.paginator.count }})</span>
+    </span>
+
+    {% if statuses.has_next %}
+        <a href="?page={{ statuses.next_page_number }}{% if search %}&search={{ search }}{% endif %}" class="page-link">Вперед ›</a>
+        <a href="?page={{ statuses.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}" class="page-link">Последняя »</a>
+    {% endif %}
 </div>
+{% endif %}
+
+<div class="info-box">
+    <p><strong>ℹ️ О статусах билетов:</strong></p>
+    <p><strong>active</strong> — активный (действительный) билет</p>
+    <p><strong>refunded</strong> — возвращённый билет</p>
+    <p><strong>used</strong> — использованный (прошедший сеанс)</p>
+    <p><strong>archived</strong> — архивный (для старых билетов)</p>
+    <p>⚠️ <strong>Важно:</strong> Системные статусы (active, refunded, used, archived) нельзя удалять, только редактировать.</p>
+</div>
+
+<style>
+.form-input {
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 13px;
+    background: var(--card-bg);
+    color: var(--text-color);
+}
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+.form-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Задержка для поиска (debounce)
+    const searchInput = document.getElementById('search-input');
+    let timeout = null;
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                document.getElementById('filter-form').submit();
+            }, 500);
+        });
+    }
+});
+</script>
 {% endblock %}

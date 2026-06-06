@@ -95,6 +95,7 @@ urlpatterns = [
         path('logs/', views_admin.admin_logs, name='admin_panel_logs'),
         path('logs/export/', views_admin.admin_logs_export, name='admin_panel_logs_export'),
         path('ticket-statuses/', views_admin.admin_ticket_statuses, name='admin_panel_ticket_statuses'),
+        path('ticket-statuses/delete/<int:ts_id>/', views_admin.admin_ticket_status_delete, name='admin_panel_ticket_status_delete'),
         path('payments/', views_admin.admin_payments, name='admin_panel_payments'),
         path('system-info/', views_admin.admin_system_info, name='admin_panel_system_info'),
         path('django-admin/', views_admin.admin_redirect_to_django, name='admin_redirect_to_django'),
