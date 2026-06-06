@@ -565,7 +565,7 @@ class ScreeningAdminForm(forms.ModelForm):
 
     class Meta:
         model = Screening
-        fields = ['movie', 'hall']  # Без start_time
+        fields = ['movie', 'hall']
         widgets = {
             'movie': forms.Select(attrs={'class': 'form-control'}),
             'hall': forms.Select(attrs={'class': 'form-control'}),
@@ -578,7 +578,6 @@ class ScreeningAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Добавляем поле ticket_price вручную
         self.fields['ticket_price'] = forms.DecimalField(
             required=False,
             label='Цена (рассчитывается автоматически)',
@@ -604,7 +603,6 @@ class ScreeningAdminForm(forms.ModelForm):
                 self.fields['ticket_price'].initial = self.instance.ticket_price
 
     def clean(self):
-        """Общая валидация формы и создание start_datetime"""
         cleaned_data = super().clean()
         start_date = cleaned_data.get('start_date')
         start_hour = cleaned_data.get('start_time_hour')
@@ -617,7 +615,6 @@ class ScreeningAdminForm(forms.ModelForm):
                 hour = int(start_hour)
                 minute = int(start_minute)
 
-                # Создаем datetime
                 import datetime as dt
                 from django.utils import timezone
 
@@ -627,11 +624,9 @@ class ScreeningAdminForm(forms.ModelForm):
                 )
                 start_datetime = timezone.make_aware(naive_datetime)
 
-                # Проверка: не в прошлом ли
                 if start_datetime < timezone.now():
                     raise ValidationError("Нельзя создавать сеансы в прошлом")
 
-                # Проверка окончания сеанса
                 duration_timedelta = dt.timedelta(minutes=movie.duration)
                 end_datetime = start_datetime + duration_timedelta + dt.timedelta(minutes=10)
 
@@ -647,7 +642,6 @@ class ScreeningAdminForm(forms.ModelForm):
                         f"Кинотеатр работает до 24:00. Выберите более раннее время начала."
                     )
 
-                # Проверка пересечения с другими сеансами
                 overlapping_screenings = Screening.objects.filter(
                     hall=hall,
                     start_time__lt=end_datetime,
@@ -665,7 +659,6 @@ class ScreeningAdminForm(forms.ModelForm):
                         f"Выберите другое время."
                     )
 
-                # Сохраняем datetime для использования в save()
                 cleaned_data['start_datetime'] = start_datetime
 
             except ValidationError:
@@ -676,16 +669,15 @@ class ScreeningAdminForm(forms.ModelForm):
         return cleaned_data
 
     def save(self, commit=True):
-        """Сохраняем объект с вычисленным временем"""
         screening = super().save(commit=False)
 
         if 'start_datetime' in self.cleaned_data:
             screening.start_time = self.cleaned_data['start_datetime']
             if screening.movie:
                 import datetime as dt
-                screening.end_time = screening.start_time + dt.timedelta(minutes=screening.movie.duration) + dt.timedelta(minutes=10)
+                screening.end_time = screening.start_time + dt.timedelta(
+                    minutes=screening.movie.duration) + dt.timedelta(minutes=10)
 
-        # Рассчитываем цену
         if screening.hall and screening.start_time:
             screening.ticket_price = screening.calculate_ticket_price()
 
@@ -693,17 +685,6 @@ class ScreeningAdminForm(forms.ModelForm):
             screening.save()
 
         return screening
-
-
-class DailyBackupForm(forms.Form):
-    backup_date = forms.DateField(
-        label='Select date for backup',
-        widget=forms.DateInput(attrs={
-            'type': 'date',
-            'max': str(date.today()),
-            'class': 'vDateField form-control'
-        })
-    )
 
 
 class PasswordResetRequestForm(forms.Form):

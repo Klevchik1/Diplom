@@ -37,9 +37,6 @@
             <div class="user-info">
                 <span>{{ user.name }} {{ user.surname }}</span>
                 <span>{{ user.email }}</span>
-                {% if user.is_superuser %}
-                <a href="/admin/" class="btn-admin-link" target="_blank">🔧 Админ-панель</a>
-                {% endif %}
             </div>
         </div>
 

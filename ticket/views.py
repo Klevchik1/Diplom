@@ -9,17 +9,10 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
-from django.db.models import Q, Count, Sum, Avg
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.utils import timezone
 from django.views.decorators.http import require_POST
-from django.http import JsonResponse
-from .forms import DirectorForm, ActorForm
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from .forms import DirectorForm, ActorForm
 from django.views.decorators.csrf import csrf_exempt
 from .payment_service import YooKassaService
 from .models import Payment
@@ -43,20 +36,12 @@ from .models import (
 from .utils import generate_enhanced_ticket_pdf, generate_ticket_pdf, generate_individual_tickets_zip
 from .report_utils import ReportGenerator
 from .logging_utils import OperationLogger
-from decimal import Decimal
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Count, Sum, Q, Avg, F
 from django.db.models.functions import TruncDate, TruncWeek, TruncMonth
-from datetime import datetime, timedelta
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
-
-
-@staff_member_required
-def admin_dashboard(request):
-    """Панель управления для администратора"""
-    return render(request, 'ticket/admin_dashboard.html')
 
 
 def register(request):
@@ -231,9 +216,6 @@ def verify_email(request):
             messages.error(request, 'Неверный код подтверждения')
 
     return render(request, 'ticket/verify_email.html', {'email': user.email})
-
-    storage = messages.get_messages(request)
-    storage.used = True
 
     email_sent_message = request.session.pop('email_sent_message', None)
     if email_sent_message:
@@ -1258,273 +1240,6 @@ def profile(request):
         'ticket_groups': ticket_groups,
         'active_email_change': active_email_change,
     })
-
-
-# Административные views
-@staff_member_required
-def movie_manage(request):
-    """Управление фильмами"""
-    movies = Movie.objects.all().select_related('genre', 'age_rating')
-    return render(request, 'ticket/admin/movie_manage.html', {'movies': movies})
-
-
-@staff_member_required
-def movie_add(request):
-    """Добавление фильма"""
-    if request.method == 'POST':
-        form = MovieForm(request.POST, request.FILES)
-        if form.is_valid():
-            movie = form.save()
-
-            OperationLogger.log_operation(
-                request=request,
-                action_type='CREATE',
-                module_type='MOVIES',
-                description=f'Создан новый фильм: {movie.title}',
-                object_id=movie.pk,
-                object_repr=str(movie),
-                additional_data={
-                    'genres': ", ".join(g.name for g in movie.genres.all()),
-                    'age_rating': str(movie.age_rating)
-                }
-            )
-
-            messages.success(request, f'Фильм "{movie.title}" успешно добавлен.')
-            return redirect('movie_manage')
-    else:
-        form = MovieForm()
-    return render(request, 'ticket/admin/movie_form.html', {'form': form})
-
-
-@staff_member_required
-def movie_edit(request, movie_id):
-    """Редактирование фильма"""
-    movie = get_object_or_404(Movie, pk=movie_id)
-    if request.method == 'POST':
-        form = MovieForm(request.POST, request.FILES, instance=movie)
-        if form.is_valid():
-            movie = form.save()
-
-            OperationLogger.log_operation(
-                request=request,
-                action_type='UPDATE',
-                module_type='MOVIES',
-                description=f'Обновлен фильм: {movie.title}',
-                object_id=movie.pk,
-                object_repr=str(movie)
-            )
-
-            messages.success(request, f'Фильм "{movie.title}" успешно обновлен.')
-            return redirect('movie_manage')
-    else:
-        form = MovieForm(instance=movie)
-    return render(request, 'ticket/admin/movie_form.html', {'form': form})
-
-
-@staff_member_required
-def movie_delete(request, movie_id):
-    """Удаление фильма"""
-    movie = get_object_or_404(Movie, pk=movie_id)
-    if request.method == 'POST':
-        OperationLogger.log_operation(
-            request=request,
-            action_type='DELETE',
-            module_type='MOVIES',
-            description=f'Удален фильм: {movie.title}',
-            object_id=movie.pk,
-            object_repr=str(movie)
-        )
-
-        movie.delete()
-        messages.success(request, f'Фильм "{movie.title}" успешно удален.')
-        return redirect('movie_manage')
-    return render(request, 'ticket/admin/movie_confirm_delete.html', {'movie': movie})
-
-
-@staff_member_required
-def hall_manage(request):
-    """Управление залами"""
-    halls = Hall.objects.all().select_related('hall_type')
-    return render(request, 'ticket/admin/hall_manage.html', {'halls': halls})
-
-
-@staff_member_required
-def hall_add(request):
-    """Добавление зала"""
-    if request.method == 'POST':
-        form = HallForm(request.POST)
-        if form.is_valid():
-            hall = form.save()
-
-            OperationLogger.log_operation(
-                request=request,
-                action_type='CREATE',
-                module_type='HALLS',
-                description=f'Создан новый зал: {hall.name}',
-                object_id=hall.pk,
-                object_repr=str(hall),
-                additional_data={
-                    'hall_type': hall.hall_type.name,
-                    'rows': hall.rows,
-                    'seats_per_row': hall.seats_per_row,
-                    'total_seats': hall.rows * hall.seats_per_row
-                }
-            )
-
-            messages.success(request, f'Зал "{hall.name}" успешно добавлен.')
-            return redirect('hall_manage')
-    else:
-        form = HallForm()
-    return render(request, 'ticket/admin/hall_form.html', {'form': form})
-
-
-@staff_member_required
-def hall_edit(request, hall_id):
-    """Редактирование зала"""
-    hall = get_object_or_404(Hall, pk=hall_id)
-    if request.method == 'POST':
-        form = HallForm(request.POST, instance=hall)
-        if form.is_valid():
-            hall = form.save()
-
-            OperationLogger.log_operation(
-                request=request,
-                action_type='UPDATE',
-                module_type='HALLS',
-                description=f'Обновлен зал: {hall.name}',
-                object_id=hall.pk,
-                object_repr=str(hall)
-            )
-
-            messages.success(request, f'Зал "{hall.name}" успешно обновлен.')
-            return redirect('hall_manage')
-    else:
-        form = HallForm(instance=hall)
-    return render(request, 'ticket/admin/hall_form.html', {'form': form})
-
-
-@staff_member_required
-def hall_delete(request, hall_id):
-    """Удаление зала"""
-    hall = get_object_or_404(Hall, pk=hall_id)
-    if request.method == 'POST':
-        OperationLogger.log_operation(
-            request=request,
-            action_type='DELETE',
-            module_type='HALLS',
-            description=f'Удален зал: {hall.name}',
-            object_id=hall.pk,
-            object_repr=str(hall)
-        )
-
-        hall.delete()
-        messages.success(request, f'Зал "{hall.name}" успешно удален.')
-        return redirect('hall_manage')
-    return render(request, 'ticket/admin/hall_confirm_delete.html', {'hall': hall})
-
-
-@staff_member_required
-def screening_manage(request):
-    """Управление сеансами"""
-    screenings = Screening.objects.all().select_related('movie', 'hall', 'hall__hall_type')
-    return render(request, 'ticket/admin/screening_manage.html', {'screenings': screenings})
-
-
-@staff_member_required
-def screening_add(request):
-    """Добавление сеанса"""
-    if request.method == 'POST':
-        form = ScreeningForm(request.POST)
-        if form.is_valid():
-            screening = form.save(commit=False)
-            if screening.movie and screening.start_time:
-                duration_timedelta = timedelta(minutes=screening.movie.duration)
-                screening.end_time = screening.start_time + duration_timedelta + timedelta(minutes=10)
-                screening.ticket_price = screening.calculate_ticket_price()
-            screening.save()
-
-            OperationLogger.log_operation(
-                request=request,
-                action_type='CREATE',
-                module_type='SCREENINGS',
-                description=f'Создан новый сеанс: {screening.movie.title} в {screening.hall.name}',
-                object_id=screening.pk,
-                object_repr=str(screening),
-                additional_data={
-                    'movie': screening.movie.title,
-                    'hall': screening.hall.name,
-                    'start_time': screening.start_time.strftime('%d.%m.%Y %H:%M'),
-                    'price': str(screening.ticket_price)
-                }
-            )
-
-            messages.success(request, f'Сеанс успешно добавлен.')
-            return redirect('screening_manage')
-    else:
-        form = ScreeningForm()
-    return render(request, 'ticket/admin/screening_form.html', {'form': form})
-
-
-@staff_member_required
-def screening_edit(request, screening_id):
-    """Редактирование сеанса"""
-    screening = get_object_or_404(Screening, pk=screening_id)
-    if request.method == 'POST':
-        form = ScreeningForm(request.POST, instance=screening)
-        if form.is_valid():
-            updated_screening = form.save(commit=False)
-            if updated_screening.movie and updated_screening.start_time:
-                duration_timedelta = timedelta(minutes=updated_screening.movie.duration)
-                updated_screening.end_time = updated_screening.start_time + duration_timedelta + timedelta(minutes=10)
-
-            old_hall = screening.hall
-            old_start_time = screening.start_time
-            old_price = screening.ticket_price
-
-            if (updated_screening.hall != old_hall) or (updated_screening.start_time != old_start_time):
-                updated_screening.ticket_price = updated_screening.calculate_ticket_price()
-
-            updated_screening.save()
-
-            OperationLogger.log_operation(
-                request=request,
-                action_type='UPDATE',
-                module_type='SCREENINGS',
-                description=f'Обновлен сеанс: {screening.movie.title} в {screening.hall.name}',
-                object_id=screening.pk,
-                object_repr=str(screening),
-                additional_data={
-                    'old_price': str(screening.ticket_price),
-                    'new_price': str(updated_screening.ticket_price),
-                    'price_recalculated': updated_screening.ticket_price != screening.ticket_price
-                }
-            )
-
-            messages.success(request, f'Сеанс успешно обновлен.')
-            return redirect('screening_manage')
-    else:
-        form = ScreeningForm(instance=screening)
-    return render(request, 'ticket/admin/screening_form.html', {'form': form})
-
-
-@staff_member_required
-def screening_delete(request, screening_id):
-    """Удаление сеанса"""
-    screening = get_object_or_404(Screening, pk=screening_id)
-    if request.method == 'POST':
-        OperationLogger.log_operation(
-            request=request,
-            action_type='DELETE',
-            module_type='SCREENINGS',
-            description=f'Удален сеанс: {screening.movie.title} в {screening.hall.name}',
-            object_id=screening.pk,
-            object_repr=str(screening)
-        )
-
-        screening.delete()
-        messages.success(request, f'Сеанс успешно удален.')
-        return redirect('screening_manage')
-    return render(request, 'ticket/admin/screening_confirm_delete.html', {'screening': screening})
 
 
 def screening_partial(request, screening_id):

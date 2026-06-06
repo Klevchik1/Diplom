@@ -287,36 +287,6 @@ def generate_enhanced_ticket_pdf(tickets):
     return buffer
 
 
-def format_duration(duration):
-    """Форматирование длительности фильма"""
-    # Если duration - это число (минуты)
-    if isinstance(duration, int):
-        minutes = duration
-    # Если duration - это строка
-    elif isinstance(duration, str):
-        try:
-            minutes = int(duration)
-        except ValueError:
-            return duration
-    # Если duration - это timedelta
-    elif hasattr(duration, 'total_seconds'):
-        total_seconds = int(duration.total_seconds())
-        minutes = total_seconds // 60
-    else:
-        try:
-            minutes = int(duration)
-        except (TypeError, ValueError):
-            return str(duration)
-
-    hours = minutes // 60
-    remaining_minutes = minutes % 60
-
-    if hours > 0:
-        return f"{hours} ч {remaining_minutes} мин"
-    else:
-        return f"{minutes} мин"
-
-
 def generate_individual_tickets_zip(tickets):
     """
     Генерация ZIP-архива с отдельными PDF-билетами на каждое место
