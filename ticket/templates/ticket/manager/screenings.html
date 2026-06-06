@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'ticket/css/manager/manager-forms.css' %}">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 {% endblock %}
 
 {% block content %}
@@ -15,43 +16,61 @@
 
 <!-- Вкладки -->
 <div class="screenings-tabs">
-    <a href="?view=upcoming{% if filters.date %}&date={{ filters.date }}{% endif %}{% if filters.movie %}&movie={{ filters.movie }}{% endif %}{% if filters.hall %}&hall={{ filters.hall }}{% endif %}"
-       class="tab-btn {% if view_mode == 'upcoming' %}active{% endif %}">
+    <button class="tab-btn {% if view_mode == 'upcoming' %}active{% endif %}" data-view="upcoming">
         🔜 Предстоящие
-    </a>
-    <a href="?view=all{% if filters.date %}&date={{ filters.date }}{% endif %}{% if filters.movie %}&movie={{ filters.movie }}{% endif %}{% if filters.hall %}&hall={{ filters.hall }}{% endif %}"
-       class="tab-btn {% if view_mode == 'all' %}active{% endif %}">
+    </button>
+    <button class="tab-btn {% if view_mode == 'all' %}active{% endif %}" data-view="all">
         📋 Все сеансы
-    </a>
+    </button>
 </div>
 
+<!-- Форма фильтрации (AJAX) -->
 <div class="filter-form">
-    <form method="get">
-        <input type="hidden" name="view" value="{{ view_mode }}">
-        <input type="date" name="date" value="{{ filters.date }}" placeholder="Дата">
-        <select name="movie" id="movie-filter" style="width: 250px;">
-            <option value="">Все фильмы</option>
-            {% for movie in movies %}
-                <option value="{{ movie.id }}" {% if filters.movie == movie.id|stringformat:"i" %}selected{% endif %}>
-                    {{ movie.title }}
-                </option>
-            {% endfor %}
-        </select>
-        <select name="hall">
-            <option value="">Все залы</option>
-            {% for hall in halls %}
-                <option value="{{ hall.id }}" {% if filters.hall == hall.id|stringformat:"i" %}selected{% endif %}>
-                    {{ hall.name }}
-                </option>
-            {% endfor %}
-        </select>
-        <button type="submit" class="btn">Применить</button>
-        <a href="?view={{ view_mode }}" class="btn btn-secondary">Сбросить</a>
+    <form id="screenings-filter-form" onsubmit="return false;">
+        {% csrf_token %}
+        <input type="hidden" id="view-mode" name="view_mode" value="{{ view_mode }}">
+        <div class="filter-row">
+            <div class="filter-group">
+                <label>🔍 Поиск по фильму</label>
+                <input type="text" id="screening-search" class="form-control" placeholder="Название фильма...">
+            </div>
+            <div class="filter-group">
+                <label>📅 Дата</label>
+                <input type="date" id="screening-date" class="form-control" value="{{ filters.date }}">
+            </div>
+            <div class="filter-group">
+                <label>🎬 Фильм</label>
+                <select id="screening-movie" class="form-control select2-movie">
+                    <option value="">Все фильмы</option>
+                    {% for movie in movies %}
+                        <option value="{{ movie.id }}" {% if filters.movie == movie.id|stringformat:"i" %}selected{% endif %}>
+                            {{ movie.title }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>🏛️ Зал</label>
+                <select id="screening-hall" class="form-control">
+                    <option value="">Все залы</option>
+                    {% for hall in halls %}
+                        <option value="{{ hall.id }}" {% if filters.hall == hall.id|stringformat:"i" %}selected{% endif %}>
+                            {{ hall.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-actions">
+                <button type="button" id="reset-screening-filters" class="btn btn-secondary">🔄 Сбросить</button>
+            </div>
+        </div>
     </form>
 </div>
 
+<!-- ТАБЛИЦА СЕАНСОВ -->
 <div class="table-container">
-    <table>
+    <h3>📋 Список сеансов</h3>
+    <table class="screenings-table">
         <thead>
             <tr>
                 <th>Фильм</th>
@@ -59,58 +78,269 @@
                 <th>Дата и время</th>
                 <th>Цена</th>
                 <th>Продано мест</th>
+                <th>Загрузка</th>
                 <th>Действия</th>
             </tr>
         </thead>
-        <tbody>
-            {% for screening in screenings %}
+        <tbody id="screenings-table-body">
             <tr>
-                <td>{{ screening.movie.title }}</td>
-                <td>{{ screening.hall.name }}</td>
-                <td>{{ screening.start_time|date:"d.m.Y H:i" }}</td>
-                <td>{{ screening.ticket_price }} ₽</td>
-                <td>
-                    {{ screening.tickets.count }} / {{ screening.hall.total_seats }}
-                </td>
-                <td>
-                    <a href="{% url 'manager_screening_edit' screening.id %}" class="btn btn-sm btn-warning">✏️ Ред.</a>
-                    <a href="{% url 'manager_screening_delete' screening.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Удалить сеанс?')">❌ Уд.</a>
+                <td colspan="7" class="text-center">
+                    <div class="loading-spinner"></div>
+                    <span>Загрузка сеансов...</span>
                 </td>
             </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6" class="text-center">
-                    {% if view_mode == 'upcoming' %}
-                        Нет предстоящих сеансов
-                    {% else %}
-                        Нет сеансов
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
         </tbody>
     </table>
+
+    <!-- Пагинация -->
+    <div id="screenings-pagination" class="pagination-container"></div>
 </div>
+
+<style>
+/* ===== ФИЛЬТРЫ — ГОРИЗОНТАЛЬНАЯ СТРОКА БЕЗ НАЛОЖЕНИЙ ===== */
+.filter-form {
+    background: rgba(30, 30, 30, 0.95);
+    border: 2px solid #ff0000;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+.filter-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+    min-width: min-content;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 0 0 auto;
+    min-width: 150px;
+}
+
+.filter-group label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #ffcc00;
+    margin: 0;
+    padding: 0;
+    white-space: nowrap;
+}
+
+.filter-group .form-control,
+.filter-group input,
+.filter-group select {
+    width: 160px;
+    padding: 10px 12px;
+    background: rgba(20, 20, 20, 0.9);
+    border: 1px solid #ff0000;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 14px;
+    transition: all 0.3s;
+    box-sizing: border-box;
+}
+
+/* Для числовых полей и даты — чуть шире */
+.filter-group input[type="number"],
+.filter-group input[type="date"] {
+    width: 140px;
+}
+
+.filter-group .form-control:focus,
+.filter-group input:focus,
+.filter-group select:focus {
+    outline: none;
+    border-color: #ffcc00;
+    box-shadow: 0 0 5px rgba(255, 204, 0, 0.3);
+}
+
+.filter-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+.filter-actions .btn {
+    white-space: nowrap;
+    padding: 10px 20px;
+    margin: 0;
+}
+
+/* Для узких экранов — горизонтальная прокрутка вместо переноса */
+@media (max-width: 1200px) {
+    .filter-row {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+
+    .filter-group .form-control,
+    .filter-group input,
+    .filter-group select {
+        width: 150px;
+    }
+
+    .filter-group input[type="number"],
+    .filter-group input[type="date"] {
+        width: 130px;
+    }
+}
+
+/* Светлая тема */
+[data-theme="light"] .filter-group label {
+    color: #b8860b;
+}
+
+[data-theme="light"] .filter-group .form-control,
+[data-theme="light"] .filter-group input,
+[data-theme="light"] .filter-group select {
+    background: #f5f5f5;
+    border-color: #cc0000;
+    color: #1a1a1a;
+}
+/* ===== SELECT2 ДЛЯ ТЁМНОЙ ТЕМЫ ===== */
+.select2-container--default .select2-selection--single {
+    background-color: rgba(20, 20, 20, 0.9) !important;
+    border: 1px solid #ff0000 !important;
+    border-radius: 6px !important;
+    height: 42px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #ffffff !important;
+    line-height: 42px !important;
+    padding-left: 12px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 40px !important;
+    right: 8px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: #ffcc00 transparent transparent transparent !important;
+}
+
+.select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+    border-color: transparent transparent #ffcc00 transparent !important;
+}
+
+/* Выпадающий список */
+.select2-dropdown {
+    background-color: rgba(30, 30, 30, 0.98) !important;
+    border: 1px solid #ff0000 !important;
+    border-radius: 8px !important;
+}
+
+.select2-container--default .select2-results__option {
+    color: #ffffff !important;
+    padding: 10px 12px !important;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background: linear-gradient(135deg, #ff0000, #cc0000) !important;
+    color: #ffffff !important;
+}
+
+.select2-container--default .select2-results__option[aria-selected="true"] {
+    background-color: rgba(255, 0, 0, 0.3) !important;
+    color: #ffcc00 !important;
+}
+
+.select2-container--default .select2-search--dropdown .select2-search__field {
+    background-color: rgba(20, 20, 20, 0.9) !important;
+    border: 1px solid #ff0000 !important;
+    color: #ffffff !important;
+    border-radius: 6px !important;
+    padding: 8px 12px !important;
+}
+
+.select2-container--default .select2-search--dropdown .select2-search__field:focus {
+    outline: none !important;
+    border-color: #ffcc00 !important;
+}
+
+/* Placeholder в поиске */
+.select2-container--default .select2-search--dropdown .select2-search__field::placeholder {
+    color: #888888 !important;
+}
+
+/* СВЕТЛАЯ ТЕМА ДЛЯ SELECT2 */
+[data-theme="light"] .select2-container--default .select2-selection--single {
+    background-color: #f5f5f5 !important;
+    border-color: #cc0000 !important;
+}
+
+[data-theme="light"] .select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .select2-dropdown {
+    background-color: #ffffff !important;
+    border-color: #cc0000 !important;
+}
+
+[data-theme="light"] .select2-container--default .select2-results__option {
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background: linear-gradient(135deg, #ff0000, #cc0000) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="light"] .select2-container--default .select2-results__option[aria-selected="true"] {
+    background-color: rgba(255, 0, 0, 0.15) !important;
+    color: #b8860b !important;
+}
+
+[data-theme="light"] .select2-container--default .select2-search--dropdown .select2-search__field {
+    background-color: #ffffff !important;
+    border-color: #cc0000 !important;
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .select2-container--default .select2-search--dropdown .select2-search__field::placeholder {
+    color: #999999 !important;
+}
+</style>
 {% endblock %}
 
 {% block extra_js %}
-<!-- Select2 для поиска по фильмам -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="{% static 'ticket/js/manager/screening-filters.js' %}"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
-        $('#movie-filter').select2({
+// Инициализация Select2 с поддержкой темы
+jQuery(document).ready(function($) {
+    function initSelect2() {
+        $('#screening-movie').select2({
             width: '100%',
             placeholder: '🔍 Поиск фильма...',
             allowClear: true,
+            dropdownAutoWidth: true,
             language: {
                 noResults: function() { return "Ничего не найдено"; },
                 searching: function() { return "Поиск..."; }
             }
         });
     }
+
+    initSelect2();
+
+    // Обновляем Select2 при переключении темы
+    window.addEventListener('themeChanged', function() {
+        $('#screening-movie').select2('destroy');
+        initSelect2();
+    });
 });
 </script>
 {% endblock %}

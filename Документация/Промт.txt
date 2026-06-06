@@ -171,7 +171,9 @@ Dipom/                                               # Корень проект
 │   │           │   ├── manager-base.js
 │   │           │   ├── manager-forms.js
 │   │           │   ├── manager-statistics.js
-│   │           │   └── movie-form.js
+│   │           │   ├── movie-filters.js
+│   │           │   ├── movie-form.js
+│   │           │   └── screening-filters.js
 │   │           └── user/
 │   │               ├── auth.js
 │   │               ├── base.js

@@ -2427,8 +2427,27 @@ def manager_dashboard(request):
 @user_passes_test(is_manager, login_url='login')
 def manager_movies(request):
     """Управление фильмами для менеджера"""
-    movies = Movie.objects.all().select_related('age_rating').prefetch_related('genres', 'countries').order_by('-created_at')
-    return render(request, 'ticket/manager/movies.html', {'movies': movies})
+    # Получаем списки для фильтров
+    genres = Genre.objects.all().order_by('name')
+    age_ratings = AgeRating.objects.all().order_by('name')
+    countries = Country.objects.all().order_by('name')
+
+    # Преобразуем в JSON для JS
+    import json
+    genres_json = json.dumps([{'id': g.id, 'name': g.name} for g in genres])
+    age_ratings_json = json.dumps([{'id': r.id, 'name': r.name} for r in age_ratings])
+    countries_json = json.dumps([{'id': c.id, 'name': c.name} for c in countries])
+
+    context = {
+        'movies': [],  # Пустой список, так как данные через AJAX
+        'genres': genres,
+        'age_ratings': age_ratings,
+        'countries': countries,
+        'genres_json': genres_json,
+        'age_ratings_json': age_ratings_json,
+        'countries_json': countries_json,
+    }
+    return render(request, 'ticket/manager/movies.html', context)
 
 
 @user_passes_test(is_manager, login_url='login')
@@ -2980,3 +2999,263 @@ def manager_settings(request):
         ]
     }
     return render(request, 'ticket/manager/settings.html', context)
+
+
+# ============================================
+# API ДЛЯ AJAX-ФИЛЬТРАЦИИ И ПАГИНАЦИИ
+# ============================================
+
+@user_passes_test(is_manager, login_url='login')
+def api_movies_filter(request):
+    """AJAX API для фильтрации и пагинации фильмов (панель менеджера)"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Метод не разрешён'})
+
+    # Получаем параметры из POST
+    search = request.POST.get('search', '').strip()
+    genre = request.POST.get('genre', '').strip()
+    age_rating = request.POST.get('age_rating', '').strip()
+    country = request.POST.get('country', '').strip()
+    year_min = request.POST.get('year_min', '').strip()
+    year_max = request.POST.get('year_max', '').strip()
+    page = int(request.POST.get('page', 1))
+    per_page = 50
+
+    # Базовый запрос
+    movies = Movie.objects.all().select_related('age_rating').prefetch_related('genres', 'countries')
+
+    # Применяем фильтры
+    if search:
+        movies = movies.filter(title__icontains=search)
+
+    if genre:
+        movies = movies.filter(genres__name=genre)
+
+    if age_rating:
+        movies = movies.filter(age_rating__name=age_rating)
+
+    if country:
+        movies = movies.filter(countries__name=country)
+
+    if year_min:
+        try:
+            year_min_int = int(year_min)
+            movies = movies.filter(release_year__gte=year_min_int)
+        except ValueError:
+            pass
+
+    if year_max:
+        try:
+            year_max_int = int(year_max)
+            movies = movies.filter(release_year__lte=year_max_int)
+        except ValueError:
+            pass
+
+    # Уникальные фильмы (из-за JOIN'ов)
+    movies = movies.distinct().order_by('-created_at')
+
+    # Пагинация
+    from django.core.paginator import Paginator
+    paginator = Paginator(movies, per_page)
+
+    try:
+        page_obj = paginator.page(page)
+    except:
+        page_obj = paginator.page(1)
+
+    # Формируем данные для ответа
+    movies_data = []
+    for movie in page_obj:
+        movies_data.append({
+            'id': movie.id,
+            'title': movie.title,
+            'poster_url': movie.poster.url if movie.poster else None,
+            'genres': [g.name for g in movie.genres.all()],
+            'countries': [c.name for c in movie.countries.all()],
+            'release_year': movie.release_year,
+            'age_rating': movie.age_rating.name if movie.age_rating else '—',
+            'duration_display': movie.get_duration_display(),
+        })
+
+    return JsonResponse({
+        'success': True,
+        'movies': movies_data,
+        'total_count': paginator.count,
+        'total_pages': paginator.num_pages,
+        'current_page': page_obj.number,
+        'has_next': page_obj.has_next(),
+        'has_previous': page_obj.has_previous(),
+        'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
+        'previous_page': page_obj.previous_page_number() if page_obj.has_previous() else None,
+    })
+
+
+@user_passes_test(is_manager, login_url='login')
+def api_screenings_filter(request):
+    """AJAX API для фильтрации и пагинации сеансов (панель менеджера)"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Метод не разрешён'})
+
+    # Получаем параметры
+    view_mode = request.POST.get('view_mode', 'upcoming')
+    date = request.POST.get('date', '').strip()
+    movie_id = request.POST.get('movie', '').strip()
+    hall_id = request.POST.get('hall', '').strip()
+    search = request.POST.get('search', '').strip()
+    page = int(request.POST.get('page', 1))
+    per_page = 50
+
+    # Базовый запрос
+    screenings = Screening.objects.all().select_related('movie', 'hall', 'hall__hall_type').prefetch_related('tickets')
+
+    # Режим отображения
+    if view_mode == 'upcoming':
+        screenings = screenings.filter(start_time__gte=timezone.now())
+
+    # Фильтры
+    if date:
+        try:
+            filter_date = datetime.strptime(date, '%Y-%m-%d').date()
+            screenings = screenings.filter(start_time__date=filter_date)
+        except ValueError:
+            pass
+
+    if movie_id:
+        screenings = screenings.filter(movie_id=movie_id)
+
+    if hall_id:
+        screenings = screenings.filter(hall_id=hall_id)
+
+    if search:
+        screenings = screenings.filter(movie__title__icontains=search)
+
+    screenings = screenings.order_by('start_time')
+
+    # Пагинация
+    from django.core.paginator import Paginator
+    paginator = Paginator(screenings, per_page)
+
+    try:
+        page_obj = paginator.page(page)
+    except:
+        page_obj = paginator.page(1)
+
+    # Формируем данные
+    screenings_data = []
+    for screening in page_obj:
+        total_seats = screening.hall.rows * screening.hall.seats_per_row
+        screenings_data.append({
+            'id': screening.id,
+            'movie_title': screening.movie.title,
+            'movie_id': screening.movie.id,
+            'hall_name': screening.hall.name,
+            'start_time': screening.start_time.strftime('%d.%m.%Y %H:%M'),
+            'ticket_price': float(screening.ticket_price),
+            'tickets_count': screening.tickets.count(),
+            'total_seats': total_seats,
+            'occupancy_percent': round(screening.tickets.count() / total_seats * 100, 1) if total_seats > 0 else 0,
+        })
+
+    return JsonResponse({
+        'success': True,
+        'screenings': screenings_data,
+        'total_count': paginator.count,
+        'total_pages': paginator.num_pages,
+        'current_page': page_obj.number,
+        'has_next': page_obj.has_next(),
+        'has_previous': page_obj.has_previous(),
+        'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
+        'previous_page': page_obj.previous_page_number() if page_obj.has_previous() else None,
+    })
+
+
+@user_passes_test(is_manager, login_url='login')
+def api_statistics_filter(request):
+    """AJAX API для фильтрации статистики (панель менеджера)"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Метод не разрешён'})
+
+    # Получаем параметры
+    start_date_str = request.POST.get('start_date', '')
+    end_date_str = request.POST.get('end_date', '')
+    movie_id = request.POST.get('movie', '').strip()
+    hall_id = request.POST.get('hall', '').strip()
+
+    today = timezone.now().date()
+
+    # Парсим даты
+    try:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date() if start_date_str else today - timedelta(
+            days=7)
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date() if end_date_str else today
+    except ValueError:
+        start_date = today - timedelta(days=7)
+        end_date = today
+
+    # Фильтр по билетам
+    tickets = Ticket.objects.filter(
+        created_at__date__gte=start_date,
+        created_at__date__lte=end_date,
+        status__code='active'
+    )
+
+    # Фильтр по фильму
+    if movie_id:
+        tickets = tickets.filter(screening__movie_id=movie_id)
+
+    # Фильтр по залу
+    if hall_id:
+        tickets = tickets.filter(screening__hall_id=hall_id)
+
+    # Статистика
+    total_tickets = tickets.count()
+    total_revenue = tickets.aggregate(total=Sum('price'))['total'] or 0
+    avg_ticket = total_revenue / total_tickets if total_tickets > 0 else 0
+
+    # Продажи по дням
+    sales_by_day = list(tickets.annotate(
+        day=TruncDate('created_at')
+    ).values('day').annotate(
+        tickets=Count('id'),
+        revenue=Sum('price')
+    ).order_by('day'))
+
+    max_revenue = max((day['revenue'] for day in sales_by_day), default=1)
+
+    # Популярные фильмы
+    popular_movies = Movie.objects.filter(
+        screenings__tickets__in=tickets
+    ).annotate(
+        tickets_sold=Count('screenings__tickets'),
+        revenue=Sum('screenings__tickets__price')
+    ).order_by('-tickets_sold')[:5]
+
+    popular_movies_data = []
+    for movie in popular_movies:
+        popular_movies_data.append({
+            'id': movie.id,
+            'title': movie.title,
+            'tickets_sold': movie.tickets_sold,
+            'revenue': float(movie.revenue or 0),
+        })
+
+    # Данные для графика
+    chart_data = [
+        {
+            'day': day['day'].strftime('%Y-%m-%d'),
+            'day_label': day['day'].strftime('%d.%m'),
+            'revenue': float(day['revenue']),
+            'tickets': day['tickets']
+        }
+        for day in sales_by_day
+    ]
+
+    return JsonResponse({
+        'success': True,
+        'total_tickets': total_tickets,
+        'total_revenue': float(total_revenue),
+        'avg_ticket': float(avg_ticket),
+        'max_revenue': float(max_revenue),
+        'popular_movies': popular_movies_data,
+        'sales_by_day': chart_data,
+    })
