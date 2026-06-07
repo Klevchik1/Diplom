@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" version="29.5.6">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36">
   <diagram name="Страница 1" id="GOqsQ83yMCCc8tBVAAom">
-    <mxGraphModel dx="1678" dy="-295" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1311" dy="-406" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -76,7 +76,7 @@
         <mxCell id="UdnUSK5n67mowr2e_vGY-366" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Клиент" vertex="1">
           <mxGeometry height="40" width="100" x="478.5441176470588" y="1752.7794117647059" as="geometry" />
         </mxCell>
-        <mxCell id="UdnUSK5n67mowr2e_vGY-367" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="База данных" vertex="1">
+        <mxCell id="UdnUSK5n67mowr2e_vGY-367" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Таблица&amp;nbsp;&lt;div&gt;Screenings&lt;/div&gt;" vertex="1">
           <mxGeometry height="60" width="150" x="142.54411764705878" y="2203.779411764706" as="geometry" />
         </mxCell>
         <mxCell id="UdnUSK5n67mowr2e_vGY-368" edge="1" parent="1" source="UdnUSK5n67mowr2e_vGY-367" style="endArrow=none;html=1;rounded=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" target="UdnUSK5n67mowr2e_vGY-367" value="">
