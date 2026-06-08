@@ -705,3 +705,4 @@ GitHub репозиторий: https://github.com/Klevchik1/Diplom
 API Poiskkino.dev: https://api.poiskkino.dev
 
 YooKassa документация: https://yookassa.ru/developers/api
+

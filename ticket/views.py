@@ -20,7 +20,8 @@ from django.core.files.base import ContentFile
 import zipfile
 from io import BytesIO
 
-from .email_utils import send_verification_email, send_welcome_email, send_password_reset_email, send_email_change_verification
+from .email_utils import send_verification_email, send_welcome_email, send_password_reset_email, \
+    send_email_change_verification, send_verification_email_to_user
 from .forms import (
     MovieForm, HallForm, ScreeningForm, UserUpdateForm,
     PasswordResetForm, EmailChangeForm, RegistrationForm, LoginForm,
