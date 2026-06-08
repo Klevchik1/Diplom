@@ -24,9 +24,33 @@
             <span><strong>Год:</strong> {{ movie.release_year }}</span>
             <span><strong>Страна:</strong> {% for country in movie.countries.all %}{{ country.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
             <span><strong>Возраст:</strong> {{ movie.age_rating.name }}</span>
-            <span><strong>Длительность:</strong> {{ movie.duration }}</span>
+            <span><strong>Длительность:</strong> {{ movie.get_duration_display }}</span>
         </div>
         <div class="movie-description-large">{{ movie.description }}</div>
+
+        <!-- Режиссёры -->
+        {% if movie.directors.all %}
+        <div class="movie-crew">
+            <h3>🎬 Режиссёры:</h3>
+            <div class="crew-list">
+                {% for director in movie.directors.all|dictsort:"surname" %}
+                    {{ director.name }} {{ director.surname }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Актёры -->
+        {% if movie.actors.all %}
+        <div class="movie-crew">
+            <h3>🎭 В ролях:</h3>
+            <div class="crew-list">
+                {% for actor in movie.actors.all|dictsort:"surname" %}
+                    {{ actor.name }} {{ actor.surname }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 

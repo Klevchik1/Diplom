@@ -36,12 +36,60 @@
     <div class="screening-movie-info">
         <h3>{{ screening.movie.title }}</h3>
         <div class="info-grid">
-            <div class="info-item"><strong>Жанр:</strong> {{ screening.movie.genre }}</div>
+            <!-- Жанры (исправлено: цикл) -->
+            <div class="info-item">
+                <strong>Жанр:</strong>
+                {% for genre in screening.movie.genres.all %}
+                    {{ genre.name }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    —
+                {% endfor %}
+            </div>
+
+            <!-- Год -->
             <div class="info-item"><strong>Год:</strong> {{ screening.movie.release_year }}</div>
+
+            <!-- Страны (добавлено) -->
+            <div class="info-item">
+                <strong>Страна:</strong>
+                {% for country in screening.movie.countries.all %}
+                    {{ country.name }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    —
+                {% endfor %}
+            </div>
+
+            <!-- Возраст -->
             <div class="info-item"><strong>Возраст:</strong> {{ screening.movie.age_rating.name }}</div>
-            <div class="info-item"><strong>Длительность:</strong> {{ screening.movie.duration }}</div>
-            <div class="info-item"><strong>Начало:</strong> {{ screening.start_time|date:"d F Y H:i" }}</div>
-            <div class="info-item"><strong>Зал:</strong> {{ screening.hall.name }}</div>
+
+            <!-- Длительность -->
+            <div class="info-item"><strong>Длительность:</strong> {{ screening.movie.get_duration_display }}</div>
+
+            <!-- Режиссёры (добавлено) -->
+            <div class="info-item full-width">
+                <strong>🎬 Режиссёры:</strong>
+                {% for director in screening.movie.directors.all|dictsort:"surname" %}
+                    {{ director.name }} {{ director.surname }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    —
+                {% endfor %}
+            </div>
+
+            <!-- Актёры (добавлено) -->
+            <div class="info-item full-width">
+                <strong>🎭 В ролях:</strong>
+                {% for actor in screening.movie.actors.all|dictsort:"surname" %}
+                    {{ actor.name }} {{ actor.surname }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    —
+                {% endfor %}
+            </div>
+
+            <!-- ❌ УДАЛЕНО: Начало и Зал (дублируются ниже) -->
+            <!-- ❌ Было: <div class="info-item"><strong>Начало:</strong> ... </div> -->
+            <!-- ❌ Было: <div class="info-item"><strong>Зал:</strong> ... </div> -->
+
+            <!-- Оставлена только цена -->
             <div class="info-item"><strong>Цена:</strong> <span class="screening-price">{{ screening.ticket_price }}</span> ₽</div>
         </div>
     </div>
