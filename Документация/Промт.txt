@@ -301,7 +301,21 @@ Dipom/                                               # Корень проект
 │   │   └── ru_filters.py
 │   │
 │   ├── tests/
-│   │   └── __init__.py
+│   │   ├── __init__.py
+│   │   ├── conftest.py                    # Фикстуры для pytest
+│   │   ├── functional/
+│   │   │   ├── __init__.py
+│   │   │   ├── test_auth.py               # Регистрация, логин, верификация
+│   │   │   ├── test_booking.py            # Бронирование, оплата, возврат
+│   │   │   ├── test_access.py             # Проверка ролей (админ, менеджер)
+│   │   │   ├── test_api.py                # Импорт фильмов из Poiskkino.dev
+│   │   │   └── test_validation.py         # Валидация данных
+│   │   ├── load/
+│   │   │   ├── __init__.py
+│   │   │   └── locust_server.py              # Конфиг для нагрузочного тестирования
+│   │   └── utils/
+│   │       ├── __init__.py
+│   │       └── test_data.py               # Генераторы тестовых данных
 │   │
 │   ├── __init__.py
 │   ├── admin.py
