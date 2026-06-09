@@ -102,6 +102,7 @@ Dipom/                                               # Корень проект
 │   │       ├── full_import.py
 │   │       ├── import_kinopoisk_movies.py
 │   │       ├── init_tokens.py
+│   │       ├── populate_real_data.py
 │   │       ├── setup_manager_permissions.py
 │   │       ├── smart_import.py
 │   │       ├── test_cinema_system.py

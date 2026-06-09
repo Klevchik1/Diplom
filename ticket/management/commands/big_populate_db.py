@@ -245,7 +245,8 @@ class Command(BaseCommand):
                 password='admin',
                 name='Администратор',
                 surname='Системы',
-                number='+79001234567'
+                number='+79001234567',
+                is_email_verified = True
             )
             self.stdout.write(self.style.SUCCESS(f'✅ Создан администратор: {admin.email} (пароль: admin)'))
         else:
