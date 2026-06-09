@@ -14,7 +14,7 @@ from ticket.models import (
     Hall, Movie, Screening, Seat, User, Genre, AgeRating,
     TicketStatus, Country, HallType, Director, Actor,
     MovieDirector, MovieActor, MovieGenre, ActionType, ModuleType,
-    Ticket, TicketGroup, PendingRegistration, PasswordResetRequest,
+    Ticket, TicketGroup, PasswordResetRequest,
     EmailChangeRequest, OperationLog
 )
 
