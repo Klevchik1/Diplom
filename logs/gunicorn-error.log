@@ -1679,3 +1679,46 @@ ValueError: Unable to configure handler 'file'
 [2026-05-15 04:51:20 +0300] [270850] [INFO] Booting worker with pid: 270850
 [2026-05-15 04:51:20 +0300] [270851] [INFO] Booting worker with pid: 270851
 [2026-05-15 04:51:20 +0300] [270848] [INFO] Control socket listening at /var/www/.gunicorn/gunicorn.ctl
+[2026-06-09 12:02:47 +0300] [192714] [INFO] Starting gunicorn 26.0.0
+[2026-06-09 12:02:47 +0300] [192714] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (192714)
+[2026-06-09 12:02:47 +0300] [192714] [INFO] Using worker: sync
+[2026-06-09 12:02:47 +0300] [192716] [INFO] Booting worker with pid: 192716
+[2026-06-09 12:02:47 +0300] [192717] [INFO] Booting worker with pid: 192717
+[2026-06-09 12:02:47 +0300] [192718] [INFO] Booting worker with pid: 192718
+[2026-06-09 12:02:48 +0300] [192714] [INFO] Control socket listening at /root/.gunicorn/gunicorn.ctl
+[2026-06-09 12:03:30 +0300] [192714] [INFO] Handling signal: term
+[2026-06-09 17:03:30 +0800] [192717] [INFO] Worker exiting (pid: 192717)
+[2026-06-09 17:03:30 +0800] [192718] [INFO] Worker exiting (pid: 192718)
+[2026-06-09 17:03:30 +0800] [192716] [INFO] Worker exiting (pid: 192716)
+[2026-06-09 12:03:30 +0300] [192714] [INFO] Shutting down: Master
+[2026-06-09 12:03:30 +0300] [192924] [INFO] Starting gunicorn 26.0.0
+[2026-06-09 12:03:30 +0300] [192924] [INFO] Listening at: unix:/var/www/cinema/run/gunicorn.sock (192924)
+[2026-06-09 12:03:30 +0300] [192924] [INFO] Using worker: sync
+[2026-06-09 12:03:30 +0300] [192925] [INFO] Booting worker with pid: 192925
+[2026-06-09 12:03:31 +0300] [192926] [INFO] Booting worker with pid: 192926
+[2026-06-09 12:03:31 +0300] [192927] [INFO] Booting worker with pid: 192927
+[2026-06-09 12:03:31 +0300] [192924] [INFO] Control socket listening at /root/.gunicorn/gunicorn.ctl
+[2026-06-09 12:03:45 +0300] [192924] [INFO] Handling signal: term
+[2026-06-09 17:03:45 +0800] [192925] [INFO] Worker exiting (pid: 192925)
+[2026-06-09 17:03:45 +0800] [192927] [INFO] Worker exiting (pid: 192927)
+[2026-06-09 17:03:45 +0800] [192926] [INFO] Worker exiting (pid: 192926)
+[2026-06-09 12:03:45 +0300] [192924] [INFO] Shutting down: Master
+[2026-06-09 12:03:46 +0300] [192956] [INFO] Starting gunicorn 26.0.0
+[2026-06-09 12:03:46 +0300] [192956] [INFO] Listening at: http://127.0.0.1:8001 (192956)
+[2026-06-09 12:03:46 +0300] [192956] [INFO] Using worker: sync
+[2026-06-09 12:03:46 +0300] [192957] [INFO] Booting worker with pid: 192957
+[2026-06-09 12:03:46 +0300] [192958] [INFO] Booting worker with pid: 192958
+[2026-06-09 12:03:46 +0300] [192959] [INFO] Booting worker with pid: 192959
+[2026-06-09 12:03:46 +0300] [192956] [INFO] Control socket listening at /root/.gunicorn/gunicorn.ctl
+[2026-06-09 12:33:50 +0300] [192956] [INFO] Handling signal: term
+[2026-06-09 17:33:50 +0800] [192958] [INFO] Worker exiting (pid: 192958)
+[2026-06-09 17:33:50 +0800] [192959] [INFO] Worker exiting (pid: 192959)
+[2026-06-09 17:33:50 +0800] [192957] [INFO] Worker exiting (pid: 192957)
+[2026-06-09 12:33:51 +0300] [192956] [INFO] Shutting down: Master
+[2026-06-09 12:33:52 +0300] [193746] [INFO] Starting gunicorn 26.0.0
+[2026-06-09 12:33:52 +0300] [193746] [INFO] Listening at: http://127.0.0.1:8001 (193746)
+[2026-06-09 12:33:52 +0300] [193746] [INFO] Using worker: sync
+[2026-06-09 12:33:52 +0300] [193747] [INFO] Booting worker with pid: 193747
+[2026-06-09 12:33:52 +0300] [193748] [INFO] Booting worker with pid: 193748
+[2026-06-09 12:33:52 +0300] [193749] [INFO] Booting worker with pid: 193749
+[2026-06-09 12:33:52 +0300] [193746] [INFO] Control socket listening at /root/.gunicorn/gunicorn.ctl

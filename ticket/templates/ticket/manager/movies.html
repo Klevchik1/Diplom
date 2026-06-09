@@ -48,7 +48,7 @@
     </div>
 </div>
 
-<!-- ФОРМА ФИЛЬТРАЦИИ — ОБНОВЛЕННАЯ ВЕРСТКА -->
+<!-- ФОРМА ФИЛЬТРАЦИИ -->
 <div class="filter-form">
     <form id="movie-filter-form" onsubmit="return false;">
         {% csrf_token %}
@@ -210,7 +210,6 @@
     box-sizing: border-box;
 }
 
-/* Для числовых полей и даты — чуть шире */
 .filter-group input[type="number"],
 .filter-group input[type="date"] {
     width: 140px;
@@ -237,7 +236,124 @@
     margin: 0;
 }
 
-/* Для узких экранов — горизонтальная прокрутка вместо переноса */
+/* Таблица фильмов - исправленная */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.movies-table {
+    width: 100%;
+    min-width: 800px;
+    border-collapse: collapse;
+}
+
+.movies-table th,
+.movies-table td {
+    padding: 12px 8px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.movies-table th {
+    background: rgba(255, 0, 0, 0.2);
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.movies-table td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Фиксированная ширина столбцов */
+.movies-table th:nth-child(1),
+.movies-table td:nth-child(1) {
+    width: 80px;
+    text-align: center;
+}
+
+.movies-table th:nth-child(2),
+.movies-table td:nth-child(2) {
+    width: auto;
+    min-width: 180px;
+}
+
+.movies-table th:nth-child(3),
+.movies-table td:nth-child(3) {
+    width: auto;
+    min-width: 140px;
+}
+
+.movies-table th:nth-child(4),
+.movies-table td:nth-child(4) {
+    width: auto;
+    min-width: 120px;
+}
+
+.movies-table th:nth-child(5),
+.movies-table td:nth-child(5) {
+    width: 70px;
+    text-align: center;
+}
+
+.movies-table th:nth-child(6),
+.movies-table td:nth-child(6) {
+    width: 60px;
+    text-align: center;
+}
+
+.movies-table th:nth-child(7),
+.movies-table td:nth-child(7) {
+    width: 100px;
+    text-align: center;
+}
+
+.movies-table th:nth-child(8),
+.movies-table td:nth-child(8) {
+    width: 100px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* Кнопки действий */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-edit, .btn-delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 12px;
+    transition: all 0.3s;
+}
+
+.btn-edit {
+    background: #2196F3;
+    color: white;
+}
+
+.btn-edit:hover {
+    background: #0b7dda;
+    transform: translateY(-1px);
+}
+
+.btn-delete {
+    background: #f44336;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #da190b;
+    transform: translateY(-1px);
+}
+
 @media (max-width: 1200px) {
     .filter-row {
         flex-wrap: nowrap;
@@ -250,14 +366,8 @@
     .filter-group select {
         width: 150px;
     }
-
-    .filter-group input[type="number"],
-    .filter-group input[type="date"] {
-        width: 130px;
-    }
 }
 
-/* Светлая тема */
 [data-theme="light"] .filter-group label {
     color: #b8860b;
 }
@@ -269,11 +379,20 @@
     border-color: #cc0000;
     color: #1a1a1a;
 }
+
+[data-theme="light"] .movies-table td {
+    border-bottom-color: #ddd;
+}
+
+[data-theme="light"] .movies-table th {
+    background: rgba(204, 0, 0, 0.1);
+}
 </style>
 {% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'ticket/css/manager/api-import.css' %}">
+<link rel="stylesheet" href="{% static 'ticket/css/manager/manager-forms.css' %}">
 {% endblock %}
 
 {% block extra_js %}

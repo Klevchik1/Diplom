@@ -16,13 +16,11 @@ let isFiltering = false;
 
 document.addEventListener('DOMContentLoaded', function() {
     initMovieFilters();
-    initMoviePagination();
     loadFiltersFromURL();
     updateFilterValuesFromURL();
 });
 
 function initMovieFilters() {
-    // Поиск по названию (с debounce)
     const searchInput = document.getElementById('movie-search');
     if (searchInput) {
         searchInput.addEventListener('input', debounce(function() {
@@ -33,7 +31,6 @@ function initMovieFilters() {
         }, 500));
     }
 
-    // Фильтр по жанру
     const genreSelect = document.getElementById('filter-genre');
     if (genreSelect) {
         genreSelect.addEventListener('change', function() {
@@ -44,7 +41,6 @@ function initMovieFilters() {
         });
     }
 
-    // Фильтр по возрастному рейтингу
     const ageRatingSelect = document.getElementById('filter-age-rating');
     if (ageRatingSelect) {
         ageRatingSelect.addEventListener('change', function() {
@@ -55,7 +51,6 @@ function initMovieFilters() {
         });
     }
 
-    // Фильтр по стране
     const countrySelect = document.getElementById('filter-country');
     if (countrySelect) {
         countrySelect.addEventListener('change', function() {
@@ -66,7 +61,6 @@ function initMovieFilters() {
         });
     }
 
-    // Фильтр по году (от)
     const yearMinInput = document.getElementById('filter-year-min');
     if (yearMinInput) {
         yearMinInput.addEventListener('change', function() {
@@ -77,7 +71,6 @@ function initMovieFilters() {
         });
     }
 
-    // Фильтр по году (до)
     const yearMaxInput = document.getElementById('filter-year-max');
     if (yearMaxInput) {
         yearMaxInput.addEventListener('change', function() {
@@ -88,17 +81,13 @@ function initMovieFilters() {
         });
     }
 
-    // Кнопка сброса фильтров
     const resetBtn = document.getElementById('reset-filters');
     if (resetBtn) {
         resetBtn.addEventListener('click', function() {
             resetFilters();
         });
     }
-}
 
-function initMoviePagination() {
-    // Пагинация через делегирование (обработчик на контейнере)
     const paginationContainer = document.getElementById('movies-pagination');
     if (paginationContainer) {
         paginationContainer.addEventListener('click', function(e) {
@@ -109,7 +98,6 @@ function initMoviePagination() {
                     currentFilters.page = parseInt(page);
                     applyFilters();
                     updateURL();
-                    // Прокрутка к таблице
                     document.querySelector('.table-container')?.scrollIntoView({ behavior: 'smooth' });
                 }
             }
@@ -121,10 +109,8 @@ function applyFilters() {
     if (isFiltering) return;
     isFiltering = true;
 
-    // Показываем индикатор загрузки
     showLoadingIndicator();
 
-    // Собираем данные для отправки
     const formData = new FormData();
     formData.append('search', currentFilters.search);
     formData.append('genre', currentFilters.genre);
@@ -156,7 +142,6 @@ function applyFilters() {
     })
     .finally(() => {
         isFiltering = false;
-        hideLoadingIndicator();
     });
 }
 
@@ -179,25 +164,27 @@ function updateMoviesTable(data) {
     for (const movie of data.movies) {
         html += `
             <tr>
-                <td>
-                    ${movie.poster_url ? 
-                        `<img src="${movie.poster_url}" alt="${escapeHtml(movie.title)}" class="poster-preview">` : 
+                <td class="poster-cell">
+                    ${movie.poster_url ?
+                        `<img src="${movie.poster_url}" alt="${escapeHtml(movie.title)}" class="poster-preview">` :
                         '<span class="no-poster">—</span>'
                     }
                 </td>
-                <td><strong>${escapeHtml(movie.title)}</strong></td>
-                <td>
+                <td class="title-cell"><strong>${escapeHtml(movie.title)}</strong></td>
+                <td class="genres-cell">
                     ${movie.genres.map(g => `<span class="genre-tag">${escapeHtml(g)}</span>`).join('')}
                 </td>
-                <td>
+                <td class="countries-cell">
                     ${movie.countries.map(c => `<span class="country-tag">${escapeHtml(c)}</span>`).join('') || '—'}
                 </td>
-                <td>${movie.release_year}</td>
-                <td><span class="age-badge">${escapeHtml(movie.age_rating)}</span></td>
-                <td>${movie.duration_display}</td>
+                <td class="year-cell">${movie.release_year}</td>
+                <td class="age-cell"><span class="age-badge">${escapeHtml(movie.age_rating)}</span></td>
+                <td class="duration-cell">${movie.duration_display}</td>
                 <td class="actions-cell">
-                    <a href="/manager/movies/${movie.id}/edit/" class="btn btn-sm btn-warning">✏️</a>
-                    <a href="/manager/movies/${movie.id}/delete/" class="btn btn-sm btn-danger" data-confirm="Удалить фильм?">❌</a>
+                    <div class="action-buttons">
+                        <a href="/manager/movies/${movie.id}/edit/" class="btn btn-sm btn-warning">✏️</a>
+                        <a href="/manager/movies/${movie.id}/delete/" class="btn btn-sm btn-danger" data-confirm="Удалить фильм?">❌</a>
+                    </div>
                 </td>
             </tr>
         `;
@@ -215,15 +202,12 @@ function updatePagination(data) {
     }
 
     let html = '<div class="pagination">';
-
-    // Previous button
     if (data.has_previous) {
         html += `<button class="page-btn" data-page="${data.previous_page}">← Назад</button>`;
     } else {
         html += `<button class="page-btn disabled" disabled>← Назад</button>`;
     }
 
-    // Page numbers
     const startPage = Math.max(1, data.current_page - 2);
     const endPage = Math.min(data.total_pages, data.current_page + 2);
 
@@ -245,7 +229,6 @@ function updatePagination(data) {
         html += `<button class="page-btn" data-page="${data.total_pages}">${data.total_pages}</button>`;
     }
 
-    // Next button
     if (data.has_next) {
         html += `<button class="page-btn" data-page="${data.next_page}">Вперёд →</button>`;
     } else {
@@ -259,7 +242,6 @@ function updatePagination(data) {
 }
 
 function resetFilters() {
-    // Очищаем значения полей
     const searchInput = document.getElementById('movie-search');
     if (searchInput) searchInput.value = '';
 
@@ -278,7 +260,6 @@ function resetFilters() {
     const yearMaxInput = document.getElementById('filter-year-max');
     if (yearMaxInput) yearMaxInput.value = '';
 
-    // Сбрасываем состояние
     currentFilters = {
         search: '',
         genre: '',
@@ -291,63 +272,32 @@ function resetFilters() {
 
     applyFilters();
     updateURL();
-    updateFilterValuesFromURL();
 }
 
 function loadFiltersFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
-
-    const search = urlParams.get('search');
-    if (search) currentFilters.search = search;
-
-    const genre = urlParams.get('genre');
-    if (genre) currentFilters.genre = genre;
-
-    const age_rating = urlParams.get('age_rating');
-    if (age_rating) currentFilters.age_rating = age_rating;
-
-    const country = urlParams.get('country');
-    if (country) currentFilters.country = country;
-
-    const year_min = urlParams.get('year_min');
-    if (year_min) currentFilters.year_min = year_min;
-
-    const year_max = urlParams.get('year_max');
-    if (year_max) currentFilters.year_max = year_max;
-
-    const page = urlParams.get('page');
-    if (page && !isNaN(parseInt(page))) currentFilters.page = parseInt(page);
-
-    if (search || genre || age_rating || country || year_min || year_max || page !== 1) {
-        applyFilters();
-    }
+    if (urlParams.get('search')) currentFilters.search = urlParams.get('search');
+    if (urlParams.get('genre')) currentFilters.genre = urlParams.get('genre');
+    if (urlParams.get('age_rating')) currentFilters.age_rating = urlParams.get('age_rating');
+    if (urlParams.get('country')) currentFilters.country = urlParams.get('country');
+    if (urlParams.get('year_min')) currentFilters.year_min = urlParams.get('year_min');
+    if (urlParams.get('year_max')) currentFilters.year_max = urlParams.get('year_max');
+    if (urlParams.get('page')) currentFilters.page = parseInt(urlParams.get('page'));
+    applyFilters();
 }
 
 function updateFilterValuesFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
-
-    const searchInput = document.getElementById('movie-search');
-    if (searchInput && urlParams.get('search')) searchInput.value = urlParams.get('search');
-
-    const genreSelect = document.getElementById('filter-genre');
-    if (genreSelect && urlParams.get('genre')) genreSelect.value = urlParams.get('genre');
-
-    const ageRatingSelect = document.getElementById('filter-age-rating');
-    if (ageRatingSelect && urlParams.get('age_rating')) ageRatingSelect.value = urlParams.get('age_rating');
-
-    const countrySelect = document.getElementById('filter-country');
-    if (countrySelect && urlParams.get('country')) countrySelect.value = urlParams.get('country');
-
-    const yearMinInput = document.getElementById('filter-year-min');
-    if (yearMinInput && urlParams.get('year_min')) yearMinInput.value = urlParams.get('year_min');
-
-    const yearMaxInput = document.getElementById('filter-year-max');
-    if (yearMaxInput && urlParams.get('year_max')) yearMaxInput.value = urlParams.get('year_max');
+    if (urlParams.get('search')) document.getElementById('movie-search').value = urlParams.get('search');
+    if (urlParams.get('genre')) document.getElementById('filter-genre').value = urlParams.get('genre');
+    if (urlParams.get('age_rating')) document.getElementById('filter-age-rating').value = urlParams.get('age_rating');
+    if (urlParams.get('country')) document.getElementById('filter-country').value = urlParams.get('country');
+    if (urlParams.get('year_min')) document.getElementById('filter-year-min').value = urlParams.get('year_min');
+    if (urlParams.get('year_max')) document.getElementById('filter-year-max').value = urlParams.get('year_max');
 }
 
 function updateURL() {
     const urlParams = new URLSearchParams();
-
     if (currentFilters.search) urlParams.set('search', currentFilters.search);
     if (currentFilters.genre) urlParams.set('genre', currentFilters.genre);
     if (currentFilters.age_rating) urlParams.set('age_rating', currentFilters.age_rating);
@@ -355,14 +305,13 @@ function updateURL() {
     if (currentFilters.year_min) urlParams.set('year_min', currentFilters.year_min);
     if (currentFilters.year_max) urlParams.set('year_max', currentFilters.year_max);
     if (currentFilters.page > 1) urlParams.set('page', currentFilters.page);
-
     const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
     window.history.pushState({}, '', newUrl);
 }
 
 function showLoadingIndicator() {
     const tbody = document.getElementById('movies-table-body');
-    if (tbody && !isFiltering) {
+    if (tbody) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="8" class="text-center">
@@ -372,10 +321,6 @@ function showLoadingIndicator() {
             </tr>
         `;
     }
-}
-
-function hideLoadingIndicator() {
-    // Индикатор будет заменён при обновлении таблицы
 }
 
 function showError(message) {

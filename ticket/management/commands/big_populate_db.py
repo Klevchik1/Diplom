@@ -219,7 +219,6 @@ class Command(BaseCommand):
             # Теперь удаляем справочники
             ('Типов действий', ActionType),
             ('Типов модулей', ModuleType),
-            ('Временных регистраций', PendingRegistration),
             ('Запросов сброса пароля', PasswordResetRequest),
             ('Запросов смены email', EmailChangeRequest),
         ]

@@ -339,3 +339,15 @@ Missing session data in verify_email
 Missing session data in verify_email
 Invalid verification code entered for vladislavmix2020@gmail.com
 Invalid verification code entered for vladislavmix2020@gmail.com
+
+Error: Error: '/var/www/cinema/logs/gunicorn-error.log' isn't writable [PermissionError(13, 'Permission denied')]
+
+
+Error: Error: '/var/www/cinema/logs/gunicorn-error.log' isn't writable [PermissionError(13, 'Permission denied')]
+
+
+Error: Error: '/var/www/cinema/logs/gunicorn-error.log' isn't writable [PermissionError(13, 'Permission denied')]
+
+
+Error: Error: '/var/www/cinema/logs/gunicorn-error.log' isn't writable [PermissionError(13, 'Permission denied')]
+
