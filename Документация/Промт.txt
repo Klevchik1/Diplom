@@ -1,4 +1,4 @@
-🎬 КИНОТЕАТР «ПРЕМЬЕРА» — ПОЛНЫЙ ПРОМТ ДЛЯ РАЗРАБОТКИ
+🎬 КИНОТЕАТР «ПРЕМЬЕРА» — АКТУАЛЬНЫЙ ПРОМТ ДЛЯ РАЗРАБОТКИ
 📋 ОПИСАНИЕ ПРОЕКТА
 Название: Кинотеатр Премьера (Cinema Management System)
 
@@ -9,15 +9,18 @@
 Компонент	Технология
 Backend	Django 5.2
 База данных	PostgreSQL
-Платежи	YooKassa API
+Платежи	YooKassa API (yookassa==3.10.1)
 API для фильмов	Poiskkino.dev (kinopoisk.dev)
 SMTP	Яндекс.Почта
-PDF генерация	ReportLab
-QR-коды	qrcode + PIL
+PDF генерация	ReportLab 4.4.10
+QR-коды	qrcode 8.2 + pillow 12.1.1
 Веб-сервер	Gunicorn + Nginx
 Процесс-менеджер	Supervisor
 CI/CD	GitHub Actions
-Тесты	pytest + Selenium
+Тесты	pytest 8.0.0 + selenium 4.16.0
+Нагрузочное тестирование	locust 2.20.0
+Генерация данных	Faker 40.8.0
+Django REST	djangorestframework 3.16.1
 🖥️ СРЕДА РАЗРАБОТКИ
 Локальная разработка (Windows)
 Путь: C:\Users\Ivan\Desktop\Седых\cinema-management-system
@@ -28,7 +31,7 @@ Settings модуль: cinematic.settings.development
 
 DEBUG: True
 
-База данных: PostgreSQL на 192.168.0.10:5432 (БД: cinema, пользователь: postgres, пароль: 123)
+База данных: PostgreSQL на 192.168.0.5:5432 (БД: cinema, пользователь: postgres, пароль: 123)
 
 ALLOWED_HOSTS: ['*']
 
@@ -55,13 +58,15 @@ DEBUG: False
 
 Переменные окружения: /var/www/cinema/.env.production
 
-📁 СТРУКТУРА ПРОЕКТА
+Логи: /var/www/cinema/logs/django.log, gunicorn-access.log, gunicorn-error.log
 
-Dipom/                                               # Корень проекта (C:\Users\PC\Desktop\Dipom)
+📁 СТРУКТУРА ПРОЕКТА (АКТУАЛЬНАЯ)
+
+Diplom/                                               # Корень проекта (C:\Users\PC\Desktop\Diplom)
 │
 ├── .github/                                         # GitHub Actions (CI/CD)
 │   └── workflows/
-│       └── deploy.yml                               # ✅ Автоматический деплой на сервер
+│       └── deploy.yml                               # Автоматический деплой на сервер
 │
 ├── cinematic/                                       # Django project settings
 │   ├── settings/
@@ -71,7 +76,7 @@ Dipom/                                               # Корень проект
 │   │   └── production.py                            # Настройки для продакшена
 │   ├── __init__.py
 │   ├── asgi.py
-│   ├── urls.py                                       # Корневые URL-маршруты
+│   ├── urls.py                                      # Корневые URL-маршруты
 │   └── wsgi.py
 │
 ├── logs/                                            # Логи
@@ -88,26 +93,26 @@ Dipom/                                               # Корень проект
 │
 ├── ticket/                                          # ОСНОВНОЕ ПРИЛОЖЕНИЕ DJANGO
 │   │
-│   ├── fonts/                                       # Шрифты для PDF
+│   ├── fonts/                                       # Шрифты для PDF (DejaVuSans)
 │   │
 │   ├── management/
 │   │   └── commands/
 │   │       ├── posters/                             # Тестовые постеры
 │   │       ├── __init__.py
-│   │       ├── auto_update_ticket_statuses.py
-│   │       ├── big_populate_db.py
-│   │       ├── cleanup_expired_registrations.py
-│   │       ├── create_manager.py
-│   │       ├── createsuperuser_custom.py
-│   │       ├── full_import.py
-│   │       ├── import_kinopoisk_movies.py
-│   │       ├── init_tokens.py
-│   │       ├── populate_real_data.py
-│   │       ├── setup_manager_permissions.py
-│   │       ├── smart_import.py
-│   │       ├── test_cinema_system.py
-│   │       ├── test_import_countries.py
-│   │       └── test_web_interface.py
+│   │       ├── auto_update_ticket_statuses.py       # Обновление active→used
+│   │       ├── big_populate_db.py                   # Заполнение тестовыми данными
+│   │       ├── cleanup_expired_registrations.py     # Очистка просроченных регистраций
+│   │       ├── create_manager.py                    # Создание менеджера
+│   │       ├── createsuperuser_custom.py            # Создание суперпользователя
+│   │       ├── full_import.py                       # Полный импорт фильмов
+│   │       ├── import_kinopoisk_movies.py           # Устаревший импорт
+│   │       ├── init_tokens.py                       # Инициализация API токенов
+│   │       ├── populate_real_data.py                # Реальные данные
+│   │       ├── setup_manager_permissions.py         # Настройка прав Manager
+│   │       ├── smart_import.py                      # Умный импорт с ротацией токенов
+│   │       ├── test_import_countries.py             # Тест импорта стран/персон
+│   │       ├── test_cinema_system.py                # Функциональные тесты
+│   │       └── test_web_interface.py                # Selenium тесты
 │   │
 │   ├── migrations/
 │   │   ├── __init__.py
@@ -155,8 +160,8 @@ Dipom/                                               # Корень проект
 │   │       │   │   ├── home.css
 │   │       │   │   ├── movies.css
 │   │       │   │   ├── payment.css
-│   │       │   │   ├── payment-receipt_email.css      # ⚠️ В промте: payment_receipt_email.css
-│   │       │   │   ├── payment-result.css             # ⚠️ В промте: payment_result.css
+│   │       │   │   ├── payment_receipt_email.css
+│   │       │   │   ├── payment_result.css
 │   │       │   │   ├── profile.css
 │   │       │   │   ├── screenings.css
 │   │       │   │   └── theme-switcher.css
@@ -185,7 +190,7 @@ Dipom/                                               # Корень проект
 │   │               └── theme-switcher.js
 │   │
 │   ├── templates/
-│   │   ├── admin/
+│   │   ├── admin/                                    # Переопределение Django Admin
 │   │   │   ├── ticket/
 │   │   │   │   ├── apirequestlog/
 │   │   │   │   │   ├── change_list.html
@@ -205,7 +210,7 @@ Dipom/                                               # Корень проект
 │   │   │   └── login.html
 │   │   │
 │   │   └── ticket/
-│   │       ├── admin/                               # ✅ Кастомная админ-панель
+│   │       ├── admin/                               # Кастомная админ-панель
 │   │       │   ├── reports/
 │   │       │   │   ├── halls_report.html
 │   │       │   │   ├── movies_report.html
@@ -214,7 +219,7 @@ Dipom/                                               # Корень проект
 │   │       │   ├── export_logs.html
 │   │       │   └── reports.html
 │   │       │
-│   │       ├── admin_panel/                         # ✅ Полноценная админ-панель
+│   │       ├── admin_panel/                         # Полноценная админ-панель
 │   │       │   ├── action_type_form.html
 │   │       │   ├── action_types.html
 │   │       │   ├── actors.html
@@ -256,7 +261,7 @@ Dipom/                                               # Корень проект
 │   │       │   ├── user_edit.html
 │   │       │   └── users.html
 │   │       │
-│   │       ├── manager/                             # ✅ Панель менеджера
+│   │       ├── manager/                             # Панель менеджера
 │   │       │   ├── base_manager.html
 │   │       │   ├── dashboard.html
 │   │       │   ├── movie_confirm_delete.html
@@ -303,72 +308,63 @@ Dipom/                                               # Корень проект
 │   │
 │   ├── tests/
 │   │   ├── __init__.py
-│   │   ├── conftest.py                    # Фикстуры для pytest
+│   │   ├── conftest.py                               # Фикстуры для pytest
 │   │   ├── functional/
 │   │   │   ├── __init__.py
-│   │   │   ├── test_auth.py               # Регистрация, логин, верификация
-│   │   │   ├── test_booking.py            # Бронирование, оплата, возврат
-│   │   │   ├── test_access.py             # Проверка ролей (админ, менеджер)
-│   │   │   ├── test_api.py                # Импорт фильмов из Poiskkino.dev
-│   │   │   └── test_validation.py         # Валидация данных
+│   │   │   ├── test_auth.py                          # Регистрация, логин, верификация
+│   │   │   ├── test_booking.py                       # Бронирование, оплата, возврат
+│   │   │   ├── test_access.py                        # Проверка ролей
+│   │   │   ├── test_api.py                           # Импорт фильмов из Poiskkino.dev
+│   │   │   └── test_validation.py                    # Валидация данных
 │   │   ├── load/
 │   │   │   ├── __init__.py
-│   │   │   └── locust_server.py              # Конфиг для нагрузочного тестирования
+│   │   │   └── locust_server.py                      # Конфиг для нагрузочного тестирования
 │   │   └── utils/
 │   │       ├── __init__.py
-│   │       └── test_data.py               # Генераторы тестовых данных
+│   │       └── test_data.py                          # Генераторы тестовых данных
 │   │
 │   ├── __init__.py
-│   ├── admin.py
+│   ├── admin.py                                      # Регистрация моделей + LoggingModelAdmin
 │   ├── apps.py
-│   ├── email_utils.py
-│   ├── export_utils.py
-│   ├── forms.py
-│   ├── logging_utils.py
-│   ├── middleware.py
-│   ├── models.py
-│   ├── payment_service.py
-│   ├── pdf_utils.py
-│   ├── phone_utils.py
-│   ├── report_utils.py
+│   ├── email_utils.py                                # Отправка писем
+│   ├── export_utils.py                               # Экспорт логов в CSV/JSON/PDF
+│   ├── forms.py                                      # Все формы
+│   ├── logging_utils.py                              # Логирование операций
+│   ├── middleware.py                                 # ManagerAccessMiddleware
+│   ├── models.py                                     # Все модели
+│   ├── payment_service.py                            # YooKassa интеграция
+│   ├── pdf_utils.py                                  # Генерация PDF отчётов
+│   ├── phone_utils.py                                # Валидация телефонов
+│   ├── report_utils.py                               # Генерация отчётов
 │   ├── tests.py
-│   ├── tmdb_client.py
-│   ├── urls.py
-│   ├── utils.py
-│   ├── views.py
-│   ├── views_admin.py
-│   └── widgets.py
+│   ├── tmdb_client.py                                # Клиент Poiskkino.dev API
+│   ├── urls.py                                       # Полные URL-маршруты
+│   ├── utils.py                                      # PDF билетов, QR-коды
+│   ├── views.py                                      # Основные представления
+│   ├── views_admin.py                                # Админ-панель представления
+│   └── widgets.py                                    # Кастомные виджеты
 │
 ├── БД/                                              # Документация БД
 ├── Диаграммы/                                        # Диаграммы проекта
 ├── Документация/                                     # Документация
 ├── Прототипы/                                        # Прототипы интерфейсов
 │
+├── .env                                              # Переменные окружения (локально)
 ├── .gitignore
 ├── __init__.py
 ├── create_smart_schedule.py
 ├── Crontab_instructions.md
-├── deploy.sh
-├── gunicorn_config.py
+├── deploy.sh                                         # Скрипт деплоя
+├── gunicorn_config.py                                # Конфиг Gunicorn
 ├── manage.py
+├── pytest.ini
 ├── README.md
-└── requirements.txt
+└── requirements.txt                                  # Зависимости
 
-🔍 ВАЖНЫЕ ОСОБЕННОСТИ СТРУКТУРЫ
-ticket/static/ticket/ — статика разделена на три подкатегории: admin/, manager/, user/
-
-ticket/templates/ticket/ — содержит как пользовательские шаблоны, так и поддиректории admin/ и manager/
-
-ticket/templates/admin/ticket/ — кастомные шаблоны для админ-панели Django (override стандартных)
-
-management/commands/posters/ — содержит тестовые изображения постеров для big_populate_db.py
-
-fonts/ — шрифты DejaVuSans для корректного отображения кириллицы в PDF
-
+📊 МОДЕЛИ ДАННЫХ (ПОЛНОЕ ОПИСАНИЕ)
 Пользователи и аутентификация
 Модель	Поля	Особенности
-User (AbstractUser)	email (USERNAME_FIELD), name, surname, number, is_email_verified, email_verification_code, email_verification_code_sent_at	Логирование создания/обновления, метод requires_email_verification()
-PendingRegistration	email, name, surname, number, password, verification_code, created_at	Истекает через 30 минут
+User (AbstractUser)	email (USERNAME_FIELD), name, surname, number, is_email_verified, email_verification_code, email_verification_code_sent_at, created_at, updated_at	Логирование создания/обновления, метод requires_email_verification(), верификация через 6-значный код (10 минут)
 PasswordResetRequest	user, reset_code, is_used, expires_at	6-значный код, 30 минут
 EmailChangeRequest	user, new_email, verification_code, is_used, expires_at	Смена email с подтверждением
 Кинотеатральная логика
@@ -386,29 +382,25 @@ Screening	movie, hall, start_time, end_time (авто), ticket_price (авто)	
 Билеты и платежи
 Модель	Поля	Особенности
 TicketStatus	code, name, description, is_active, can_be_refunded	Коды: active, refunded, used, archived
-TicketGroup	group_uuid (UUID), user, screening, purchase_date, total_amount, tickets_count, payment_status (pending/paid/canceled), expires_at	Группировка билетов одной покупки, метод request_refund()
+TicketGroup	group_uuid (UUID), user, screening, purchase_date, total_amount, tickets_count, payment_status (pending_payment/paid/canceled), expires_at	Группировка билетов одной покупки, метод request_refund()
 Ticket	user, screening, seat, qr_code, price, refund_requested_at, refund_processed_at, status, ticket_group	Валидация занятых мест, метод can_be_refunded() (≥30 мин до сеанса), авто-обновление active → used после сеанса
 Payment	ticket_group (OneToOne), payment_id, idempotence_key, status (pending/waiting_for_capture/succeeded/canceled), amount, currency, payment_method, card_last4, card_type, confirmation_url, receipt_url, refund_id, refund_status, expires_at	Связь с YooKassa
 Системные модели
 Модель	Поля	Особенности
-ActionType	code, name, description	CREATE, UPDATE, DELETE, VIEW, EXPORT, LOGIN, LOGOUT, BACKUP, REPORT
-ModuleType	code, name, description	USERS, MOVIES, HALLS, SCREENINGS, TICKETS, REPORTS, BACKUPS, SYSTEM, AUTH
+ActionType	code, name, description	CREATE, UPDATE, DELETE, VIEW, EXPORT, LOGIN, LOGOUT, BACKUP, REPORT, API_REQUEST
+ModuleType	code, name, description	USERS, MOVIES, HALLS, SCREENINGS, TICKETS, REPORTS, BACKUPS, SYSTEM, AUTH, API_IMPORT
 OperationLog	user, action_type, module_type, description, ip_address, user_agent, object_id, object_repr, additional_data (JSON), timestamp	Полное логирование операций
-PriceHistory	screening, old_price, new_price, changed_by, changed_at, reason	История изменения цен на сеансы
 API и импорт
 Модель	Поля	Особенности
 APIToken	token, label, is_active, daily_limit (200), requests_today, last_reset_date, total_requests	Ротация токенов, авто-сброс счётчика в полночь
-APIRequestLog	token, endpoint, params (JSON), status_code, success, response_size, duration_ms, error_message	Логирование всех запросов к Poiskkino.dev
-ImportTask	import_type, status, pages_limit, movies_per_page, year_from, year_to, import_posters, import_persons, skip_existing, current_page, current_movie_index, total_processed, movies_new, movies_updated, persons_created, genres_created, countries_created, posters_downloaded, api_requests_made, errors_count	Сохранение прогресса импорта
 ImportCache	cache_type (movie/person/genre/country), external_id, internal_id, data (JSON), expires_at	Кэширование импортированных данных
-Report	—	Модель-заглушка для отчётов в админке
 🔧 КЛЮЧЕВЫЕ ФУНКЦИОНАЛЬНОСТИ
 Ядро системы
 Бронирование мест — выбор мест через интерактивную схему зала (JS + AJAX)
 
 Групповые покупки — TicketGroup с UUID, общая оплата через YooKassa
 
-PDF билеты с QR-кодом — generate_enhanced_ticket_pdf() (улучшенная версия с DejaVu шрифтами)
+PDF билеты с QR-кодом — generate_enhanced_ticket_pdf() (DejaVu шрифты)
 
 Расчёт цен — base_price × price_coefficient × time_multiplier → округление до целого
 
@@ -420,8 +412,9 @@ YooKassa — создание платежей, чеки (54-ФЗ), возвра
 Роль	Доступ	URL
 Обычный пользователь	Регистрация, покупка билетов, просмотр профиля, возврат	/, /profile/, /movie/*, /screening/*
 Менеджер (группа Manager или is_staff)	Управление фильмами, сеансами, статистика, импорт из API	/manager/*
-Администратор (is_superuser)	Полный доступ к админ-панели Django + кастомные отчёты	/admin/*
-Middleware	ManagerAccessMiddleware — проверка доступа к /manager/*	—
+Администратор (is_superuser)	Полный доступ к админ-панели Django + кастомные отчёты	/admin/*, /admin-panel/*
+Middleware: ManagerAccessMiddleware — проверка доступа к /manager/*
+
 Безопасность и аутентификация
 Аутентификация по email (USERNAME_FIELD = 'email')
 
@@ -462,17 +455,16 @@ YooKassa	payment_service.py	Платежи, чеки, возвраты, webhook	
 # Django
 SECRET_KEY=your-super-secret-key-here-change-it
 DEBUG=False
-ALLOWED_HOSTS=168.222.140.166,localhost,127.0.0.1
 
-# База данных
-DB_NAME=cinema_db
-DB_USER=cinema_user
+# База данных (локальная)
+DB_NAME=cinema
+DB_USER=postgres
 DB_PASSWORD=123
-DB_HOST=localhost
+DB_HOST=192.168.0.5
 DB_PORT=5432
 
 # API токены (все ваши токены через запятую)
-KINOPOISK_API_KEYS=M7FHXBY-VVX4HPR-H973SKW-2NDZHBZ,T0N8T7B-28ZM37Q-Q44WNP4-YEKWJT5,F4TMA9R-YVRM194-PMXFCZ5-953EH97,...
+KINOPOISK_API_KEYS=M7FHXBY-VVX4HPR-H973SKW-2NDZHBZ,T0N8T7B-28ZM37Q-Q44WNP4-YEKWJT5,...
 
 # Email (Яндекс)
 EMAIL_HOST_USER=Klevch1k@yandex.ru
@@ -481,7 +473,6 @@ EMAIL_HOST_PASSWORD=your_yandex_password
 # YooKassa
 YOOKASSA_SHOP_ID=1343453
 YOOKASSA_SECRET_KEY=test_your_test_key
-
 .env.production (сервер)
 # Django
 DJANGO_ENVIRONMENT=production
@@ -495,7 +486,7 @@ DB_HOST=localhost
 DB_PORT=5432
 
 # API токены
-KINOPOISK_API_KEY=M7FHXBY-VVX4HPR-H973SKW-2NDZHBZ,T0N8T7B-28ZM37Q-Q44WNP4-YEKWJT5,F4TMA9R-YVRM194-PMXFCZ5-953EH97,...
+KINOPOISK_API_KEY=M7FHXBY-VVX4HPR-H973SKW-2NDZHBZ,T0N8T7B-28ZM37Q-Q44WNP4-YEKWJT5,...
 
 # Email (Яндекс)
 EMAIL_HOST_USER=Klevch1k@yandex.ru
@@ -511,13 +502,12 @@ CSRF_TRUSTED_ORIGINS=https://cinemapremiere.online,https://www.cinemapremiere.on
 SECURE_SSL_REDIRECT=True
 SESSION_COOKIE_SECURE=True
 CSRF_COOKIE_SECURE=True
-
 Ключевые отличия окружений
 Параметр	Локальная разработка	Продакшен
 Settings модуль	cinematic.settings.development	cinematic.settings.production
 DEBUG	True	False
 ALLOWED_HOSTS	['*']	cinemapremiere.online, 168.222.140.166, localhost
-База данных	192.168.0.10:5432 (cinema/postgres/123)	localhost:5432 (cinema_db/cinema_user/123)
+База данных	192.168.0.5:5432	localhost:5432
 SSL	False	True (SECURE_SSL_REDIRECT)
 Логирование	Консоль	/var/www/cinema/logs/django.log
 Загрузка .env	.env	.env.production
@@ -539,7 +529,6 @@ python manage.py big_populate_db --interactive
 
 # Импорт фильмов из API
 python manage.py smart_import --pages=3 --year-from=2024
-
 Деплой на сервер (скрипт deploy.sh)
 #!/bin/bash
 echo "🚀 Деплой на сервер..."
@@ -562,31 +551,6 @@ systemctl reload nginx
 
 echo "✅ Деплой завершен!"
 ENDSSH
-
-GitHub Actions (deploy.yml)
-name: Deploy to Server
-on:
-  push:
-    branches: [main, master]
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to VPS
-        uses: appleboy/ssh-action@master
-        with:
-          host: 168.222.140.166
-          username: root
-          password: ${{ secrets.SERVER_PASSWORD }}
-          script: |
-            cd /var/www/cinema
-            source venv/bin/activate
-            git pull origin main
-            python manage.py migrate --noinput
-            python manage.py collectstatic --noinput
-            supervisorctl restart cinema
-            systemctl reload nginx
-
 Gunicorn конфиг (gunicorn_config.py)
 bind = "unix:/var/www/cinema/run/gunicorn.sock"
 workers = 3
@@ -597,8 +561,7 @@ pidfile = "/var/www/cinema/run/gunicorn.pid"
 accesslog = "/var/www/cinema/logs/gunicorn-access.log"
 errorlog = "/var/www/cinema/logs/gunicorn-error.log"
 raw_env = ['DJANGO_SETTINGS_MODULE=cinematic.settings.production']
-
-Supervisor конфиг (ожидается)
+Supervisor конфиг
 [program:cinema]
 command=/var/www/cinema/venv/bin/gunicorn -c /var/www/cinema/gunicorn_config.py cinematic.wsgi:application
 directory=/var/www/cinema
@@ -606,45 +569,49 @@ user=root
 autostart=true
 autorestart=true
 redirect_stderr=true
-
-MANAGEMENT-КОМАНДЫ
+🛠️ MANAGEMENT-КОМАНДЫ
 Команда	Назначение	Пример
 auto_update_ticket_statuses	Обновление active → used через 30 мин после сеанса	python manage.py auto_update_ticket_statuses
 big_populate_db	Заполнение тестовыми данными (Faker, интерактивно)	python manage.py big_populate_db --interactive
-cleanup_expired_registrations	Очистка просроченных PendingRegistration	python manage.py cleanup_expired_registrations
+cleanup_expired_registrations	Очистка просроченных регистраций	python manage.py cleanup_expired_registrations
 create_manager	Создание менеджера (группа Manager)	python manage.py create_manager --email manager@example.com
 createsuperuser_custom	Создание суперпользователя с верификацией	python manage.py createsuperuser_custom
-full_import	Полный импорт фильмов (страны, персоны, постеры, сеансы)	python manage.py full_import --pages=5 --screening-days=30
-import_kinopoisk_movies	Устаревшая версия импорта (без ротации токенов)	python manage.py import_kinopoisk_movies --pages=3
+full_import	Полный импорт фильмов (страны, персоны, постеры)	python manage.py full_import --pages=5
+import_kinopoisk_movies	Устаревшая версия импорта	python manage.py import_kinopoisk_movies --pages=3
 init_tokens	Инициализация API токенов Poiskkino.dev	python manage.py init_tokens --token=XXX --label=Основной
+populate_real_data	Заполнение реальными данными	python manage.py populate_real_data --users=10 --clear
 setup_manager_permissions	Настройка прав группы Manager	python manage.py setup_manager_permissions
-smart_import	Умный импорт (ротация токенов, кэш, прогресс, контроль лимитов)	python manage.py smart_import --type=movies --pages=3 --year-from=2024
+smart_import	Умный импорт (ротация токенов, кэш, прогресс)	python manage.py smart_import --type=movies --pages=3 --year-from=2024
+test_import_countries	Тест импорта стран и персон	python manage.py test_import_countries --pages=1 --limit=3
 test_cinema_system	Функциональные тесты (pytest)	python manage.py test_cinema_system
-test_import_countries	Тест импорта стран и персон (даты рождения, страны)	python manage.py test_import_countries --pages=1 --limit=3
 test_web_interface	Selenium тесты веб-интерфейса	python manage.py test_web_interface
 🧪 ТЕСТИРОВАНИЕ
-Функциональные тесты (test_cinema_system.py — pytest)
+Функциональные тесты (pytest)
 ID теста	Название	Описание
-FUNC-POS-01	Успешная регистрация	Создание пользователя через PendingRegistration
+FUNC-POS-01	Успешная регистрация	Создание пользователя через систему
 FUNC-POS-02	Бронирование и платеж	Создание TicketGroup, Ticket, PDF генерация
 FUNC-POS-03	Возврат билета	Изменение статуса active → refunded
 FUNC-NEG-01	Занятое место	ValidationError при повторном бронировании
 FUNC-NEG-02	Доступ к админке	PermissionDenied для обычного пользователя
 FUNC-NEG-03	Доступ менеджера	Успешный доступ к /manager/*
 FUNC-API-01	Поиск фильма	API запрос к Poiskkino.dev
-Веб-тесты (test_web_interface.py — Selenium)
-Полный пользовательский путь: регистрация → верификация → выбор фильма → выбор места → оплата
-
+Нагрузочное тестирование (Locust)
+locust -f ticket/tests/load/locust_server.py \
+  --host=http://cinemapremiere.online \
+  --headless \
+  --users=50 \
+  --spawn-rate=10 \
+  --run-time=5m \
+  --html=load_test_report.html
 Запуск тестов
 # Функциональные тесты
-python test_cinema_system.py
+pytest ticket/tests/functional/ -v
 
-# Веб-тесты (требуется запущенный сервер)
-python test_web_interface.py
+# Нагрузочное тестирование
+locust -f ticket/tests/load/locust_server.py --host=http://localhost:8000
 
 # Через Django manage
 python manage.py test_cinema_system
-
 📝 ПРИМЕЧАНИЯ ДЛЯ РАЗРАБОТЧИКОВ
 Принципы разработки
 Анализ перед изменением — всегда проверять models.py, существующие views и шаблоны
@@ -680,7 +647,6 @@ systemctl reload nginx
 
 # Проверка БД
 sudo -u postgres psql -d cinema_db
-
 API Endpoints (для отладки)
 Endpoint	Метод	Назначение
 /manager/api/search-movie/	GET	Поиск фильма по названию
@@ -708,7 +674,7 @@ Django Debug Toolbar — только для локальной разработ
 
 Система промокодов и скидок
 
-Личный кабинет с историей покупок и возможностью возврата онлайн
+Личный кабинет — с историей покупок и возможностью возврата онлайн
 
 📞 КОНТАКТЫ И РЕСУРСЫ
 Сервер: 168.222.140.166
@@ -721,3 +687,37 @@ API Poiskkino.dev: https://api.poiskkino.dev
 
 YooKassa документация: https://yookassa.ru/developers/api
 
+📦 АКТУАЛЬНЫЕ ЗАВИСИМОСТИ (requirements.txt)
+asgiref==3.11.1
+certifi==2026.2.25
+charset-normalizer==3.4.4
+colorama==0.4.6
+Deprecated==1.3.1
+distro==1.9.0
+Django==5.2.11
+django-qrcode==0.3
+django-rest-framework==0.1.0
+djangorestframework==3.16.1
+dotenv==0.9.9
+Faker==40.8.0
+idna==3.11
+netaddr==1.3.0
+pillow==12.1.1
+psycopg2==2.9.11
+python-dotenv==1.2.2
+qrcode==8.2
+reportlab==4.4.10
+requests==2.32.5
+sqlparse==0.5.5
+tzdata==2025.3
+urllib3==2.6.3
+wrapt==2.1.2
+yookassa==3.10.1
+django-crontab==0.7.1
+pytest==8.0.0
+pytest-django==4.7.0
+pytest-benchmark==4.0.0
+locust==2.20.0
+selenium==4.16.0
+webdriver-manager==4.0.1
+tqdm
