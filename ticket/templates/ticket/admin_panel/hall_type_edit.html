@@ -21,13 +21,14 @@
             
             <div class="form-group">
                 <label>Базовая цена (₽) *</label>
-                <input type="number" name="base_price" step="1" value="{{ hall_type.base_price|default:'' }}" class="form-control" required>
+                <input type="number" name="base_price" step="1" value="{{ hall_type.base_price }}" class="form-control" required>
+                <small>Текущая базовая цена: <strong>{{ hall_type.base_price }} ₽</strong></small>
             </div>
 
             <div class="form-group">
                 <label>Коэффициент *</label>
-                <input type="number" name="price_coefficient" step="0.1" min="0.1" max="9.99" value="{{ hall_type.price_coefficient|default:'1.0' }}" class="form-control" required>
-                <small>⚠️ Допустимые значения: от 0.1 до 9.99. Влияет на итоговую цену.</small>
+                <input type="number" name="price_coefficient" step="0.1" min="0.1" max="9.99" value="{{ hall_type.price_coefficient }}" class="form-control" required>
+                <small>⚠️ Допустимые значения: от 0.1 до 9.99. Текущий коэффициент: <strong>{{ hall_type.price_coefficient }}</strong></small>
             </div>
             
             <div class="form-group">

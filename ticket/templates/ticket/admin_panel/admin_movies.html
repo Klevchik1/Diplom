@@ -171,7 +171,7 @@
                 <th>Жанры</th>
                 <th>Страны</th>
                 <th style="width: 80px;">Сеансов</th>
-                <th style="width: 120px;">Действия</th>
+                <th style="width: 120px; text-align: center;">Действия</th>
             </tr>
         </thead>
         <tbody>
@@ -214,8 +214,8 @@
                 <td>
                     <span class="screenings-count">{{ movie.screenings.count }}</span>
                 </td>
-                <td class="actions-cell" style="white-space: nowrap; vertical-align: middle;">
-                    <div style="display: flex; gap: 6px; align-items: center; justify-content: center; min-height: 100%;">
+                <td style="vertical-align: middle; text-align: center;">
+                    <div style="display: inline-flex; gap: 6px; align-items: center; justify-content: center;">
                         <a href="{% url 'admin_panel_movie_edit' movie.id %}" class="btn-icon edit" title="Редактировать">✏️</a>
                         <form method="post" action="{% url 'admin_panel_movie_delete' movie.id %}" style="display:inline; margin:0;"
                               onsubmit="return confirm('Удалить фильм «{{ movie.title }}»? Это действие нельзя отменить.')">
@@ -395,13 +395,6 @@
     font-size: 12px;
 }
 
-.action-buttons {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    justify-content: center;
-}
-
 .genre-list, .country-list {
     display: flex;
     flex-wrap: wrap;
@@ -411,6 +404,9 @@
 .movie-row:hover {
     background: var(--bg-secondary);
 }
+
+.btn-icon.edit:hover { color: var(--warning-color); }
+.btn-icon.delete:hover { color: var(--danger-color); }
 </style>
 
 <script>

@@ -43,7 +43,7 @@
                 <th style="width: 80px;">Лимит</th>
                 <th style="width: 100px;">Всего запросов</th>
                 <th style="width: 120px;">Дата добавления</th>
-                <th style="width: 140px;">Действия</th>  <!-- Увеличили ширину -->
+                <th style="width: 140px; text-align: center;">Действия</th>
             </tr>
         </thead>
         <tbody>
@@ -68,8 +68,8 @@
                 <td>{{ token.daily_limit }}</td>
                 <td>{{ token.total_requests }}</td>
                 <td class="nowrap">{{ token.created_at|date:"d.m.Y" }}</td>
-                <td class="actions-cell" style="white-space: nowrap;">
-                    <div style="display: flex; gap: 6px; align-items: center; justify-content: center;">
+                <td style="vertical-align: middle; text-align: center;">
+                    <div style="display: flex; gap: 6px; align-items: center; justify-content: center; min-height: 100%;">
                         <a href="{% url 'admin_panel_api_token_edit' token.id %}" class="btn-icon edit" title="Редактировать">✏️</a>
                         <form method="post" action="{% url 'admin_panel_api_token_delete' token.id %}" style="display:inline; margin:0;"
                               onsubmit="return confirm('Удалить токен {{ token.label }}?')">
@@ -118,7 +118,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Автоматическая отправка формы при изменении select
     const activeFilter = document.getElementById('active-filter');
     if (activeFilter) {
         activeFilter.addEventListener('change', function() {
@@ -126,7 +125,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Задержка для поиска (debounce)
     const searchInput = document.getElementById('search-input');
     let timeout = null;
     if (searchInput) {
