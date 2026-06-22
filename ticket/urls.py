@@ -40,6 +40,7 @@ urlpatterns = [
     path('manager/movies/add/', views.manager_movie_add, name='manager_movie_add'),
     path('manager/movies/<int:movie_id>/edit/', views.manager_movie_edit, name='manager_movie_edit'),
     path('manager/movies/<int:movie_id>/delete/', views.manager_movie_delete, name='manager_movie_delete'),
+    path('manager/api/movie/<int:movie_id>/can-delete/', views.api_movie_can_delete, name='api_movie_can_delete'),
     path('manager/screenings/', views.manager_screenings, name='manager_screenings'),
     path('manager/screenings/add/', views.manager_screening_add, name='manager_screening_add'),
     path('manager/screenings/<int:screening_id>/edit/', views.manager_screening_edit, name='manager_screening_edit'),

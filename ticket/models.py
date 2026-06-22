@@ -466,6 +466,24 @@ class Movie(models.Model):
             return f"{hours} ч {minutes} мин"
         return f"{minutes} мин"
 
+    def can_delete(self):
+        """Проверяет, можно ли удалить фильм (нет ли сеансов)"""
+        return not self.screenings.exists()
+
+    def get_screenings_info(self):
+        """Возвращает информацию о сеансах фильма"""
+        screenings = self.screenings.all().select_related('hall').order_by('start_time')
+        return [
+            {
+                'id': s.id,
+                'hall_name': s.hall.name,
+                'start_time': s.start_time.strftime('%d.%m.%Y %H:%M'),
+                'tickets_count': s.tickets.count(),
+                'has_tickets': s.tickets.exists()
+            }
+            for s in screenings
+        ]
+
     class Meta:
         verbose_name = "Фильм"
         verbose_name_plural = "Фильмы"

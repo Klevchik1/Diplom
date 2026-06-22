@@ -2242,9 +2242,59 @@ def manager_movie_edit(request, movie_id):
 
 @user_passes_test(is_manager, login_url='login')
 def manager_movie_delete(request, movie_id):
-    """Удаление фильма менеджером"""
+    """Удаление фильма менеджером с проверкой наличия сеансов"""
     movie = get_object_or_404(Movie, pk=movie_id)
 
+    # Проверяем, есть ли сеансы у фильма
+    screenings_count = movie.screenings.count()
+    has_screenings = screenings_count > 0
+
+    # Если есть сеансы - показываем предупреждение с деталями
+    if has_screenings:
+        # Получаем информацию о сеансах
+        screenings_info = movie.get_screenings_info()
+
+        # Проверяем, есть ли сеансы с купленными билетами
+        has_tickets = any(s['has_tickets'] for s in screenings_info)
+
+        if request.method == 'POST':
+            # Если пользователь подтвердил удаление, но у нас есть сеансы
+            # Блокируем удаление и показываем сообщение
+            messages.error(
+                request,
+                f'❌ Невозможно удалить фильм "{movie.title}". '
+                f'У него есть {screenings_count} сеансов. '
+                f'Сначала удалите все сеансы этого фильма.'
+            )
+
+            # Логируем попытку удаления с сеансами
+            OperationLogger.log_operation(
+                request=request,
+                action_type='OTHER',
+                module_type='MOVIES',
+                description=f'Блокировка удаления фильма "{movie.title}" (есть {screenings_count} сеансов)',
+                object_id=movie.pk,
+                object_repr=str(movie),
+                additional_data={
+                    'screenings_count': screenings_count,
+                    'has_tickets': has_tickets,
+                    'attempted_delete': True
+                }
+            )
+
+            return redirect('manager_movies')
+
+        # GET запрос - показываем страницу с детальным предупреждением
+        return render(request, 'ticket/manager/movie_confirm_delete.html', {
+            'movie': movie,
+            'has_screenings': True,
+            'screenings_count': screenings_count,
+            'screenings_info': screenings_info,
+            'has_tickets': has_tickets,
+            'can_delete': False,
+        })
+
+    # Если сеансов нет - обычное удаление
     if request.method == 'POST':
         title = movie.title
 
@@ -2258,10 +2308,56 @@ def manager_movie_delete(request, movie_id):
         )
 
         movie.delete()
-        messages.success(request, f'Фильм "{title}" успешно удален.')
+        messages.success(request, f'✅ Фильм "{title}" успешно удален.')
         return redirect('manager_movies')
 
-    return render(request, 'ticket/manager/movie_confirm_delete.html', {'movie': movie})
+    # GET запрос для фильма без сеансов - обычное подтверждение
+    return render(request, 'ticket/manager/movie_confirm_delete.html', {
+        'movie': movie,
+        'has_screenings': False,
+        'screenings_count': 0,
+        'screenings_info': [],
+        'has_tickets': False,
+        'can_delete': True,
+    })
+
+
+@user_passes_test(is_manager, login_url='login')
+def api_movie_can_delete(request, movie_id):
+    """API для проверки, можно ли удалить фильм"""
+    movie = get_object_or_404(Movie, pk=movie_id)
+
+    screenings_count = movie.screenings.count()
+    has_screenings = screenings_count > 0
+
+    if has_screenings:
+        screenings_info = movie.get_screenings_info()
+        has_tickets = any(s['has_tickets'] for s in screenings_info)
+
+        return JsonResponse({
+            'can_delete': False,
+            'has_screenings': True,
+            'screenings_count': screenings_count,
+            'has_tickets': has_tickets,
+            'screenings': [
+                {
+                    'id': s['id'],
+                    'hall_name': s['hall_name'],
+                    'start_time': s['start_time'],
+                    'tickets_count': s['tickets_count'],
+                    'has_tickets': s['has_tickets']
+                }
+                for s in screenings_info
+            ]
+        })
+
+    return JsonResponse({
+        'can_delete': True,
+        'has_screenings': False,
+        'screenings_count': 0,
+        'has_tickets': False,
+        'screenings': []
+    })
 
 
 @user_passes_test(is_manager, login_url='login')
@@ -2865,7 +2961,7 @@ def api_screenings_filter(request):
             'movie_title': screening.movie.title,
             'movie_id': screening.movie.id,
             'hall_name': screening.hall.name,
-            'start_time': screening.start_time.strftime('%d.%m.%Y %H:%M'),
+            'start_time': timezone.localtime(screening.start_time).strftime('%d.%m.%Y %H:%M'),
             'ticket_price': float(screening.ticket_price),
             'tickets_count': screening.tickets.count(),
             'total_seats': total_seats,
