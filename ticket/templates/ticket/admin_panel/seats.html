@@ -38,7 +38,6 @@
                 <th style="width: 80px;">Ряд</th>
                 <th style="width: 80px;">Место</th>
                 <th style="width: 150px;">Дата создания</th>
-                <th style="width: 100px;">Действия</th>
             </tr>
         </thead>
         <tbody>
@@ -49,13 +48,6 @@
                 <td style="text-align: center;">{{ seat.row }}</td>
                 <td style="text-align: center;">{{ seat.number }}</td>
                 <td class="nowrap">{{ seat.created_at|date:"d.m.Y H:i" }}</td>
-                <td class="actions-cell">
-                    <form method="post" action="{% url 'admin_panel_seat_delete' seat.id %}" style="display:inline"
-                          onsubmit="return confirm('Удалить место {{ seat }}? Это действие нельзя отменить.')">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-icon delete" title="Удалить">🗑️</button>
-                    </form>
-                </td>
             </tr>
             {% empty %}
             <tr>

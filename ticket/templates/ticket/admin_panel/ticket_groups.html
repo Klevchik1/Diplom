@@ -65,8 +65,17 @@
                     {% endif %}
                 </td>
                 <td class="nowrap">{{ group.purchase_date|date:"d.m.Y H:i" }}</td>
-                <td class="actions-cell">
-                    <a href="{% url 'admin_panel_ticket_group_detail' group.group_uuid %}" class="btn-icon view" title="Просмотр">👁️</a>
+                <td class="actions-cell" style="white-space: nowrap;">
+                    <div style="display: flex; gap: 6px; align-items: center; justify-content: center;">
+                        <a href="{% url 'admin_panel_ticket_group_detail' group.group_uuid %}" class="btn-icon view" title="Просмотр">👁️</a>
+                        {% if group.payment_status != 'paid' %}
+                        <form method="post" action="{% url 'admin_panel_ticket_group_delete' group.id %}" style="display:inline; margin:0;"
+                              onsubmit="return confirm('Удалить группу билетов #{{ group.id }}? Это действие нельзя отменить.')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-icon delete" title="Удалить">🗑️</button>
+                        </form>
+                        {% endif %}
+                    </div>
                 </td>
              </tr>
             {% empty %}

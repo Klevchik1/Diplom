@@ -171,7 +171,7 @@
                 <th>Жанры</th>
                 <th>Страны</th>
                 <th style="width: 80px;">Сеансов</th>
-                <th style="width: 100px;">Действия</th>
+                <th style="width: 120px;">Действия</th>
             </tr>
         </thead>
         <tbody>
@@ -214,10 +214,10 @@
                 <td>
                     <span class="screenings-count">{{ movie.screenings.count }}</span>
                 </td>
-                <td class="actions-cell">
-                    <div class="action-buttons">
+                <td class="actions-cell" style="white-space: nowrap; vertical-align: middle;">
+                    <div style="display: flex; gap: 6px; align-items: center; justify-content: center; min-height: 100%;">
                         <a href="{% url 'admin_panel_movie_edit' movie.id %}" class="btn-icon edit" title="Редактировать">✏️</a>
-                        <form method="post" action="{% url 'admin_panel_movie_delete' movie.id %}" style="display:inline"
+                        <form method="post" action="{% url 'admin_panel_movie_delete' movie.id %}" style="display:inline; margin:0;"
                               onsubmit="return confirm('Удалить фильм «{{ movie.title }}»? Это действие нельзя отменить.')">
                             {% csrf_token %}
                             <button type="submit" class="btn-icon delete" title="Удалить">🗑️</button>

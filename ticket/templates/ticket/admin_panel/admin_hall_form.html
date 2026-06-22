@@ -52,12 +52,6 @@
                 <small>Дополнительная информация о зале</small>
             </div>
             
-            <div class="info-box" style="margin-top: 16px;">
-                <p><strong>📊 Предварительный расчёт:</strong></p>
-                <p>Всего мест: <strong id="total-seats-preview">{% if hall %}{{ hall.total_seats }}{% else %}—{% endif %}</strong></p>
-                <p>Стоимость билета в этом зале: от <strong id="price-preview">—</strong> ₽ (в зависимости от времени)</p>
-            </div>
-            
             <div class="form-actions" style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 24px;">
                 <button type="submit" class="btn-primary">💾 Сохранить</button>
                 <a href="{% url 'admin_panel_halls' %}" class="btn-secondary">Отмена</a>

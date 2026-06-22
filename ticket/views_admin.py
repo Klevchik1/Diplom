@@ -1940,6 +1940,38 @@ def admin_ticket_group_detail(request, group_uuid):
     })
 
 
+@staff_member_required
+@require_POST
+def admin_ticket_group_delete(request, group_id):
+    """Удаление группы билетов"""
+    if not request.user.is_superuser:
+        messages.error(request, 'У вас нет доступа к админ-панели.')
+        return redirect('manager_dashboard')
+
+    group = get_object_or_404(TicketGroup, id=group_id)
+
+    # Проверяем, есть ли оплаченные билеты в группе
+    if group.payment_status == 'paid':
+        messages.error(request, f'Нельзя удалить оплаченную группу билетов #{group.id}.')
+        return redirect('admin_panel_ticket_groups')
+
+    group_uuid = group.group_uuid
+    tickets_count = group.tickets.count()
+
+    # Удаляем все билеты в группе (каскадно)
+    group.delete()
+
+    OperationLogger.log_operation(
+        request=request,
+        action_type='DELETE',
+        module_type='TICKETS',
+        description=f'Удалена группа билетов #{group.id} ({tickets_count} билетов)',
+        additional_data={'group_uuid': str(group_uuid), 'tickets_count': tickets_count}
+    )
+
+    messages.success(request, f'Группа билетов #{group.id} удалена.')
+    return redirect('admin_panel_ticket_groups')
+
 # ==================== МЕСТА (Seat) ====================
 
 @staff_member_required
@@ -2226,46 +2258,6 @@ def admin_api_token_delete(request, token_id):
     )
     messages.success(request, f'Токен "{label}" удалён')
     return redirect('admin_panel_api_tokens')
-
-
-# ==================== КЭШ ИМПОРТА ====================
-
-@staff_member_required
-def admin_import_cache(request):
-    """Просмотр кэша импорта"""
-    if not request.user.is_superuser:
-        messages.error(request, 'У вас нет доступа к админ-панели.')
-        return redirect('manager_dashboard')
-
-    cache_type = request.GET.get('cache_type', '')
-    caches = ImportCache.objects.all().order_by('-created_at')
-
-    if cache_type:
-        caches = caches.filter(cache_type=cache_type)
-
-    paginator = Paginator(caches, 30)
-    page_number = request.GET.get('page', 1)
-    page_obj = paginator.get_page(page_number)
-
-    return render(request, 'ticket/admin_panel/import_cache.html', {
-        'caches': page_obj,
-        'cache_type_filter': cache_type,
-    })
-
-
-@require_POST
-def admin_import_cache_delete(request, cache_id):
-    """Удаление записи кэша импорта"""
-    if not request.user.is_superuser:
-        messages.error(request, 'У вас нет доступа к админ-панели.')
-        return redirect('manager_dashboard')
-
-    cache = get_object_or_404(ImportCache, id=cache_id)
-    cache.delete()
-
-    messages.success(request, 'Запись кэша удалена')
-    return redirect('admin_panel_import_cache')
-
 
 # ==================== ФИЛЬМЫ (полный CRUD) ====================
 
