@@ -1,4 +1,3 @@
-# ticket/views_admin.py
 import json
 import csv
 from datetime import datetime, timedelta
@@ -332,6 +331,96 @@ def admin_role_edit(request, group_id):
 
 
 @staff_member_required
+def admin_role_add(request):
+    """Добавление новой роли (группы)"""
+    if not request.user.is_superuser:
+        messages.error(request, 'У вас нет доступа к админ-панели.')
+        return redirect('manager_dashboard')
+
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+
+        if not name:
+            messages.error(request, 'Название роли обязательно для заполнения.')
+        elif Group.objects.filter(name=name).exists():
+            messages.error(request, f'Роль с названием "{name}" уже существует.')
+        else:
+            group = Group.objects.create(name=name)
+
+            # Назначаем права, если выбраны
+            permission_ids = request.POST.getlist('permissions')
+            if permission_ids:
+                group.permissions.set(permission_ids)
+
+            OperationLogger.log_operation(
+                request=request,
+                action_type='CREATE',
+                module_type='SYSTEM',
+                description=f'Создана новая роль: {name}',
+                object_id=group.id,
+                object_repr=name
+            )
+            messages.success(request, f'Роль "{name}" успешно создана.')
+            return redirect('admin_panel_roles')
+
+    all_permissions = Permission.objects.select_related('content_type').order_by('content_type__app_label', 'codename')
+    permissions_by_app = {}
+    for perm in all_permissions:
+        app_label = perm.content_type.app_label
+        if app_label not in permissions_by_app:
+            permissions_by_app[app_label] = []
+        permissions_by_app[app_label].append({
+            'id': perm.id,
+            'name': perm.name,
+            'codename': perm.codename,
+            'checked': False
+        })
+
+    return render(request, 'ticket/admin_panel/role_edit.html', {
+        'group': None,
+        'permissions_by_app': permissions_by_app,
+        'is_add': True,
+    })
+
+
+@staff_member_required
+@require_POST
+def admin_role_delete(request, group_id):
+    """Удаление роли (группы)"""
+    if not request.user.is_superuser:
+        messages.error(request, 'У вас нет доступа к админ-панели.')
+        return redirect('manager_dashboard')
+
+    group = get_object_or_404(Group, id=group_id)
+
+    # Запрещаем удаление системных ролей
+    if group.name == 'Manager':
+        messages.error(request, 'Нельзя удалить системную роль "Manager".')
+        return redirect('admin_panel_roles')
+
+    name = group.name
+
+    # Проверяем, есть ли пользователи в этой группе
+    user_count = group.user_set.count()
+    if user_count > 0:
+        messages.error(request, f'Нельзя удалить роль "{name}", так как в ней состоят {user_count} пользователей.')
+        return redirect('admin_panel_roles')
+
+    group.delete()
+
+    OperationLogger.log_operation(
+        request=request,
+        action_type='DELETE',
+        module_type='SYSTEM',
+        description=f'Удалена роль: {name}',
+        object_id=group_id,
+        object_repr=name
+    )
+    messages.success(request, f'Роль "{name}" удалена.')
+    return redirect('admin_panel_roles')
+
+
+@staff_member_required
 def admin_hall_types(request):
     """Управление типами залов"""
     if not request.user.is_superuser:
@@ -498,6 +587,18 @@ def admin_hall_type_delete(request, ht_id):
 
     hall_type = get_object_or_404(HallType, id=ht_id)
 
+    # Проверяем, есть ли залы с этим типом
+    halls_with_type = Hall.objects.filter(hall_type=hall_type)
+    if halls_with_type.exists():
+        hall_names = ', '.join([h.name for h in halls_with_type[:5]])
+        if halls_with_type.count() > 5:
+            hall_names += f' и ещё {halls_with_type.count() - 5}'
+        messages.error(
+            request,
+            f'❌ Нельзя удалить тип зала "{hall_type.name}", так как существуют залы с этим типом: {hall_names}.'
+        )
+        return redirect('admin_panel_hall_types')
+
     if request.method == 'POST':
         name = hall_type.name
         hall_type.delete()
@@ -564,6 +665,19 @@ def admin_age_rating_delete(request, ar_id):
         return redirect('manager_dashboard')
 
     age_rating = get_object_or_404(AgeRating, id=ar_id)
+
+    # Проверяем, есть ли фильмы с этим рейтингом
+    movies_with_rating = Movie.objects.filter(age_rating=age_rating)
+    if movies_with_rating.exists():
+        movie_titles = ', '.join([m.title for m in movies_with_rating[:5]])
+        if movies_with_rating.count() > 5:
+            movie_titles += f' и ещё {movies_with_rating.count() - 5}'
+        messages.error(
+            request,
+            f'❌ Нельзя удалить возрастной рейтинг "{age_rating.name}", так как существуют фильмы с этим рейтингом: {movie_titles}.'
+        )
+        return redirect('admin_panel_age_ratings')
+
     name = age_rating.name
     age_rating.delete()
 
@@ -1013,12 +1127,12 @@ def admin_logs(request):
 
 @staff_member_required
 def admin_logs_export(request):
-    """Экспорт логов в CSV/JSON/PDF/XLSX"""
+    """Экспорт логов в JSON/PDF/XLSX"""
     if not request.user.is_superuser:
         messages.error(request, 'У вас нет доступа к админ-панели.')
         return redirect('manager_dashboard')
 
-    format_type = request.GET.get('format', 'csv')
+    format_type = request.GET.get('format', 'xlsx')
 
     # Получаем параметры фильтрации
     action_type = request.GET.get('action_type', '')
@@ -1057,9 +1171,7 @@ def admin_logs_export(request):
         description=f'Экспорт логов в {format_type.upper()} ({logs.count()} записей)'
     )
 
-    if format_type == 'csv':
-        return export_logs_csv(logs)
-    elif format_type == 'xlsx':
+    if format_type == 'xlsx':
         return export_logs_xlsx(logs)
     elif format_type == 'json':
         return export_logs_json(logs)
@@ -1068,47 +1180,6 @@ def admin_logs_export(request):
     else:
         messages.error(request, 'Неподдерживаемый формат экспорта.')
         return redirect('admin_panel_logs')
-
-
-def export_logs_csv(logs):
-    """Экспорт в CSV с правильным разделением для Excel"""
-    import csv
-
-    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
-    response['Content-Disposition'] = 'attachment; filename="logs_export.csv"'
-
-    writer = csv.writer(response, delimiter=';')  # Используем ; как разделитель для Excel
-
-    # Заголовки
-    writer.writerow([
-        'ID',
-        'Пользователь',
-        'Тип действия',
-        'Модуль',
-        'Описание',
-        'IP адрес',
-        'User Agent',
-        'Время',
-        'Object ID',
-        'Object Repr'
-    ])
-
-    # Данные
-    for log in logs:
-        writer.writerow([
-            log.id,
-            log.user.email if log.user else 'Аноним',
-            log.action_type.name if log.action_type else '-',
-            log.module_type.name if log.module_type else '-',
-            log.description,
-            log.ip_address or '-',
-            (log.user_agent or '-')[:100],  # Ограничиваем длину
-            log.timestamp.strftime('%d.%m.%Y %H:%M:%S'),
-            log.object_id or '-',
-            log.object_repr or '-',
-        ])
-
-    return response
 
 
 def export_logs_xlsx(logs):

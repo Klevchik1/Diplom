@@ -6,6 +6,7 @@
 {% block content %}
 <div class="page-header">
     <h2>🛡️ Управление ролями</h2>
+    <a href="{% url 'admin_panel_role_add' %}" class="btn-primary">➕ Добавить роль</a>
 </div>
 
 <div class="table-container">
@@ -26,6 +27,15 @@
                 <td>{{ group.user_count }}</td>
                 <td class="actions-cell">
                     <a href="{% url 'admin_panel_role_edit' group.id %}" class="btn-icon edit" title="Редактировать">✏️</a>
+                    {% if group.name != 'Manager' %}
+                    <form method="post" action="{% url 'admin_panel_role_delete' group.id %}" style="display:inline"
+                          onsubmit="return confirm('Удалить роль «{{ group.name }}»? Это действие нельзя отменить.')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-icon delete" title="Удалить">🗑️</button>
+                    </form>
+                    {% else %}
+                    <span class="badge system-badge" title="Системная роль, нельзя удалить">🔒 Системная</span>
+                    {% endif %}
                 </td>
             </tr>
             {% empty %}
@@ -40,5 +50,16 @@
 <div class="info-box">
     <p><strong>ℹ️ О ролях:</strong></p>
     <p>Роли (группы) определяют набор разрешений для пользователей. Менеджеры должны быть в группе "Manager".</p>
+    <p>🔒 Системную роль "Manager" нельзя удалить.</p>
 </div>
+
+<style>
+.system-badge {
+    background: #6c757d;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+}
+</style>
 {% endblock %}

@@ -1,14 +1,14 @@
 {% extends 'ticket/admin_panel/base_admin.html' %}
 {% load static %}
 
-{% block title %}Редактирование роли | Админ-панель{% endblock %}
+{% block title %}{% if is_add %}Добавление роли{% else %}Редактирование роли{% endif %} | Админ-панель{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'ticket/css/admin_panel/role-edit.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h2>🛡️ Редактирование роли: {{ group.name }}</h2>
+    <h2>{% if is_add %}➕ Добавление роли{% else %}✏️ Редактирование роли: {{ group.name }}{% endif %}</h2>
     <a href="{% url 'admin_panel_roles' %}" class="btn-secondary">← Назад к списку</a>
 </div>
 
@@ -19,8 +19,8 @@
         <div class="form-card">
             <h3>Основная информация</h3>
             <div class="form-group">
-                <label>Название роли</label>
-                <input type="text" name="name" value="{{ group.name }}" class="form-control" required>
+                <label>Название роли *</label>
+                <input type="text" name="name" value="{% if group %}{{ group.name }}{% endif %}" class="form-control" required placeholder="Например: Manager, Cashier, Admin">
             </div>
         </div>
 
@@ -50,7 +50,7 @@
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn-primary">💾 Сохранить изменения</button>
+            <button type="submit" class="btn-primary">{% if is_add %}➕ Создать роль{% else %}💾 Сохранить изменения{% endif %}</button>
             <a href="{% url 'admin_panel_roles' %}" class="btn-secondary">Отмена</a>
         </div>
     </form>
